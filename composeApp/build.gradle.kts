@@ -23,7 +23,7 @@ kotlin {
     listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
@@ -35,7 +35,7 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        moduleName = "composeApp"
+        outputModuleName = "composeApp"
         browser {
             val rootDirPath = project.rootDir.path
             val projectDirPath = project.projectDir.path
@@ -139,7 +139,7 @@ compose.desktop {
             packageVersion = "1.0.0"
 
             linux {
-                modules("jdk.security.auth") //needed to access file system
+                modules("jdk.security.auth") // needed to access file system
                 iconFile.set(project.file("src/desktopMain/resources/icon.png"))
             }
 
