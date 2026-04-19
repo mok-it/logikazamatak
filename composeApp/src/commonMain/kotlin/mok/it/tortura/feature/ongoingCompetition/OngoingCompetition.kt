@@ -126,50 +126,8 @@ fun OngoingCompetition(
                             AnswerBlock(
                                 teamName = competitionTeam.team.name ?: "${competition.teamAssignment.baseTeamId + index}",
                                 answer = competitionTeam.answer,
-                                modifyAnswer = { task, newAnswer ->
-                                    viewModel.onEvent(
-                                        OnGoingCompetitionEvent.ModifyAnswer(
-                                            competition,
-                                            competitionTeam,
-                                            task,
-                                            newAnswer
-                                        )
-                                    )
-                                }
                             )
 
-                            if (showConfirmDialog.value) {
-                                AlertDialog(
-                                    title = { Text("Próbálkozás törlése") },
-                                    text = { Text("Egész biztos törölni akarod?\nUtána már nem fogom visszaimádkozni sehogy...") },
-                                    onDismissRequest = {
-                                        showConfirmDialog.value = false
-                                    },
-                                    confirmButton = {
-                                        Button(
-                                            onClick = {
-                                                viewModel.onEvent(
-                                                    OnGoingCompetitionEvent.DeleteLastTry(competition, competitionTeam)
-                                                )
-                                                showConfirmDialog.value = false
-                                            },
-                                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                                        ) {
-                                            Row {
-                                                Icon(Icons.Filled.DeleteForever, null)
-                                                Text("Biztos")
-                                            }
-                                        }
-                                    },
-                                    dismissButton = {
-                                        Button(onClick = {
-                                            showConfirmDialog.value = false
-                                        }) {
-                                            Text("Hupsz, mégse")
-                                        }
-                                    }
-                                )
-                            }
                         }
                     }
                 }
