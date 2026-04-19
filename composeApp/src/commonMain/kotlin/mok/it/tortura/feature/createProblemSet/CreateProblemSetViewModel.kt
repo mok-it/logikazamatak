@@ -9,20 +9,22 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import mok.it.tortura.loadProblemSetFromExcel
-import mok.it.tortura.model.Block
+import mok.it.tortura.model.Location
 import mok.it.tortura.model.ProblemSet
 import mok.it.tortura.model.Task
 
 class CreateProblemSetViewModel : ViewModel() {
-    val problemSet = mutableStateOf(ProblemSet( listOf()))
+    val problemSet = mutableStateOf(ProblemSet(listOf()))
     val popup = mutableStateOf(CreateProblemSetPopupType.NONE)
 
-
-    private fun modifyAllBlocks(newValue: List<Block>) {
+    private fun modifyAllBlocks(newValue: List<Location>) {
         problemSet.value = problemSet.value.copy(blocks = newValue)
     }
 
-    private fun modifySingleBlock(block: Block, newValue: Block) {
+    private fun modifySingleBlock(
+        block: Location,
+        newValue: Location,
+    ) {
         val blockIndex = problemSet.value.blocks.indexOf(block)
         if (blockIndex == -1) {
             return
@@ -32,7 +34,11 @@ class CreateProblemSetViewModel : ViewModel() {
         modifyAllBlocks(newBlocks)
     }
 
-    private fun modifyTask(block: Block, task: Task, newValue: Task) {
+    private fun modifyTask(
+        block: Location,
+        task: Task,
+        newValue: Task,
+    ) {
         val taskIndex = block.tasks.indexOf(task)
         if (taskIndex == -1) {
             return
@@ -49,11 +55,19 @@ class CreateProblemSetViewModel : ViewModel() {
             }
 
             is CreateProblemSetEvent.AddBlock -> {
-                modifyAllBlocks(problemSet.value.blocks + Block())
+                modifyAllBlocks(problemSet.value.blocks + Location())
             }
 
             is CreateProblemSetEvent.DeleteTask -> {
-                modifySingleBlock(event.block, event.block.copy(tasks = event.block.tasks.filter { it != event.task }))
+                modifySingleBlock(
+                    event.block,
+                    event.block.copy(
+                        tasks = event.block.tasks.filter {
+                            it !=
+                                event.task
+                        },
+                    ),
+                )
             }
 
             is CreateProblemSetEvent.DeleteBlock -> {
@@ -71,7 +85,9 @@ class CreateProblemSetViewModel : ViewModel() {
             is CreateProblemSetEvent.ImportProblemSetFromJson -> {
                 viewModelScope.launch {
                     try {
-                        val newProblemSet = Json.decodeFromString<ProblemSet>(event.file.readString())
+                        val newProblemSet = Json.decodeFromString<ProblemSet>(
+                            event.file.readString(),
+                        )
                         problemSet.value = newProblemSet
                     } catch (_: SerializationException) {
                         popup.value = CreateProblemSetPopupType.PARSE_ERROR
@@ -79,7 +95,6 @@ class CreateProblemSetViewModel : ViewModel() {
                         popup.value = CreateProblemSetPopupType.TYPE_ERROR
                     }
                 }
-
             }
 
             is CreateProblemSetEvent.ImportProblemSetFromExcel -> {
@@ -98,19 +113,25 @@ class CreateProblemSetViewModel : ViewModel() {
             is CreateProblemSetEvent.ShowHelp -> {
                 popup.value = CreateProblemSetPopupType.HELP
             }
-
         }
     }
-
 }
 
 sealed class CreateProblemSetEvent {
     data object AddBlock : CreateProblemSetEvent()
-    data class AddTask(val block: Block) : CreateProblemSetEvent()
-    data class DeleteBlock(val block: Block) : CreateProblemSetEvent()
-    data class DeleteTask(val task: Task, val block: Block) : CreateProblemSetEvent()
-    data class ChangeTaskText(val block: Block, val task: Task, val text: String) : CreateProblemSetEvent()
-    data class ChangeTaskSolution(val block: Block, val task: Task, val text: String) : CreateProblemSetEvent()
+    data class AddTask(val block: Location) : CreateProblemSetEvent()
+    data class DeleteBlock(val block: Location) : CreateProblemSetEvent()
+    data class DeleteTask(val task: Task, val block: Location) : CreateProblemSetEvent()
+    data class ChangeTaskText(
+        val block: Location,
+        val task: Task,
+        val text: String,
+    ) : CreateProblemSetEvent()
+    data class ChangeTaskSolution(
+        val block: Location,
+        val task: Task,
+        val text: String,
+    ) : CreateProblemSetEvent()
     data class ImportProblemSetFromJson(val file: PlatformFile) : CreateProblemSetEvent()
     data class ImportProblemSetFromExcel(val file: PlatformFile) : CreateProblemSetEvent()
     data object DismissPopup : CreateProblemSetEvent()
@@ -122,5 +143,5 @@ enum class CreateProblemSetPopupType {
     TYPE_ERROR,
     EXCEL_ERROR,
     HELP,
-    NONE
+    NONE,
 }

@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 fun MainMenu(
     onSetUp: (() -> Unit),
     onCompetition: (() -> Unit),
-    onExit: (() -> Unit),
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -24,11 +23,7 @@ fun MainMenu(
             Text(text = "Előkészítés")
         }
         Button(onClick = onCompetition) {
-            Text(text = "Tortúra!!!")
+            Text(text = "Tortúra!!! (már nem, csak de)")
         }
-        Button(onClick = onExit) {
-            Text(text = "Jó éjszakát, szevasztok!")
-        }
-
     }
 }

@@ -1,30 +1,14 @@
 package mok.it.tortura.model
 
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class ProblemSet(
-    val blocks: List<Block>,
-){
-
-    fun previousTaskNumber( block: Block ): Int {
-        var sum = 0
-        for( b in blocks ){
-            if( block == b ){
-                return sum
-            }
-            sum += b.tasks.size
-        }
-        return sum
-    }
-
-    val maxTasks: Int
-        get() {
-            var max = 0
-            for( block in blocks ){
-                max = if( block.tasks.size > max ) block.tasks.size else max
-            }
-            return max
-        }
-
-}
+    @Transient
+    val locations: List<Location> = emptyList(),
+    val mainBoss: Task,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val id: Int = -1,
+)

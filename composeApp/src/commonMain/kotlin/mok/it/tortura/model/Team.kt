@@ -1,20 +1,14 @@
 package mok.it.tortura.model
 
-import kotlinx.serialization.Required
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class Team(
-    val students: List<Student>,
+    @Transient
+    val students: List<Student> = emptyList(),
     val name: String? = null,
-    @Required
-    private val id: Int = nextId(),
-) {
-    companion object IdCounter {
-        private var id = 0
-        fun nextId(): Int {
-            id += 1
-            return id
-        }
-    }
-}
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    private val id: Int = -1,
+)
