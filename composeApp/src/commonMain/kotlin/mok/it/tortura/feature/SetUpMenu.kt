@@ -20,7 +20,7 @@ fun SetUpMenu(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Előkókányolás") },
+                title = { Text("Előkókányolás xd") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         NavigateBackIcon()
