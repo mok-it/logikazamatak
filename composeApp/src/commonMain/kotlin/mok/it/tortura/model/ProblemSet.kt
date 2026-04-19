@@ -1,14 +1,11 @@
 package mok.it.tortura.model
 
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
-
-@Serializable
 data class ProblemSet(
-    @Transient
-    val locations: List<Location> = emptyList(),
+    val locations: Set<Location>,
+    val healers: Set<Healer>,
     val mainBoss: Task,
-    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val taskValue: Int,
+    val miniBossValue: Int,
+    val maxBossValue: Int,
     val id: Int = -1,
 )
