@@ -135,45 +135,7 @@ fun OngoingCompetition(
                                             newAnswer
                                         )
                                     )
-                                },
-                                onRestartBlock = {
-                                    viewModel.onEvent(
-                                        OnGoingCompetitionEvent.RestartBlock(
-                                            competition,
-                                            competitionTeam
-                                        )
-                                    )
-                                },
-                                onNextBlock = {
-                                    viewModel.onEvent(
-                                        OnGoingCompetitionEvent.NextBlock(
-                                            competition,
-                                            competitionTeam
-                                        )
-                                    )
-                                },
-                                onNavigateForwards = {
-                                    viewModel.onEvent(
-                                        OnGoingCompetitionEvent.NavigateForwards(
-                                            competition,
-                                            competitionTeam
-                                        )
-                                    )
-                                },
-                                onNavigateBackWards = {
-                                    viewModel.onEvent(
-                                        OnGoingCompetitionEvent.NavigateBackwards(
-                                            competition,
-                                            competitionTeam
-                                        )
-                                    )
-                                },
-                                onDeleteLastTry = {
-                                    showConfirmDialog.value = true
-                                },
-                                textColor = competition.colors.textColor,
-                                backgroundColor = competition.colors.backgroundColor,
-                                modifier = Modifier.weight(1f)
+                                }
                             )
 
                             if (showConfirmDialog.value) {
