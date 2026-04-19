@@ -79,13 +79,10 @@ kotlin {
             implementation(compose.material3)
 
             implementation(libs.kotlinx.datetime)
-            implementation(libs.kotbase)
-            implementation(libs.appdirs)
 
             implementation(libs.apache.poi)
             implementation(libs.apache.poi.ooxml)
 
-            implementation(libs.kotlin.csv)
             implementation(libs.flyingsaucer.core)
             implementation(libs.flyingsaucer.pdf)
             implementation("com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10")
@@ -94,6 +91,9 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.kotlin.csv)
+            implementation(libs.appdirs)
+            implementation(libs.kotbase)
         }
     }
 }
