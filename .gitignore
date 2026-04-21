@@ -70,3 +70,12 @@ captures
 # CouchBase subfolders
 composeApp/CouchBaseLiteTemp/
 composeApp/tortura_db.cblite2/
+
+# Supabase local runtime
+supabase/.branches
+supabase/.temp
+
+# Environment/secrets
+.env
+.env.*
+!.env.example
