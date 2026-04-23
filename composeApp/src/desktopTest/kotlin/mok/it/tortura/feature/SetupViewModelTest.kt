@@ -7,7 +7,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import mok.it.tortura.model.Game
 import mok.it.tortura.model.TeamAssignment
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,68 +17,40 @@ import kotlin.test.assertNull
 class SetupViewModelTest {
 
     @Test
-    fun loadSetupDataPopulatesGamesAndTeamAssignments() = runViewModelTest {
+    fun loadSetupDataPopulatesTeamAssignmentsForActiveGame() = runViewModelTest {
+        val dataSource = FakeSetupDataSource(
+            teamAssignments = listOf(TeamAssignment(id = 2, baseTeamCounter = 4, gameId = 7)),
+        )
         val viewModel = SetupViewModel(
-            FakeSetupDataSource(
-                games = listOf(Game(id = 1, name = "Main game")),
-                teamAssignments = listOf(TeamAssignment(id = 2, baseTeamCounter = 4)),
-            )
+            activeGameId = 7,
+            dataSource = dataSource,
         )
 
         viewModel.loadSetupData()
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals(listOf("Main game"), state.games.map { it.name })
         assertEquals(listOf(4L), state.teamAssignments.map { it.baseTeamCounter })
+        assertEquals(listOf(7L), state.teamAssignments.map { it.gameId })
+        assertEquals(listOf(7L), dataSource.loadedGameIds)
         assertEquals("Adatok betöltve", state.message)
         assertNull(state.errorMessage)
         assertFalse(state.isLoading)
     }
 
     @Test
-    fun createGameTrimsNameCreatesRowAndClearsInput() = runViewModelTest {
+    fun createTeamAssignmentCreatesRowForActiveGameAndClearsInput() = runViewModelTest {
         val dataSource = FakeSetupDataSource()
-        val viewModel = SetupViewModel(dataSource)
-
-        viewModel.onGameNameChange("  New game  ")
-        viewModel.createGame()
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertEquals(listOf("New game"), dataSource.createdGameNames)
-        assertEquals(listOf("New game"), state.games.map { it.name })
-        assertEquals("", state.gameName)
-        assertEquals("Feladatsor létrehozva", state.message)
-        assertNull(state.errorMessage)
-    }
-
-    @Test
-    fun createGameRejectsBlankNameWithoutCallingDataSource() = runViewModelTest {
-        val dataSource = FakeSetupDataSource()
-        val viewModel = SetupViewModel(dataSource)
-
-        viewModel.onGameNameChange("   ")
-        viewModel.createGame()
-        advanceUntilIdle()
-
-        assertEquals(emptyList(), dataSource.createdGameNames)
-        assertEquals("Adj nevet a feladatsornak", viewModel.uiState.value.errorMessage)
-        assertFalse(viewModel.uiState.value.isLoading)
-    }
-
-    @Test
-    fun createTeamAssignmentCreatesRowAndClearsInput() = runViewModelTest {
-        val dataSource = FakeSetupDataSource()
-        val viewModel = SetupViewModel(dataSource)
+        val viewModel = SetupViewModel(activeGameId = 7, dataSource = dataSource)
 
         viewModel.onBaseTeamCounterChange("6")
         viewModel.createTeamAssignment()
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals(listOf(6L), dataSource.createdBaseTeamCounters)
+        assertEquals(listOf(7L to 6L), dataSource.createdTeamAssignments)
         assertEquals(listOf(6L), state.teamAssignments.map { it.baseTeamCounter })
+        assertEquals(listOf(7L), state.teamAssignments.map { it.gameId })
         assertEquals("", state.baseTeamCounter)
         assertEquals("Csapatbeosztás létrehozva", state.message)
         assertNull(state.errorMessage)
@@ -88,13 +59,13 @@ class SetupViewModelTest {
     @Test
     fun createTeamAssignmentRejectsNonNumericValue() = runViewModelTest {
         val dataSource = FakeSetupDataSource()
-        val viewModel = SetupViewModel(dataSource)
+        val viewModel = SetupViewModel(activeGameId = 7, dataSource = dataSource)
 
         viewModel.onBaseTeamCounterChange("not a number")
         viewModel.createTeamAssignment()
         advanceUntilIdle()
 
-        assertEquals(emptyList(), dataSource.createdBaseTeamCounters)
+        assertEquals(emptyList(), dataSource.createdTeamAssignments)
         assertEquals("A csapatszám legyen egész szám", viewModel.uiState.value.errorMessage)
         assertFalse(viewModel.uiState.value.isLoading)
     }
@@ -102,6 +73,7 @@ class SetupViewModelTest {
     @Test
     fun repositoryErrorIsExposedInStateAndLoadingStops() = runViewModelTest {
         val viewModel = SetupViewModel(
+            activeGameId = 7,
             FakeSetupDataSource(loadError = IllegalStateException("database unavailable"))
         )
 
@@ -112,45 +84,37 @@ class SetupViewModelTest {
         assertEquals("database unavailable", state.errorMessage)
         assertFalse(state.isLoading)
     }
-
-    private fun runViewModelTest(block: suspend kotlinx.coroutines.test.TestScope.() -> Unit) = runTest {
-        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        try {
-            block()
-        } finally {
-            Dispatchers.resetMain()
-        }
-    }
 }
 
 private class FakeSetupDataSource(
-    private val games: List<Game> = emptyList(),
     private val teamAssignments: List<TeamAssignment> = emptyList(),
     private val loadError: Exception? = null,
 ) : SetupDataSource {
-    val createdGameNames = mutableListOf<String>()
-    val createdBaseTeamCounters = mutableListOf<Long>()
+    val loadedGameIds = mutableListOf<Long>()
+    val createdTeamAssignments = mutableListOf<Pair<Long, Long>>()
 
-    override suspend fun getGames(): List<Game> {
+    override suspend fun getTeamAssignments(gameId: Long): List<TeamAssignment> {
         loadError?.let { throw it }
-        return games
-    }
-
-    override suspend fun getTeamAssignments(): List<TeamAssignment> {
-        loadError?.let { throw it }
+        loadedGameIds += gameId
         return teamAssignments
     }
 
-    override suspend fun createGame(name: String): Game {
-        createdGameNames += name
-        return Game(id = createdGameNames.size.toLong(), name = name)
-    }
-
-    override suspend fun createTeamAssignment(baseTeamCounter: Long): TeamAssignment {
-        createdBaseTeamCounters += baseTeamCounter
+    override suspend fun createTeamAssignment(gameId: Long, baseTeamCounter: Long): TeamAssignment {
+        createdTeamAssignments += gameId to baseTeamCounter
         return TeamAssignment(
-            id = createdBaseTeamCounters.size.toLong(),
+            id = createdTeamAssignments.size.toLong(),
             baseTeamCounter = baseTeamCounter,
+            gameId = gameId,
         )
+    }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+private fun runViewModelTest(block: suspend kotlinx.coroutines.test.TestScope.() -> Unit) = runTest {
+    Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+    try {
+        block()
+    } finally {
+        Dispatchers.resetMain()
     }
 }

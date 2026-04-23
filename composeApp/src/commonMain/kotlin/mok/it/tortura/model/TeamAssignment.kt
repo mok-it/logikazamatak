@@ -9,6 +9,7 @@ data class TeamAssignment(
     val id: Long? = null,
     val createdAt: Instant? = null,
     val baseTeamCounter: Long? = null,
+    val gameId: Long? = null,
     @Transient
     val teams: List<Team> = emptyList(),
 )

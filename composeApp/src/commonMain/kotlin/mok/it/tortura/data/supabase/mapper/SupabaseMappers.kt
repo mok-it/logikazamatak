@@ -137,15 +137,18 @@ fun TeamAssignmentDto.toModel(
     id = id,
     createdAt = createdAt,
     baseTeamCounter = baseTeamCounter,
+    gameId = gameId,
     teams = teams,
 )
 
 fun TeamAssignment.toInsertDto(): TeamAssignmentInsertDto = TeamAssignmentInsertDto(
     baseTeamCounter = baseTeamCounter,
+    gameId = gameId,
 )
 
 fun TeamAssignment.toUpdateDto(): TeamAssignmentUpdateDto = TeamAssignmentUpdateDto(
     baseTeamCounter = baseTeamCounter,
+    gameId = gameId,
 )
 
 fun LocationDto.toModel(
