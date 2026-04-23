@@ -8,9 +8,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import ca.gosyer.appdirs.impl.attachAppDirs
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
-import kotbase.CouchbaseLite
-import mok.it.tortura.util.appDirs
-import java.io.File
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +17,6 @@ class MainActivity : ComponentActivity() {
 
         application.attachAppDirs()
 
-        CouchbaseLite.init( applicationContext, false, File(appDirs.getUserDataDir()), File(appDirs.getUserCacheDir()) )
         setContent {
             App()
         }

@@ -1,12 +1,13 @@
 package mok.it.tortura.model
 
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import kotlin.time.Instant
 
+@Serializable
 data class Location(
-    val tasks: Set<Task> = setOf(),
-    val miniBoss: Task,
-    private val id: Int = -1,
+    val id: Long? = null,
+    val createdAt: Instant? = null,
+    val name: String? = null,
+    val gameId: Long? = null,
+    val tasks: List<Task> = emptyList(),
 )

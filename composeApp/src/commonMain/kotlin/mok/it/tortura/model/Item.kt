@@ -1,7 +1,13 @@
 package mok.it.tortura.model
 
-class Item(
-    val id: Int = -1,
-    val name: String,
-    val price: Int,
+import kotlinx.serialization.Serializable
+import kotlin.time.Instant
+
+@Serializable
+data class Item(
+    val id: Long? = null,
+    val createdAt: Instant? = null,
+    val name: String? = null,
+    val price: Int? = null,
+    val itemEffectId: Long? = null,
 )
