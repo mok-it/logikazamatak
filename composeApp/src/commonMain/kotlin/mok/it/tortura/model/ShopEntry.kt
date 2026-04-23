@@ -4,10 +4,10 @@ import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
 @Serializable
-data class Item(
+data class ShopEntry(
     val id: Long? = null,
     val createdAt: Instant? = null,
-    val name: String? = null,
-    val price: Int? = null,
-    val itemEffectId: Long? = null,
+    val itemId: Long? = null,
+    val targetId: Long? = null,
+    val userId: Long? = null,
 )
