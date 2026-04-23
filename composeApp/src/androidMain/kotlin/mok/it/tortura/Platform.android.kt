@@ -3,7 +3,7 @@ package mok.it.tortura
 import android.os.Build
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.writeString
-import mok.it.tortura.model.ProblemSet
+import mok.it.tortura.model.Game
 import mok.it.tortura.model.TeamAssignment
 
 class AndroidPlatform : Platform {
@@ -21,7 +21,7 @@ actual suspend fun saveStringToFile(
     file.writeString(string)
 }
 
-actual fun loadProblemSetFromExcel(file: PlatformFile): ProblemSet? {
+actual fun loadGameFromExcel(file: PlatformFile): Game? {
     throw Exception("No excel import available for android")
 }
 
