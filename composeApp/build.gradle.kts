@@ -19,17 +19,6 @@ kotlin {
         }
     }
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true
-        }
-    }
-
     jvm("desktop")
 
     js {
@@ -45,9 +34,6 @@ kotlin {
 
     sourceSets {
         val desktopMain by getting
-        val iosX64Main by getting
-        val iosArm64Main by getting
-        val iosSimulatorArm64Main by getting
         val jsMain by getting
         val wasmJsMain by getting
 
@@ -84,11 +70,6 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.cio)
-        }
-        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach {
-            it.dependencies {
-                implementation(libs.ktor.client.darwin)
-            }
         }
         jsMain.dependencies {
             implementation(libs.ktor.client.js)
