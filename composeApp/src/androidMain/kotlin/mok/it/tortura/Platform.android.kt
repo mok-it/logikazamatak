@@ -13,21 +13,18 @@ class AndroidPlatform : Platform {
 
 actual fun getPlatform(): Platform = AndroidPlatform()
 
-
 actual suspend fun saveStringToFile(
     file: PlatformFile,
-    string: String
+    string: String,
 ) {
     file.writeString(string)
 }
 
-actual fun loadGameFromExcel(file: PlatformFile): Game? {
+actual fun loadGameFromExcel(file: PlatformFile): Game? =
     throw Exception("No excel import available for android")
-}
 
-actual fun loadTeamAssignmentFromExcel(file: PlatformFile): TeamAssignment? {
-    throw Exception( "No excel import available for android" )
-}
+actual fun loadTeamAssignmentFromExcel(file: PlatformFile): TeamAssignment? =
+    throw Exception("No excel import available for android")
 
 actual fun goodNightGoodBye() {
     System.exit(0)
