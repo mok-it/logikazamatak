@@ -21,7 +21,10 @@ data class SetupUiState(
 
 interface SetupDataSource {
     suspend fun getTeamAssignments(gameId: Long): List<TeamAssignment>
-    suspend fun createTeamAssignment(gameId: Long, baseTeamCounter: Long): TeamAssignment
+    suspend fun createTeamAssignment(
+        gameId: Long,
+        baseTeamCounter: Long,
+    ): TeamAssignment
 }
 
 class SupabaseSetupDataSource(
@@ -31,10 +34,17 @@ class SupabaseSetupDataSource(
     override suspend fun getTeamAssignments(gameId: Long): List<TeamAssignment> =
         repositories.teamAssignments.getByGameId(gameId).map { it.toModel() }
 
-    override suspend fun createTeamAssignment(gameId: Long, baseTeamCounter: Long): TeamAssignment =
-        repositories.teamAssignments
-            .create(TeamAssignment(baseTeamCounter = baseTeamCounter, gameId = gameId).toInsertDto())
-            .toModel()
+    override suspend fun createTeamAssignment(
+        gameId: Long,
+        baseTeamCounter: Long,
+    ): TeamAssignment = repositories.teamAssignments
+        .create(
+            TeamAssignment(
+                baseTeamCounter = baseTeamCounter,
+                gameId = gameId,
+            ).toInsertDto(),
+        )
+        .toModel()
 }
 
 class SetupViewModel(
