@@ -22,8 +22,34 @@ data class SetupUiState(
     val errorMessage: String? = null,
 )
 
-class SetupViewModel(
+interface SetupDataSource {
+    suspend fun getGames(): List<Game>
+    suspend fun getTeamAssignments(): List<TeamAssignment>
+    suspend fun createGame(name: String): Game
+    suspend fun createTeamAssignment(baseTeamCounter: Long): TeamAssignment
+}
+
+class SupabaseSetupDataSource(
     private val repositories: TorturaSupabaseRepositories = TorturaSupabaseRepositories(),
+) : SetupDataSource {
+
+    override suspend fun getGames(): List<Game> =
+        repositories.games.getAll().map { it.toModel() }
+
+    override suspend fun getTeamAssignments(): List<TeamAssignment> =
+        repositories.teamAssignments.getAll().map { it.toModel() }
+
+    override suspend fun createGame(name: String): Game =
+        repositories.games.create(Game(name = name).toInsertDto()).toModel()
+
+    override suspend fun createTeamAssignment(baseTeamCounter: Long): TeamAssignment =
+        repositories.teamAssignments
+            .create(TeamAssignment(baseTeamCounter = baseTeamCounter).toInsertDto())
+            .toModel()
+}
+
+class SetupViewModel(
+    private val dataSource: SetupDataSource = SupabaseSetupDataSource(),
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SetupUiState())
@@ -31,8 +57,8 @@ class SetupViewModel(
 
     fun loadSetupData() {
         runRepositoryAction {
-            val games = repositories.games.getAll().map { it.toModel() }
-            val teamAssignments = repositories.teamAssignments.getAll().map { it.toModel() }
+            val games = dataSource.getGames()
+            val teamAssignments = dataSource.getTeamAssignments()
 
             _uiState.update {
                 it.copy(
@@ -60,7 +86,7 @@ class SetupViewModel(
         }
 
         runRepositoryAction {
-            val createdGame = repositories.games.create(Game(name = name).toInsertDto()).toModel()
+            val createdGame = dataSource.createGame(name)
             _uiState.update {
                 it.copy(
                     gameName = "",
@@ -79,9 +105,7 @@ class SetupViewModel(
         }
 
         runRepositoryAction {
-            val createdAssignment = repositories.teamAssignments
-                .create(TeamAssignment(baseTeamCounter = baseTeamCounter).toInsertDto())
-                .toModel()
+            val createdAssignment = dataSource.createTeamAssignment(baseTeamCounter)
             _uiState.update {
                 it.copy(
                     baseTeamCounter = "",
