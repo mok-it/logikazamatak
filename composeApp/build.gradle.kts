@@ -73,6 +73,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
 
             implementation(project.dependencies.platform(libs.supabase.bom))
+            implementation(libs.supabase.auth)
             implementation(libs.supabase.postgrest)
         }
         commonTest.dependencies {

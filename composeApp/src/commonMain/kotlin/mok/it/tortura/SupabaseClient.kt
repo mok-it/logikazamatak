@@ -1,6 +1,8 @@
 package mok.it.tortura
 
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.FlowType
 import io.github.jan.supabase.postgrest.Postgrest
 
 object SupabaseClient {
@@ -20,6 +22,11 @@ object SupabaseClient {
             supabaseUrl = SUPABASE_URL,
             supabaseKey = SUPABASE_PUBLISHABLE_KEY,
         ) {
+            install(Auth) {
+                scheme = "tortura"
+                host = "auth"
+                flowType = FlowType.PKCE
+            }
             install(Postgrest)
         }
     }
