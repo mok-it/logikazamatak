@@ -17,7 +17,6 @@ Must have:
 These platforms are the primary focus and must remain fully supported.
 - Web (WasmJS)
 
-
 Nice to have:
 
 These platforms are currently working, but they are secondary because the web app is available to everyone. If support breaks or becomes too expensive to maintain, it is acceptable to drop the platform. When that happens, update this file to clearly mark the platform as unsupported or broken.
