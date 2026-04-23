@@ -10,12 +10,22 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop.
 * `/iosApp` contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform, 
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
 
+# Supported Platforms
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+Must have:
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [GitHub](https://github.com/JetBrains/compose-multiplatform/issues).
+These platforms are the primary focus and must remain fully supported.
+- Web (WasmJS)
 
-You can open the web application by running the `:composeApp:wasmJsBrowserDevelopmentRun` Gradle task.
+
+Nice to have:
+
+These platforms are currently working, but they are secondary because the web app is available to everyone. If support breaks or becomes too expensive to maintain, it is acceptable to drop the platform. When that happens, update this file to clearly mark the platform as unsupported or broken.
+- Desktop (JVM)
+- Android
+
+# Business Logic Decisions
+
+e.g ledgers, editing events after they happened, etc
+
+TBD
