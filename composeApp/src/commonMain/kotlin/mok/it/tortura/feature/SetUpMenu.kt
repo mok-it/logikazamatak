@@ -21,11 +21,10 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetUpMenu(
+    activeGameName: String,
     uiState: SetupUiState = SetupUiState(),
     onLoad: () -> Unit = {},
-    onGameNameChange: (String) -> Unit = {},
     onBaseTeamCounterChange: (String) -> Unit = {},
-    onCompetitionCreation: () -> Unit = {},
     onTeamCreation: () -> Unit = {},
     onClearMessages: () -> Unit = {},
     onBack: () -> Unit = {}
@@ -73,36 +72,7 @@ fun SetUpMenu(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Feladatsor", style = MaterialTheme.typography.titleMedium)
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    OutlinedTextField(
-                        value = uiState.gameName,
-                        onValueChange = onGameNameChange,
-                        label = { Text("Név") },
-                        singleLine = true,
-                        enabled = !uiState.isLoading,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Button(
-                        onClick = onCompetitionCreation,
-                        enabled = !uiState.isLoading,
-                    ) {
-                        Text("Mentés")
-                    }
-                }
-                ExistingRows(
-                    title = "Mentett feladatsorok",
-                    rows = uiState.games.map { game -> game.name ?: "#${game.id ?: "-"}" },
-                )
-            }
+            Text("Aktív játék: $activeGameName", style = MaterialTheme.typography.titleMedium)
 
             HorizontalDivider()
 

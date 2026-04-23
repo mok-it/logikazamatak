@@ -311,6 +311,11 @@ class TeamAssignmentRepository(
             filter { eq("id", id) }
         }.decodeSingleOrNull()
 
+    suspend fun getByGameId(gameId: Long): List<TeamAssignmentDto> =
+        client.from(SupabaseTables.TEAM_ASSIGNMENT).select {
+            filter { eq("gameId", gameId) }
+        }.decodeList()
+
     suspend fun create(teamAssignment: TeamAssignmentInsertDto): TeamAssignmentDto =
         client.from(SupabaseTables.TEAM_ASSIGNMENT).insert(teamAssignment) { select() }.decodeSingle()
 

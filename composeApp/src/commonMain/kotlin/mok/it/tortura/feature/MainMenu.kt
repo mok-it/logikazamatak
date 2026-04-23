@@ -15,13 +15,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import mok.it.tortura.model.Game
 
 @Composable
 fun MainMenu(
+    activeGame: Game,
     authUiState: AuthUiState = AuthUiState(isInitializing = false, isAuthenticated = true),
     onSignInWithGoogle: () -> Unit = {},
     onSignOut: () -> Unit = {},
     onClearAuthError: () -> Unit = {},
+    onChangeGame: (() -> Unit),
     onSetUp: (() -> Unit),
     onCompetition: (() -> Unit),
 ) {
@@ -50,6 +53,22 @@ fun MainMenu(
             onSignInWithGoogle = onSignInWithGoogle,
             onSignOut = onSignOut,
         )
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "Aktív játék: ${activeGame.name ?: "#${activeGame.id ?: "-"}"}",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            TextButton(
+                onClick = onChangeGame,
+                enabled = authUiState.isAuthenticated && !authUiState.isBusy,
+            ) {
+                Text("Másik játék választása")
+            }
+        }
 
         Button(
             onClick = onSetUp,

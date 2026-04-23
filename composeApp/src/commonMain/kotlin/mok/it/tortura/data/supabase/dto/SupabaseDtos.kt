@@ -241,16 +241,19 @@ data class TeamAssignmentDto(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val createdAt: Instant? = null,
     val baseTeamCounter: Long? = null,
+    val gameId: Long? = null,
 )
 
 @Serializable
 data class TeamAssignmentInsertDto(
     val baseTeamCounter: Long? = null,
+    val gameId: Long? = null,
 )
 
 @Serializable
 data class TeamAssignmentUpdateDto(
     val baseTeamCounter: Long? = null,
+    val gameId: Long? = null,
 )
 
 @Serializable
