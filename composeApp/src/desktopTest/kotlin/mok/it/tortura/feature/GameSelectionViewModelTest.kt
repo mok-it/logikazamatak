@@ -1,5 +1,9 @@
 package mok.it.tortura.feature
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -8,10 +12,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import mok.it.tortura.model.Game
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GameSelectionViewModelTest {
@@ -21,7 +21,7 @@ class GameSelectionViewModelTest {
         val viewModel = GameSelectionViewModel(
             FakeGameSelectionDataSource(
                 games = listOf(Game(id = 1, name = "Main game")),
-            )
+            ),
         )
 
         viewModel.loadGames()
@@ -101,7 +101,7 @@ class GameSelectionViewModelTest {
     @Test
     fun repositoryErrorIsExposedInStateAndLoadingStops() = runGameSelectionViewModelTest {
         val viewModel = GameSelectionViewModel(
-            FakeGameSelectionDataSource(loadError = IllegalStateException("database unavailable"))
+            FakeGameSelectionDataSource(loadError = IllegalStateException("database unavailable")),
         )
 
         viewModel.loadGames()
@@ -131,7 +131,9 @@ private class FakeGameSelectionDataSource(
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-private fun runGameSelectionViewModelTest(block: suspend kotlinx.coroutines.test.TestScope.() -> Unit) = runTest {
+private fun runGameSelectionViewModelTest(
+    block: suspend kotlinx.coroutines.test.TestScope.() -> Unit,
+) = runTest {
     Dispatchers.setMain(StandardTestDispatcher(testScheduler))
     try {
         block()
