@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun MainMenu(
-    authUiState: AuthUiState = AuthUiState(isInitializing = false),
+    authUiState: AuthUiState = AuthUiState(isInitializing = false, isAuthenticated = true),
     onSignInWithGoogle: () -> Unit = {},
     onSignOut: () -> Unit = {},
     onClearAuthError: () -> Unit = {},
@@ -92,11 +92,13 @@ private fun AuthSection(
                 text = authUiState.email ?: "Bejelentkezve",
                 style = MaterialTheme.typography.bodyLarge,
             )
-            Button(
-                onClick = onSignOut,
-                enabled = !authUiState.isBusy,
-            ) {
-                Text("Kijelentkezés")
+            if (authUiState.email != "Auth kikapcsolva") {
+                Button(
+                    onClick = onSignOut,
+                    enabled = !authUiState.isBusy,
+                ) {
+                    Text("Kijelentkezés")
+                }
             }
         } else {
             Button(

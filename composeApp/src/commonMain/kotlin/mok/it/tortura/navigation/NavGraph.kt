@@ -7,15 +7,18 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import mok.it.tortura.feature.AuthViewModel
+import mok.it.tortura.feature.AuthUiState
 import mok.it.tortura.feature.MainMenu
 import mok.it.tortura.feature.SetUpMenu
 import mok.it.tortura.feature.SetupViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController = rememberNavController()) {
-    val authViewModel = viewModel { AuthViewModel() }
-    val authUiState = authViewModel.uiState.collectAsStateWithLifecycle()
+    val authUiState = AuthUiState(
+        isInitializing = false,
+        isAuthenticated = true,
+        email = "Auth kikapcsolva",
+    )
 
     NavHost(
         navController = navController,
@@ -38,10 +41,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
         }
         composable<Screen.MainMenu> {
             MainMenu(
-                authUiState = authUiState.value,
-                onSignInWithGoogle = authViewModel::signInWithGoogle,
-                onSignOut = authViewModel::signOut,
-                onClearAuthError = authViewModel::clearError,
+                authUiState = authUiState,
                 onSetUp = { navController.navigate(Screen.SetUpMenu) },
                 onCompetition = { },
             )
