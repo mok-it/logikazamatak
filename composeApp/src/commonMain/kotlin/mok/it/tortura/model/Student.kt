@@ -1,13 +1,14 @@
 package mok.it.tortura.model
 
-import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 @Serializable
 data class Student(
+    val id: Long? = null,
+    val createdAt: Instant? = null,
     val name: String = "",
     val group: String = "",
     val klass: String = "",
-    @EncodeDefault(EncodeDefault.Mode.NEVER)
-    private val id: Int = -1,
+    val teamId: Long? = null,
 )

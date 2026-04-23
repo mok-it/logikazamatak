@@ -1,13 +1,11 @@
 package mok.it.tortura.model
 
-import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
-@Serializable
-data class Item(
+data class Game(
     val id: Long? = null,
     val createdAt: Instant? = null,
     val name: String? = null,
-    val price: Int? = null,
-    val itemEffectId: Long? = null,
+    val locations: List<Location> = emptyList(),
+    val tasks: List<Task> = emptyList(),
 )
