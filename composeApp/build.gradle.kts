@@ -75,6 +75,10 @@ kotlin {
             implementation(project.dependencies.platform(libs.supabase.bom))
             implementation(libs.supabase.postgrest)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
