@@ -1,36 +1,39 @@
 package mok.it.tortura.model
 
-import androidx.lifecycle.Lifecycle
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
+import kotlin.time.Instant
 
 sealed class Event(
-    val id: Int = -1,
-    val time: LocalDateTime,
-    val userId: String,
+    val id: Long? = null,
+    val createdAt: Instant? = null,
+    val userId: Long? = null,
 )
 
 class TaskEvent(
-    id: Int = -1,
-    time: LocalDateTime,
-    userId: String,
-    val task: Task,
-    val newStatus: Boolean,
+    id: Long? = null,
+    createdAt: Instant? = null,
+    userId: Long? = null,
+    val teamId: Long? = null,
+    val taskId: Long,
+    val isSuccess: Boolean? = null,
+    val task: Task? = null,
 ) : Event(
     id = id,
-    time = time,
+    createdAt = createdAt,
     userId = userId,
 )
 
 class HealerEvent(
-    id: Int = -1,
-    time: LocalDateTime,
-    userId: String,
-    val task: Task,
-    val healedTask: Task,
+    id: Long? = null,
+    createdAt: Instant? = null,
+    userId: Long? = null,
+    val teamId: Long? = null,
+    val healingTaskId: Long? = null,
+    val healedTasksLedgerId: Long? = null,
+    val healingTask: HealingTask? = null,
+    val healedTask: Task? = null,
 ) : Event(
     id = id,
-    time = time,
+    createdAt = createdAt,
     userId = userId,
 )
 

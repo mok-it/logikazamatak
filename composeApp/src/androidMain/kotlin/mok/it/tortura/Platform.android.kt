@@ -3,7 +3,7 @@ package mok.it.tortura
 import android.os.Build
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.writeString
-import mok.it.tortura.model.ProblemSet
+import mok.it.tortura.model.Game
 import mok.it.tortura.model.TeamAssignment
 
 class AndroidPlatform : Platform {
@@ -13,21 +13,18 @@ class AndroidPlatform : Platform {
 
 actual fun getPlatform(): Platform = AndroidPlatform()
 
-
 actual suspend fun saveStringToFile(
     file: PlatformFile,
-    string: String
+    string: String,
 ) {
     file.writeString(string)
 }
 
-actual fun loadProblemSetFromExcel(file: PlatformFile): ProblemSet? {
+actual fun loadGameFromExcel(file: PlatformFile): Game? =
     throw Exception("No excel import available for android")
-}
 
-actual fun loadTeamAssignmentFromExcel(file: PlatformFile): TeamAssignment? {
-    throw Exception( "No excel import available for android" )
-}
+actual fun loadTeamAssignmentFromExcel(file: PlatformFile): TeamAssignment? =
+    throw Exception("No excel import available for android")
 
 actual fun goodNightGoodBye() {
     System.exit(0)
