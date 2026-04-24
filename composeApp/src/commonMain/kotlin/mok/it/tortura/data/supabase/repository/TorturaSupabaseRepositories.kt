@@ -8,6 +8,7 @@ class TorturaSupabaseRepositories(
 ) {
     val games = GameRepository(client)
     val healingLedger = HealingLedgerRepository(client)
+    val healingTasks = HealingTaskRepository(client)
     val itemEffects = ItemEffectRepository(client)
     val items = ItemRepository(client)
     val locations = LocationRepository(client)

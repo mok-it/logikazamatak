@@ -9,6 +9,9 @@ import mok.it.tortura.data.supabase.dto.GameUpdateDto
 import mok.it.tortura.data.supabase.dto.HealingLedgerDto
 import mok.it.tortura.data.supabase.dto.HealingLedgerInsertDto
 import mok.it.tortura.data.supabase.dto.HealingLedgerUpdateDto
+import mok.it.tortura.data.supabase.dto.HealingTaskDto
+import mok.it.tortura.data.supabase.dto.HealingTaskInsertDto
+import mok.it.tortura.data.supabase.dto.HealingTaskUpdateDto
 import mok.it.tortura.data.supabase.dto.ItemDto
 import mok.it.tortura.data.supabase.dto.ItemEffectDto
 import mok.it.tortura.data.supabase.dto.ItemEffectInsertDto
@@ -75,6 +78,16 @@ class HealingLedgerRepository(
             filter { eq("id", id) }
         }.decodeSingleOrNull()
 
+    suspend fun getByTeamId(teamId: Long): List<HealingLedgerDto> =
+        client.from(SupabaseTables.HEALING_LEDGER).select {
+            filter { eq("teamId", teamId) }
+        }.decodeList()
+
+    suspend fun getByHealedTasksLedgerId(healedTasksLedgerId: Long): List<HealingLedgerDto> =
+        client.from(SupabaseTables.HEALING_LEDGER).select {
+            filter { eq("healedTasksLedgerId", healedTasksLedgerId) }
+        }.decodeList()
+
     suspend fun create(entry: HealingLedgerInsertDto): HealingLedgerDto =
         client.from(SupabaseTables.HEALING_LEDGER).insert(entry) { select() }.decodeSingle()
 
@@ -86,6 +99,38 @@ class HealingLedgerRepository(
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.HEALING_LEDGER).delete {
+            filter { eq("id", id) }
+        }
+    }
+}
+
+class HealingTaskRepository(
+    private val client: SupabaseClient,
+) {
+    suspend fun getAll(): List<HealingTaskDto> =
+        client.from(SupabaseTables.HEALING_TASKS).select().decodeList()
+
+    suspend fun getById(id: Long): HealingTaskDto? =
+        client.from(SupabaseTables.HEALING_TASKS).select {
+            filter { eq("id", id) }
+        }.decodeSingleOrNull()
+
+    suspend fun getByGameId(gameId: Long): List<HealingTaskDto> =
+        client.from(SupabaseTables.HEALING_TASKS).select {
+            filter { eq("gameId", gameId) }
+        }.decodeList()
+
+    suspend fun create(task: HealingTaskInsertDto): HealingTaskDto =
+        client.from(SupabaseTables.HEALING_TASKS).insert(task) { select() }.decodeSingle()
+
+    suspend fun update(id: Long, task: HealingTaskUpdateDto): HealingTaskDto =
+        client.from(SupabaseTables.HEALING_TASKS).update(task) {
+            select()
+            filter { eq("id", id) }
+        }.decodeSingle()
+
+    suspend fun delete(id: Long) {
+        client.from(SupabaseTables.HEALING_TASKS).delete {
             filter { eq("id", id) }
         }
     }
@@ -282,6 +327,11 @@ class TasksLedgerRepository(
     suspend fun getByTaskId(taskId: Long): List<TasksLedgerDto> =
         client.from(SupabaseTables.TASKS_LEDGER).select {
             filter { eq("taskId", taskId) }
+        }.decodeList()
+
+    suspend fun getByTeamId(teamId: Long): List<TasksLedgerDto> =
+        client.from(SupabaseTables.TASKS_LEDGER).select {
+            filter { eq("teamId", teamId) }
         }.decodeList()
 
     suspend fun create(entry: TasksLedgerInsertDto): TasksLedgerDto =
