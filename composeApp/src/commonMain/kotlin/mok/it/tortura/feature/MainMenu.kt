@@ -80,7 +80,7 @@ fun MainMenu(
             onClick = onCompetition,
             enabled = authUiState.isAuthenticated && !authUiState.isBusy,
         ) {
-            Text(text = "Tortúra!!! (már nem, csak de)")
+            Text(text = "Gyógyító feladatok")
         }
     }
 }
