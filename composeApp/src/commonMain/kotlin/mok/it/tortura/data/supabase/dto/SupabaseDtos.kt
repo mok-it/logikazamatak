@@ -32,23 +32,52 @@ data class HealingLedgerDto(
     @SerialName("created_at")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val createdAt: Instant? = null,
-    val taskId: Long? = null,
-    val healedTaskId: Long? = null,
+    val teamId: Long? = null,
+    val healingTaskId: Long? = null,
+    val healedTasksLedgerId: Long? = null,
     val userId: Long? = null,
 )
 
 @Serializable
 data class HealingLedgerInsertDto(
-    val taskId: Long? = null,
-    val healedTaskId: Long? = null,
+    val teamId: Long? = null,
+    val healingTaskId: Long? = null,
+    val healedTasksLedgerId: Long? = null,
     val userId: Long? = null,
 )
 
 @Serializable
 data class HealingLedgerUpdateDto(
-    val taskId: Long? = null,
-    val healedTaskId: Long? = null,
+    val teamId: Long? = null,
+    val healingTaskId: Long? = null,
+    val healedTasksLedgerId: Long? = null,
     val userId: Long? = null,
+)
+
+@Serializable
+data class HealingTaskDto(
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val id: Long? = null,
+    @SerialName("created_at")
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val createdAt: Instant? = null,
+    val text: String? = null,
+    val solution: String? = null,
+    val gameId: Long? = null,
+)
+
+@Serializable
+data class HealingTaskInsertDto(
+    val text: String? = null,
+    val solution: String? = null,
+    val gameId: Long? = null,
+)
+
+@Serializable
+data class HealingTaskUpdateDto(
+    val text: String? = null,
+    val solution: String? = null,
+    val gameId: Long? = null,
 )
 
 @Serializable
@@ -215,6 +244,7 @@ data class TasksLedgerDto(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val createdAt: Instant? = null,
     val taskId: Long,
+    val teamId: Long? = null,
     val userId: Long? = null,
     val isSuccess: Boolean? = null,
 )
@@ -222,6 +252,7 @@ data class TasksLedgerDto(
 @Serializable
 data class TasksLedgerInsertDto(
     val taskId: Long,
+    val teamId: Long? = null,
     val userId: Long? = null,
     val isSuccess: Boolean? = null,
 )
@@ -229,6 +260,7 @@ data class TasksLedgerInsertDto(
 @Serializable
 data class TasksLedgerUpdateDto(
     val taskId: Long? = null,
+    val teamId: Long? = null,
     val userId: Long? = null,
     val isSuccess: Boolean? = null,
 )
