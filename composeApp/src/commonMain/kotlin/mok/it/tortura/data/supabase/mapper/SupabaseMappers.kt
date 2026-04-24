@@ -5,6 +5,9 @@ import mok.it.tortura.data.supabase.dto.GameInsertDto
 import mok.it.tortura.data.supabase.dto.GameUpdateDto
 import mok.it.tortura.data.supabase.dto.HealingLedgerDto
 import mok.it.tortura.data.supabase.dto.HealingLedgerInsertDto
+import mok.it.tortura.data.supabase.dto.HealingTaskDto
+import mok.it.tortura.data.supabase.dto.HealingTaskInsertDto
+import mok.it.tortura.data.supabase.dto.HealingTaskUpdateDto
 import mok.it.tortura.data.supabase.dto.ItemDto
 import mok.it.tortura.data.supabase.dto.ItemEffectDto
 import mok.it.tortura.data.supabase.dto.ItemEffectInsertDto
@@ -33,6 +36,7 @@ import mok.it.tortura.data.supabase.dto.TeamInsertDto
 import mok.it.tortura.data.supabase.dto.TeamUpdateDto
 import mok.it.tortura.model.Game
 import mok.it.tortura.model.HealerEvent
+import mok.it.tortura.model.HealingTask
 import mok.it.tortura.model.Item
 import mok.it.tortura.model.ItemEffect
 import mok.it.tortura.model.Location
@@ -60,6 +64,26 @@ fun Game.toInsertDto(): GameInsertDto = GameInsertDto(
 
 fun Game.toUpdateDto(): GameUpdateDto = GameUpdateDto(
     name = name,
+)
+
+fun HealingTaskDto.toModel(): HealingTask = HealingTask(
+    id = id,
+    createdAt = createdAt,
+    text = text.orEmpty(),
+    solution = solution,
+    gameId = gameId,
+)
+
+fun HealingTask.toInsertDto(): HealingTaskInsertDto = HealingTaskInsertDto(
+    text = text,
+    solution = solution,
+    gameId = gameId,
+)
+
+fun HealingTask.toUpdateDto(): HealingTaskUpdateDto = HealingTaskUpdateDto(
+    text = text,
+    solution = solution,
+    gameId = gameId,
 )
 
 fun StudentDto.toModel(): Student = Student(
@@ -211,6 +235,7 @@ fun TasksLedgerDto.toModel(
     id = id,
     createdAt = createdAt,
     userId = userId,
+    teamId = teamId,
     taskId = taskId,
     isSuccess = isSuccess,
     task = task,
@@ -218,26 +243,29 @@ fun TasksLedgerDto.toModel(
 
 fun TaskEvent.toInsertDto(): TasksLedgerInsertDto = TasksLedgerInsertDto(
     taskId = taskId,
+    teamId = teamId,
     userId = userId,
     isSuccess = isSuccess,
 )
 
 fun HealingLedgerDto.toModel(
-    task: Task? = null,
+    healingTask: HealingTask? = null,
     healedTask: Task? = null,
 ): HealerEvent = HealerEvent(
     id = id,
     createdAt = createdAt,
     userId = userId,
-    taskId = taskId,
-    healedTaskId = healedTaskId,
-    task = task,
+    teamId = teamId,
+    healingTaskId = healingTaskId,
+    healedTasksLedgerId = healedTasksLedgerId,
+    healingTask = healingTask,
     healedTask = healedTask,
 )
 
 fun HealerEvent.toInsertDto(): HealingLedgerInsertDto = HealingLedgerInsertDto(
-    taskId = taskId,
-    healedTaskId = healedTaskId,
+    teamId = teamId,
+    healingTaskId = healingTaskId,
+    healedTasksLedgerId = healedTasksLedgerId,
     userId = userId,
 )
 
