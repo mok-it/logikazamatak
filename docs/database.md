@@ -9,6 +9,18 @@ explains the domain model, relationships, and app-level rules.
 - Add new database changes with `supabase migration new <name>`.
 - Apply pending remote migrations with `supabase db push`.
 
+## Seed Data
+
+- `supabase/seed.sql` contains dummy data for local development and application testing.
+- Supabase applies it after migrations when running `supabase db reset`. (Make sure to have a docker daemon - in
+  practice, Docker Desktop - running before running that)
+- The seed uses fixed IDs in the `900001+` range and `ON CONFLICT` upserts, so it can be rerun locally without
+  duplicating rows.
+- The demo data includes games, locations, tasks, healing tasks, team assignments, teams, students, task ledgers,
+  healing ledgers, shop items, and shop purchases.
+- Several teams have unhealed failed `TasksLedger` rows so the healer screen has selectable failed tasks. A few failed
+  rows are also already referenced by `HealingLedger` to test previously used healing tasks.
+
 ## Entity Model
 
 See the [Supabase schema visualizer](https://supabase.com/dashboard/project/nnhvnqpczerqrofxkbki/database/schemas) (if
@@ -56,6 +68,17 @@ Key columns:
 - `gameId`: references `Games.id`
 - `locationId`: references `Locations.id`
 
+### `HealingTasks`
+
+Recovery challenges that can heal failed task attempts. Healing tasks are directly scoped to one game.
+
+Key columns:
+
+- `id`: primary key
+- `text`: healing task prompt
+- `solution`: expected answer
+- `gameId`: references `Games.id`
+
 ### `TeamAssignment`
 
 The saved team setup for a game. This is game-scoped so teams and students can be resolved through the selected game.
@@ -96,18 +119,20 @@ Key columns:
 
 - `id`: primary key
 - `taskId`: references `Tasks.id`
+- `teamId`: references `Teams.id`
 - `userId`: acting user identifier
 - `isSuccess`: attempt result
 
 ### `HealingLedger`
 
-History of healing actions between tasks.
+History of healing actions that connect a healing task to a failed task attempt.
 
 Key columns:
 
 - `id`: primary key
-- `taskId`: references `Tasks.id`
-- `healedTaskId`: references `Tasks.id`
+- `teamId`: references `Teams.id`
+- `healingTaskId`: references `HealingTasks.id`
+- `healedTasksLedgerId`: references `TasksLedger.id`
 - `userId`: acting user identifier
 
 ### `ItemEffect`
