@@ -1,5 +1,0 @@
-{
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "compatibility_date": "2026-04-23",
-  "pages_build_output_dir": "composeApp/build/dist/wasmJs/productionExecutable"
-}
