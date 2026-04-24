@@ -66,6 +66,9 @@ captures
 supabase/.branches
 supabase/.temp
 
+# Generated Kotlin/Wasm package metadata
+kotlin-js-store/wasm/
+
 # Environment/secrets
 .env
 .env.*

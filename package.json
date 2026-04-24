@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "./gradlew :composeApp:wasmJsBrowserDistribution",
+    "deploy": "npm run build && npx wrangler pages deploy composeApp/build/dist/wasmJs/productionExecutable",
+    "dev": "npm run build && npx wrangler pages dev composeApp/build/dist/wasmJs/productionExecutable"
+  }
+}
