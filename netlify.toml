@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = "composeApp/build/dist/wasmJs/productionExecutable"
+
+[[headers]]
+  for = "/*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
