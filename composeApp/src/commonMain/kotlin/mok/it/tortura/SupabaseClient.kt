@@ -5,20 +5,17 @@ import io.github.jan.supabase.postgrest.Postgrest
 
 object SupabaseClient {
 
-    private const val SUPABASE_URL = "https://nnhvnqpczerqrofxkbki.supabase.co"
-    private const val SUPABASE_PUBLISHABLE_KEY = "sb_publishable_NyBL91k2rrDYgnpKWvYhGA_cXhLoVAq"
-
     val client by lazy {
-        check(!SUPABASE_URL.contains("YOUR_PROJECT")) {
-            "Replace SUPABASE_URL in SupabaseClient.kt with your actual project URL."
+        check(SupabaseConfig.URL.isNotBlank()) {
+            "Supabase URL is blank for environment '${SupabaseConfig.ENVIRONMENT}'."
         }
-        check(SUPABASE_PUBLISHABLE_KEY != "YOUR_PUBLISHABLE_KEY") {
-            "Replace SUPABASE_PUBLISHABLE_KEY in SupabaseClient.kt with your publishable key."
+        check(SupabaseConfig.KEY.isNotBlank()) {
+            "Supabase key is blank for environment '${SupabaseConfig.ENVIRONMENT}'."
         }
 
         createSupabaseClient(
-            supabaseUrl = SUPABASE_URL,
-            supabaseKey = SUPABASE_PUBLISHABLE_KEY,
+            supabaseUrl = SupabaseConfig.URL,
+            supabaseKey = SupabaseConfig.KEY,
         ) {
             install(Postgrest)
         }
