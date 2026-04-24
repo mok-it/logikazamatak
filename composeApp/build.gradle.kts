@@ -3,6 +3,73 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+val generatedSupabaseConfigDir = layout.buildDirectory.dir("generated/supabaseConfig/commonMain/kotlin")
+
+val generateSupabaseConfig by tasks.registering {
+    val supabaseEnvironment = providers.gradleProperty("supabase.env")
+        .orElse(providers.environmentVariable("SUPABASE_ENV"))
+        .orElse("local")
+    val localUrl = providers.gradleProperty("supabase.local.url")
+        .orElse(providers.environmentVariable("SUPABASE_LOCAL_URL"))
+        .orElse("http://127.0.0.1:54321")
+    val localKey = providers.gradleProperty("supabase.local.key")
+        .orElse(providers.environmentVariable("SUPABASE_LOCAL_KEY"))
+        .orElse("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0")
+    val prodUrl = providers.gradleProperty("supabase.prod.url")
+        .orElse(providers.environmentVariable("SUPABASE_PROD_URL"))
+        .orElse("https://nnhvnqpczerqrofxkbki.supabase.co")
+    val prodKey = providers.gradleProperty("supabase.prod.key")
+        .orElse(providers.environmentVariable("SUPABASE_PROD_KEY"))
+        .orElse("sb_publishable_NyBL91k2rrDYgnpKWvYhGA_cXhLoVAq")
+
+    inputs.property("supabaseEnvironment", supabaseEnvironment)
+    inputs.property("localUrl", localUrl)
+    inputs.property("localKey", localKey)
+    inputs.property("prodUrl", prodUrl)
+    inputs.property("prodKey", prodKey)
+    outputs.dir(generatedSupabaseConfigDir)
+
+    doLast {
+        val environment = supabaseEnvironment.get().lowercase()
+        val config = when (environment) {
+            "local", "dev", "development" -> Triple("local", localUrl.get(), localKey.get())
+            "prod", "production" -> Triple("prod", prodUrl.get(), prodKey.get())
+            else -> error("Unknown Supabase environment '$environment'. Use local or prod.")
+        }
+
+        fun String.toKotlinStringLiteral() = buildString {
+            append('"')
+            this@toKotlinStringLiteral.forEach { char ->
+                when (char) {
+                    '\\' -> append("\\\\")
+                    '"' -> append("\\\"")
+                    '\n' -> append("\\n")
+                    '\r' -> append("\\r")
+                    '\t' -> append("\\t")
+                    else -> append(char)
+                }
+            }
+            append('"')
+        }
+
+        val outputFile = generatedSupabaseConfigDir.get()
+            .file("mok/it/tortura/SupabaseConfig.kt")
+            .asFile
+        outputFile.parentFile.mkdirs()
+        outputFile.writeText(
+            """
+            package mok.it.tortura
+
+            internal object SupabaseConfig {
+                const val ENVIRONMENT = ${config.first.toKotlinStringLiteral()}
+                const val URL = ${config.second.toKotlinStringLiteral()}
+                const val KEY = ${config.third.toKotlinStringLiteral()}
+            }
+            """.trimIndent() + "\n",
+        )
+    }
+}
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
@@ -37,6 +104,9 @@ kotlin {
         val jsMain by getting
         val wasmJsMain by getting
 
+        commonMain {
+            kotlin.srcDir(generatedSupabaseConfigDir)
+        }
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
@@ -109,6 +179,10 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+    dependsOn(generateSupabaseConfig)
 }
 
 compose.desktop {
