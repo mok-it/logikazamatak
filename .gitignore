@@ -75,6 +75,9 @@ composeApp/tortura_db.cblite2/
 supabase/.branches
 supabase/.temp
 
+# Netlify
+.netlify/
+
 # Generated Kotlin/Wasm package metadata
 kotlin-js-store/wasm/
 

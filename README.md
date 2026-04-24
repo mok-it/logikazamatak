@@ -25,4 +25,3 @@ You can open the web application by running the `:composeApp:wasmJsBrowserDevelo
 We use Netlify to host our frontend.
 
 The web app builds to `composeApp/build/dist/wasmJs/productionExecutable`.
-This repository includes a `wrangler.jsonc` with `pages_build_output_dir` pointing at that directory
