@@ -5,40 +5,28 @@ import io.github.jan.supabase.postgrest.from
 import mok.it.tortura.data.supabase.SupabaseTables
 import mok.it.tortura.data.supabase.dto.GameDto
 import mok.it.tortura.data.supabase.dto.GameInsertDto
-import mok.it.tortura.data.supabase.dto.GameUpdateDto
 import mok.it.tortura.data.supabase.dto.HealingLedgerDto
 import mok.it.tortura.data.supabase.dto.HealingLedgerInsertDto
-import mok.it.tortura.data.supabase.dto.HealingLedgerUpdateDto
 import mok.it.tortura.data.supabase.dto.HealingTaskDto
 import mok.it.tortura.data.supabase.dto.HealingTaskInsertDto
-import mok.it.tortura.data.supabase.dto.HealingTaskUpdateDto
 import mok.it.tortura.data.supabase.dto.ItemDto
 import mok.it.tortura.data.supabase.dto.ItemEffectDto
 import mok.it.tortura.data.supabase.dto.ItemEffectInsertDto
-import mok.it.tortura.data.supabase.dto.ItemEffectUpdateDto
 import mok.it.tortura.data.supabase.dto.ItemInsertDto
-import mok.it.tortura.data.supabase.dto.ItemUpdateDto
 import mok.it.tortura.data.supabase.dto.LocationDto
 import mok.it.tortura.data.supabase.dto.LocationInsertDto
-import mok.it.tortura.data.supabase.dto.LocationUpdateDto
 import mok.it.tortura.data.supabase.dto.ShopDto
 import mok.it.tortura.data.supabase.dto.ShopInsertDto
-import mok.it.tortura.data.supabase.dto.ShopUpdateDto
 import mok.it.tortura.data.supabase.dto.StudentDto
 import mok.it.tortura.data.supabase.dto.StudentInsertDto
-import mok.it.tortura.data.supabase.dto.StudentUpdateDto
 import mok.it.tortura.data.supabase.dto.TaskDto
 import mok.it.tortura.data.supabase.dto.TaskInsertDto
-import mok.it.tortura.data.supabase.dto.TaskUpdateDto
 import mok.it.tortura.data.supabase.dto.TasksLedgerDto
 import mok.it.tortura.data.supabase.dto.TasksLedgerInsertDto
-import mok.it.tortura.data.supabase.dto.TasksLedgerUpdateDto
 import mok.it.tortura.data.supabase.dto.TeamAssignmentDto
 import mok.it.tortura.data.supabase.dto.TeamAssignmentInsertDto
-import mok.it.tortura.data.supabase.dto.TeamAssignmentUpdateDto
 import mok.it.tortura.data.supabase.dto.TeamDto
 import mok.it.tortura.data.supabase.dto.TeamInsertDto
-import mok.it.tortura.data.supabase.dto.TeamUpdateDto
 
 class GameRepository(
     private val client: SupabaseClient,
@@ -54,7 +42,7 @@ class GameRepository(
     suspend fun create(game: GameInsertDto): GameDto =
         client.from(SupabaseTables.GAMES).insert(game) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, game: GameUpdateDto): GameDto =
+    suspend fun update(id: Long, game: GameInsertDto): GameDto =
         client.from(SupabaseTables.GAMES).update(game) {
             select()
             filter { eq("id", id) }
@@ -91,7 +79,7 @@ class HealingLedgerRepository(
     suspend fun create(entry: HealingLedgerInsertDto): HealingLedgerDto =
         client.from(SupabaseTables.HEALING_LEDGER).insert(entry) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, entry: HealingLedgerUpdateDto): HealingLedgerDto =
+    suspend fun update(id: Long, entry: HealingLedgerInsertDto): HealingLedgerDto =
         client.from(SupabaseTables.HEALING_LEDGER).update(entry) {
             select()
             filter { eq("id", id) }
@@ -123,7 +111,7 @@ class HealingTaskRepository(
     suspend fun create(task: HealingTaskInsertDto): HealingTaskDto =
         client.from(SupabaseTables.HEALING_TASKS).insert(task) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, task: HealingTaskUpdateDto): HealingTaskDto =
+    suspend fun update(id: Long, task: HealingTaskInsertDto): HealingTaskDto =
         client.from(SupabaseTables.HEALING_TASKS).update(task) {
             select()
             filter { eq("id", id) }
@@ -150,7 +138,7 @@ class ItemRepository(
     suspend fun create(item: ItemInsertDto): ItemDto =
         client.from(SupabaseTables.ITEM).insert(item) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, item: ItemUpdateDto): ItemDto =
+    suspend fun update(id: Long, item: ItemInsertDto): ItemDto =
         client.from(SupabaseTables.ITEM).update(item) {
             select()
             filter { eq("id", id) }
@@ -177,7 +165,7 @@ class ItemEffectRepository(
     suspend fun create(itemEffect: ItemEffectInsertDto): ItemEffectDto =
         client.from(SupabaseTables.ITEM_EFFECT).insert(itemEffect) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, itemEffect: ItemEffectUpdateDto): ItemEffectDto =
+    suspend fun update(id: Long, itemEffect: ItemEffectInsertDto): ItemEffectDto =
         client.from(SupabaseTables.ITEM_EFFECT).update(itemEffect) {
             select()
             filter { eq("id", id) }
@@ -204,7 +192,7 @@ class LocationRepository(
     suspend fun create(location: LocationInsertDto): LocationDto =
         client.from(SupabaseTables.LOCATIONS).insert(location) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, location: LocationUpdateDto): LocationDto =
+    suspend fun update(id: Long, location: LocationInsertDto): LocationDto =
         client.from(SupabaseTables.LOCATIONS).update(location) {
             select()
             filter { eq("id", id) }
@@ -231,7 +219,7 @@ class ShopRepository(
     suspend fun create(shopEntry: ShopInsertDto): ShopDto =
         client.from(SupabaseTables.SHOP).insert(shopEntry) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, shopEntry: ShopUpdateDto): ShopDto =
+    suspend fun update(id: Long, shopEntry: ShopInsertDto): ShopDto =
         client.from(SupabaseTables.SHOP).update(shopEntry) {
             select()
             filter { eq("id", id) }
@@ -263,7 +251,7 @@ class StudentRepository(
     suspend fun create(student: StudentInsertDto): StudentDto =
         client.from(SupabaseTables.STUDENTS).insert(student) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, student: StudentUpdateDto): StudentDto =
+    suspend fun update(id: Long, student: StudentInsertDto): StudentDto =
         client.from(SupabaseTables.STUDENTS).update(student) {
             select()
             filter { eq("id", id) }
@@ -300,7 +288,7 @@ class TaskRepository(
     suspend fun create(task: TaskInsertDto): TaskDto =
         client.from(SupabaseTables.TASKS).insert(task) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, task: TaskUpdateDto): TaskDto =
+    suspend fun update(id: Long, task: TaskInsertDto): TaskDto =
         client.from(SupabaseTables.TASKS).update(task) {
             select()
             filter { eq("id", id) }
@@ -337,7 +325,7 @@ class TasksLedgerRepository(
     suspend fun create(entry: TasksLedgerInsertDto): TasksLedgerDto =
         client.from(SupabaseTables.TASKS_LEDGER).insert(entry) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, entry: TasksLedgerUpdateDto): TasksLedgerDto =
+    suspend fun update(id: Long, entry: TasksLedgerInsertDto): TasksLedgerDto =
         client.from(SupabaseTables.TASKS_LEDGER).update(entry) {
             select()
             filter { eq("id", id) }
@@ -369,7 +357,7 @@ class TeamAssignmentRepository(
     suspend fun create(teamAssignment: TeamAssignmentInsertDto): TeamAssignmentDto =
         client.from(SupabaseTables.TEAM_ASSIGNMENT).insert(teamAssignment) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, teamAssignment: TeamAssignmentUpdateDto): TeamAssignmentDto =
+    suspend fun update(id: Long, teamAssignment: TeamAssignmentInsertDto): TeamAssignmentDto =
         client.from(SupabaseTables.TEAM_ASSIGNMENT).update(teamAssignment) {
             select()
             filter { eq("id", id) }
@@ -401,7 +389,7 @@ class TeamRepository(
     suspend fun create(team: TeamInsertDto): TeamDto =
         client.from(SupabaseTables.TEAMS).insert(team) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, team: TeamUpdateDto): TeamDto =
+    suspend fun update(id: Long, team: TeamInsertDto): TeamDto =
         client.from(SupabaseTables.TEAMS).update(team) {
             select()
             filter { eq("id", id) }
