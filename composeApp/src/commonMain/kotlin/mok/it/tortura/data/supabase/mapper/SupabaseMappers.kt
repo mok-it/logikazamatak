@@ -2,38 +2,28 @@ package mok.it.tortura.data.supabase.mapper
 
 import mok.it.tortura.data.supabase.dto.GameDto
 import mok.it.tortura.data.supabase.dto.GameInsertDto
-import mok.it.tortura.data.supabase.dto.GameUpdateDto
 import mok.it.tortura.data.supabase.dto.HealingLedgerDto
 import mok.it.tortura.data.supabase.dto.HealingLedgerInsertDto
 import mok.it.tortura.data.supabase.dto.HealingTaskDto
 import mok.it.tortura.data.supabase.dto.HealingTaskInsertDto
-import mok.it.tortura.data.supabase.dto.HealingTaskUpdateDto
 import mok.it.tortura.data.supabase.dto.ItemDto
 import mok.it.tortura.data.supabase.dto.ItemEffectDto
 import mok.it.tortura.data.supabase.dto.ItemEffectInsertDto
-import mok.it.tortura.data.supabase.dto.ItemEffectUpdateDto
 import mok.it.tortura.data.supabase.dto.ItemInsertDto
-import mok.it.tortura.data.supabase.dto.ItemUpdateDto
 import mok.it.tortura.data.supabase.dto.LocationDto
 import mok.it.tortura.data.supabase.dto.LocationInsertDto
-import mok.it.tortura.data.supabase.dto.LocationUpdateDto
 import mok.it.tortura.data.supabase.dto.ShopDto
 import mok.it.tortura.data.supabase.dto.ShopInsertDto
-import mok.it.tortura.data.supabase.dto.ShopUpdateDto
 import mok.it.tortura.data.supabase.dto.StudentDto
 import mok.it.tortura.data.supabase.dto.StudentInsertDto
-import mok.it.tortura.data.supabase.dto.StudentUpdateDto
 import mok.it.tortura.data.supabase.dto.TaskDto
 import mok.it.tortura.data.supabase.dto.TaskInsertDto
-import mok.it.tortura.data.supabase.dto.TaskUpdateDto
 import mok.it.tortura.data.supabase.dto.TasksLedgerDto
 import mok.it.tortura.data.supabase.dto.TasksLedgerInsertDto
 import mok.it.tortura.data.supabase.dto.TeamAssignmentDto
 import mok.it.tortura.data.supabase.dto.TeamAssignmentInsertDto
-import mok.it.tortura.data.supabase.dto.TeamAssignmentUpdateDto
 import mok.it.tortura.data.supabase.dto.TeamDto
 import mok.it.tortura.data.supabase.dto.TeamInsertDto
-import mok.it.tortura.data.supabase.dto.TeamUpdateDto
 import mok.it.tortura.model.Game
 import mok.it.tortura.model.HealerEvent
 import mok.it.tortura.model.HealingTask
@@ -62,7 +52,7 @@ fun Game.toInsertDto(): GameInsertDto = GameInsertDto(
     name = name,
 )
 
-fun Game.toUpdateDto(): GameUpdateDto = GameUpdateDto(
+fun Game.toUpdateDto(): GameInsertDto = GameInsertDto(
     name = name,
 )
 
@@ -80,7 +70,7 @@ fun HealingTask.toInsertDto(): HealingTaskInsertDto = HealingTaskInsertDto(
     gameId = gameId,
 )
 
-fun HealingTask.toUpdateDto(): HealingTaskUpdateDto = HealingTaskUpdateDto(
+fun HealingTask.toUpdateDto(): HealingTaskInsertDto = HealingTaskInsertDto(
     text = text,
     solution = solution,
     gameId = gameId,
@@ -102,7 +92,7 @@ fun Student.toInsertDto(): StudentInsertDto = StudentInsertDto(
     teamId = teamId,
 )
 
-fun Student.toUpdateDto(): StudentUpdateDto = StudentUpdateDto(
+fun Student.toUpdateDto(): StudentInsertDto = StudentInsertDto(
     name = name,
     group = group,
     klass = klass,
@@ -127,7 +117,7 @@ fun Task.toInsertDto(): TaskInsertDto = TaskInsertDto(
     locationId = locationId,
 )
 
-fun Task.toUpdateDto(): TaskUpdateDto = TaskUpdateDto(
+fun Task.toUpdateDto(): TaskInsertDto = TaskInsertDto(
     text = text,
     solution = solution,
     isMiniBoss = isMiniBoss,
@@ -150,7 +140,7 @@ fun Team.toInsertDto(): TeamInsertDto = TeamInsertDto(
     teamAssignmentId = teamAssignmentId,
 )
 
-fun Team.toUpdateDto(): TeamUpdateDto = TeamUpdateDto(
+fun Team.toUpdateDto(): TeamInsertDto = TeamInsertDto(
     name = name,
     teamAssignmentId = teamAssignmentId,
 )
@@ -170,7 +160,7 @@ fun TeamAssignment.toInsertDto(): TeamAssignmentInsertDto = TeamAssignmentInsert
     gameId = gameId,
 )
 
-fun TeamAssignment.toUpdateDto(): TeamAssignmentUpdateDto = TeamAssignmentUpdateDto(
+fun TeamAssignment.toUpdateDto(): TeamAssignmentInsertDto = TeamAssignmentInsertDto(
     baseTeamCounter = baseTeamCounter,
     gameId = gameId,
 )
@@ -190,7 +180,7 @@ fun Location.toInsertDto(): LocationInsertDto = LocationInsertDto(
     gameId = gameId,
 )
 
-fun Location.toUpdateDto(): LocationUpdateDto = LocationUpdateDto(
+fun Location.toUpdateDto(): LocationInsertDto = LocationInsertDto(
     name = name,
     gameId = gameId,
 )
@@ -209,7 +199,7 @@ fun Item.toInsertDto(): ItemInsertDto = ItemInsertDto(
     itemEffectId = itemEffectId,
 )
 
-fun Item.toUpdateDto(): ItemUpdateDto = ItemUpdateDto(
+fun Item.toUpdateDto(): ItemInsertDto = ItemInsertDto(
     name = name,
     price = price,
     itemEffectId = itemEffectId,
@@ -225,7 +215,7 @@ fun ItemEffect.toInsertDto(): ItemEffectInsertDto = ItemEffectInsertDto(
     description = description,
 )
 
-fun ItemEffect.toUpdateDto(): ItemEffectUpdateDto = ItemEffectUpdateDto(
+fun ItemEffect.toUpdateDto(): ItemEffectInsertDto = ItemEffectInsertDto(
     description = description,
 )
 
@@ -283,7 +273,7 @@ fun ShopEntry.toInsertDto(): ShopInsertDto = ShopInsertDto(
     userId = userId,
 )
 
-fun ShopEntry.toUpdateDto(): ShopUpdateDto = ShopUpdateDto(
+fun ShopEntry.toUpdateDto(): ShopInsertDto = ShopInsertDto(
     itemId = itemId,
     targetId = targetId,
     userId = userId,

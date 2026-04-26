@@ -21,11 +21,6 @@ data class GameInsertDto(
 )
 
 @Serializable
-data class GameUpdateDto(
-    val name: String? = null,
-)
-
-@Serializable
 data class HealingLedgerDto(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val id: Long? = null,
@@ -40,14 +35,6 @@ data class HealingLedgerDto(
 
 @Serializable
 data class HealingLedgerInsertDto(
-    val teamId: Long? = null,
-    val healingTaskId: Long? = null,
-    val healedTasksLedgerId: Long? = null,
-    val userId: Long? = null,
-)
-
-@Serializable
-data class HealingLedgerUpdateDto(
     val teamId: Long? = null,
     val healingTaskId: Long? = null,
     val healedTasksLedgerId: Long? = null,
@@ -74,13 +61,6 @@ data class HealingTaskInsertDto(
 )
 
 @Serializable
-data class HealingTaskUpdateDto(
-    val text: String? = null,
-    val solution: String? = null,
-    val gameId: Long? = null,
-)
-
-@Serializable
 data class ItemDto(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val id: Long? = null,
@@ -94,13 +74,6 @@ data class ItemDto(
 
 @Serializable
 data class ItemInsertDto(
-    val name: String? = null,
-    val price: Int? = null,
-    val itemEffectId: Long? = null,
-)
-
-@Serializable
-data class ItemUpdateDto(
     val name: String? = null,
     val price: Int? = null,
     val itemEffectId: Long? = null,
@@ -122,11 +95,6 @@ data class ItemEffectInsertDto(
 )
 
 @Serializable
-data class ItemEffectUpdateDto(
-    val description: String? = null,
-)
-
-@Serializable
 data class LocationDto(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val id: Long? = null,
@@ -139,12 +107,6 @@ data class LocationDto(
 
 @Serializable
 data class LocationInsertDto(
-    val name: String? = null,
-    val gameId: Long? = null,
-)
-
-@Serializable
-data class LocationUpdateDto(
     val name: String? = null,
     val gameId: Long? = null,
 )
@@ -169,13 +131,6 @@ data class ShopInsertDto(
 )
 
 @Serializable
-data class ShopUpdateDto(
-    val itemId: Long? = null,
-    val targetId: Long? = null,
-    val userId: Long? = null,
-)
-
-@Serializable
 data class StudentDto(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val id: Long? = null,
@@ -190,14 +145,6 @@ data class StudentDto(
 
 @Serializable
 data class StudentInsertDto(
-    val name: String? = null,
-    val group: String? = null,
-    val klass: String? = null,
-    val teamId: Long? = null,
-)
-
-@Serializable
-data class StudentUpdateDto(
     val name: String? = null,
     val group: String? = null,
     val klass: String? = null,
@@ -228,15 +175,6 @@ data class TaskInsertDto(
 )
 
 @Serializable
-data class TaskUpdateDto(
-    val text: String? = null,
-    val solution: String? = null,
-    val isMiniBoss: Boolean? = null,
-    val gameId: Long? = null,
-    val locationId: Long? = null,
-)
-
-@Serializable
 data class TasksLedgerDto(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val id: Long? = null,
@@ -252,14 +190,6 @@ data class TasksLedgerDto(
 @Serializable
 data class TasksLedgerInsertDto(
     val taskId: Long,
-    val teamId: Long? = null,
-    val userId: Long? = null,
-    val isSuccess: Boolean? = null,
-)
-
-@Serializable
-data class TasksLedgerUpdateDto(
-    val taskId: Long? = null,
     val teamId: Long? = null,
     val userId: Long? = null,
     val isSuccess: Boolean? = null,
@@ -283,12 +213,6 @@ data class TeamAssignmentInsertDto(
 )
 
 @Serializable
-data class TeamAssignmentUpdateDto(
-    val baseTeamCounter: Long? = null,
-    val gameId: Long? = null,
-)
-
-@Serializable
 data class TeamDto(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val id: Long? = null,
@@ -301,12 +225,6 @@ data class TeamDto(
 
 @Serializable
 data class TeamInsertDto(
-    val name: String? = null,
-    val teamAssignmentId: Long? = null,
-)
-
-@Serializable
-data class TeamUpdateDto(
     val name: String? = null,
     val teamAssignmentId: Long? = null,
 )
