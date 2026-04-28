@@ -17,7 +17,7 @@ explains the domain model, relationships, and app-level rules.
 - The seed uses fixed IDs in the `900001+` range and `ON CONFLICT` upserts, so it can be rerun locally without
   duplicating rows.
 - The demo data includes games, locations, tasks, healing tasks, team assignments, teams, students, task ledgers,
-  healing ledgers, shop items, and shop purchases.
+  healing ledgers, game-scoped shop items, and shop purchases.
 - Several teams have unhealed failed `TasksLedger` rows so the healer screen has selectable failed tasks. A few failed
   rows are also already referenced by `HealingLedger` to test previously used healing tasks.
 
@@ -43,6 +43,8 @@ Referenced by:
 
 - `Locations.gameId`
 - `Tasks.gameId`
+- `HealingTasks.gameId`
+- `Items.gameId`
 - `TeamAssignment.gameId`
 
 ### `Locations`
@@ -135,7 +137,7 @@ Key columns:
 - `healedTasksLedgerId`: references `TasksLedger.id`
 - `userId`: acting user identifier
 
-### `ItemEffect`
+### `ItemEffects`
 
 Global reference data for shop item effects (i.e. location doubling, area doubling). The corresponding actions are
 happening in triggers/edge functions, so that they are updatable without changing anything on frontend.
@@ -145,16 +147,18 @@ Key columns:
 - `id`: primary key
 - `description`: effect description
 
-### `Item`
+### `Items`
 
-Global reference data for shop items.
+Game-scoped shop items. A row in this table means the item is available in that game's shop.
 
 Key columns:
 
 - `id`: primary key
 - `name`: display name
 - `price`: item price
-- `itemEffectId`: references `ItemEffect.id`
+- `itemEffectId`: references `ItemEffects.id`
+- `gameId`: references `Games.id`
+- `maxPerTeam`: maximum number each team can buy
 
 ### `Shop`
 
@@ -163,19 +167,20 @@ Ledger of purchased shop items.
 Key columns:
 
 - `id`: primary key
-- `itemId`: references `Item.id`
+- `itemId`: references `Items.id`
 - `targetId`: purchase target identifier
 - `userId`: acting user identifier
 
 ## Scoping Rules
 
 - User-facing setup and gameplay data must be scoped by the selected `Games.id`.
-- `Tasks`, `Locations`, and `TeamAssignment` are directly game-scoped.
+- `Tasks`, `Locations`, `HealingTasks`, `Items`, and `TeamAssignment` are directly game-scoped.
 - `Teams` and `Students` are game-scoped through `TeamAssignment`.
 - Ledger rows are game-scoped through their referenced tasks or team-related records.
-- `Item` and `ItemEffect` are global reference tables until gameplay requirements need per-game shop catalogs.
+- `ItemEffects` is global reference data.
 - Avoid UI-facing repository calls that read broad table data, such as `getAll()`, when a selected-game scoped method
   can be used.
+- A game with no `TeamAssignment`/teams is a partially configured game that is not ready to start.
 
 ## RLS
 
@@ -186,6 +191,11 @@ Row-level security is enabled on all public tables in the current schema.
 Current temporary policies:
 
 - `Games`: anonymous and authenticated users can read and create rows.
+- `Locations`: anonymous and authenticated users can read and create rows when `gameId` is present.
+- `Tasks`: anonymous and authenticated users can read and create rows when `gameId` is present.
+- `HealingTasks`: anonymous and authenticated users can read and create rows when `gameId` is present.
+- `ItemEffects`: anonymous and authenticated users can read rows.
+- `Items`: anonymous and authenticated users can read and create rows when `gameId` is present.
 - `TeamAssignment`: anonymous and authenticated users can read and create rows when `gameId` is present.
 
 These policies match the current app state where authentication is disabled/stubbed in navigation. Before enabling real
