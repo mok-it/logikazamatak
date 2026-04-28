@@ -126,7 +126,7 @@ set
   "healedTasksLedgerId" = excluded."healedTasksLedgerId",
   "userId" = excluded."userId";
 
-insert into "public"."ItemEffect" ("id", "description")
+insert into "public"."ItemEffects" ("id", "description")
 values
   (900001, 'Double points for one location'),
   (900002, 'Double points for one team area'),
@@ -134,16 +134,18 @@ values
 on conflict ("id") do update
 set "description" = excluded."description";
 
-insert into "public"."Item" ("id", "name", "price", "itemEffectId")
+insert into "public"."Items" ("id", "name", "price", "itemEffectId", "gameId", "maxPerTeam")
 values
-  (900001, 'Location Multiplier', 5, 900001),
-  (900002, 'Area Multiplier', 8, 900002),
-  (900003, 'Hint Scroll', 3, 900003)
+  (900001, 'Location Multiplier', 5, 900001, 900001, 1),
+  (900002, 'Area Multiplier', 8, 900002, 900001, 1),
+  (900003, 'Hint Scroll', 3, 900003, 900001, 2)
 on conflict ("id") do update
 set
   "name" = excluded."name",
   "price" = excluded."price",
-  "itemEffectId" = excluded."itemEffectId";
+  "itemEffectId" = excluded."itemEffectId",
+  "gameId" = excluded."gameId",
+  "maxPerTeam" = excluded."maxPerTeam";
 
 insert into "public"."Shop" ("id", "itemId", "targetId", "userId")
 values
@@ -165,6 +167,6 @@ select setval('"public"."Teams_id_seq"', greatest((select max("id") from "public
 select setval('"public"."Students_id_seq"', greatest((select max("id") from "public"."Students"), 1), true);
 select setval('"public"."TasksLedger_id_seq"', greatest((select max("id") from "public"."TasksLedger"), 1), true);
 select setval('"public"."HealingLedger_id_seq"', greatest((select max("id") from "public"."HealingLedger"), 1), true);
-select setval('"public"."ItemEffect_id_seq"', greatest((select max("id") from "public"."ItemEffect"), 1), true);
-select setval('"public"."Item_id_seq"', greatest((select max("id") from "public"."Item"), 1), true);
+select setval('"public"."ItemEffects_id_seq"', greatest((select max("id") from "public"."ItemEffects"), 1), true);
+select setval('"public"."Items_id_seq"', greatest((select max("id") from "public"."Items"), 1), true);
 select setval('"public"."Shop_id_seq"', greatest((select max("id") from "public"."Shop"), 1), true);
