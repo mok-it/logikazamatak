@@ -70,6 +70,8 @@ data class ItemDto(
     val name: String? = null,
     val price: Int? = null,
     val itemEffectId: Long? = null,
+    val gameId: Long? = null,
+    val maxPerTeam: Int? = null,
 )
 
 @Serializable
@@ -77,6 +79,8 @@ data class ItemInsertDto(
     val name: String? = null,
     val price: Int? = null,
     val itemEffectId: Long? = null,
+    val gameId: Long? = null,
+    val maxPerTeam: Int? = null,
 )
 
 @Serializable
