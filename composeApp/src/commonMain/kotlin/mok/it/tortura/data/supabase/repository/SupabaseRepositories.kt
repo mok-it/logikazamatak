@@ -128,24 +128,29 @@ class ItemRepository(
     private val client: SupabaseClient,
 ) {
     suspend fun getAll(): List<ItemDto> =
-        client.from(SupabaseTables.ITEM).select().decodeList()
+        client.from(SupabaseTables.ITEMS).select().decodeList()
 
     suspend fun getById(id: Long): ItemDto? =
-        client.from(SupabaseTables.ITEM).select {
+        client.from(SupabaseTables.ITEMS).select {
             filter { eq("id", id) }
         }.decodeSingleOrNull()
 
+    suspend fun getByGameId(gameId: Long): List<ItemDto> =
+        client.from(SupabaseTables.ITEMS).select {
+            filter { eq("gameId", gameId) }
+        }.decodeList()
+
     suspend fun create(item: ItemInsertDto): ItemDto =
-        client.from(SupabaseTables.ITEM).insert(item) { select() }.decodeSingle()
+        client.from(SupabaseTables.ITEMS).insert(item) { select() }.decodeSingle()
 
     suspend fun update(id: Long, item: ItemInsertDto): ItemDto =
-        client.from(SupabaseTables.ITEM).update(item) {
+        client.from(SupabaseTables.ITEMS).update(item) {
             select()
             filter { eq("id", id) }
         }.decodeSingle()
 
     suspend fun delete(id: Long) {
-        client.from(SupabaseTables.ITEM).delete {
+        client.from(SupabaseTables.ITEMS).delete {
             filter { eq("id", id) }
         }
     }
@@ -155,24 +160,24 @@ class ItemEffectRepository(
     private val client: SupabaseClient,
 ) {
     suspend fun getAll(): List<ItemEffectDto> =
-        client.from(SupabaseTables.ITEM_EFFECT).select().decodeList()
+        client.from(SupabaseTables.ITEM_EFFECTS).select().decodeList()
 
     suspend fun getById(id: Long): ItemEffectDto? =
-        client.from(SupabaseTables.ITEM_EFFECT).select {
+        client.from(SupabaseTables.ITEM_EFFECTS).select {
             filter { eq("id", id) }
         }.decodeSingleOrNull()
 
     suspend fun create(itemEffect: ItemEffectInsertDto): ItemEffectDto =
-        client.from(SupabaseTables.ITEM_EFFECT).insert(itemEffect) { select() }.decodeSingle()
+        client.from(SupabaseTables.ITEM_EFFECTS).insert(itemEffect) { select() }.decodeSingle()
 
     suspend fun update(id: Long, itemEffect: ItemEffectInsertDto): ItemEffectDto =
-        client.from(SupabaseTables.ITEM_EFFECT).update(itemEffect) {
+        client.from(SupabaseTables.ITEM_EFFECTS).update(itemEffect) {
             select()
             filter { eq("id", id) }
         }.decodeSingle()
 
     suspend fun delete(id: Long) {
-        client.from(SupabaseTables.ITEM_EFFECT).delete {
+        client.from(SupabaseTables.ITEM_EFFECTS).delete {
             filter { eq("id", id) }
         }
     }

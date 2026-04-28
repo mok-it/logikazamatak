@@ -10,4 +10,6 @@ data class Item(
     val name: String? = null,
     val price: Int? = null,
     val itemEffectId: Long? = null,
+    val gameId: Long? = null,
+    val maxPerTeam: Int? = null,
 )

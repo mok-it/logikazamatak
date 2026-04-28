@@ -188,18 +188,24 @@ fun ItemDto.toModel(): Item = Item(
     name = name,
     price = price,
     itemEffectId = itemEffectId,
+    gameId = gameId,
+    maxPerTeam = maxPerTeam,
 )
 
 fun Item.toInsertDto(): ItemInsertDto = ItemInsertDto(
     name = name,
     price = price,
     itemEffectId = itemEffectId,
+    gameId = gameId,
+    maxPerTeam = maxPerTeam,
 )
 
 fun Item.toUpdateDto(): ItemInsertDto = ItemInsertDto(
     name = name,
     price = price,
     itemEffectId = itemEffectId,
+    gameId = gameId,
+    maxPerTeam = maxPerTeam,
 )
 
 fun ItemEffectDto.toModel(): ItemEffect = ItemEffect(
