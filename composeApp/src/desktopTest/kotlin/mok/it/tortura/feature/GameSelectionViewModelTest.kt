@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import mok.it.tortura.model.Game
+import mok.it.tortura.model.ItemEffect
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GameSelectionViewModelTest {
@@ -21,6 +22,7 @@ class GameSelectionViewModelTest {
         val viewModel = GameSelectionViewModel(
             FakeGameSelectionDataSource(
                 games = listOf(Game(id = 1, name = "Main game")),
+                itemEffects = listOf(ItemEffect(id = 10, description = "Double points")),
             ),
         )
 
@@ -29,13 +31,14 @@ class GameSelectionViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(listOf("Main game"), state.games.map { it.name })
+        assertEquals(listOf("Double points"), state.itemEffects.map { it.description })
         assertEquals("Játékok betöltve", state.message)
         assertNull(state.errorMessage)
         assertFalse(state.isLoading)
     }
 
     @Test
-    fun createGameTrimsNameCreatesRowAndSelectsCreatedGame() = runGameSelectionViewModelTest {
+    fun createGameWithOnlyNameCreatesGameAndNoChildRows() = runGameSelectionViewModelTest {
         val dataSource = FakeGameSelectionDataSource()
         val viewModel = GameSelectionViewModel(dataSource)
 
@@ -45,6 +48,10 @@ class GameSelectionViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(listOf("New game"), dataSource.createdGameNames)
+        assertEquals(emptyList(), dataSource.createdSetups.single().locations)
+        assertEquals(emptyList(), dataSource.createdSetups.single().tasks)
+        assertEquals(emptyList(), dataSource.createdSetups.single().healingTasks)
+        assertEquals(emptyList(), dataSource.createdSetups.single().shopItems)
         assertEquals(listOf("New game"), state.games.map { it.name })
         assertEquals("New game", state.selectedGame?.name)
         assertEquals("", state.gameName)
@@ -64,6 +71,80 @@ class GameSelectionViewModelTest {
         assertEquals(emptyList(), dataSource.createdGameNames)
         assertEquals("Adj nevet a játéknak", viewModel.uiState.value.errorMessage)
         assertFalse(viewModel.uiState.value.isLoading)
+    }
+
+    @Test
+    fun createGamePersistsUserAddedSetupRows() = runGameSelectionViewModelTest {
+        val dataSource = FakeGameSelectionDataSource()
+        val viewModel = GameSelectionViewModel(dataSource)
+
+        viewModel.onGameNameChange("Configured game")
+        viewModel.addLocation()
+        val locationId = viewModel.uiState.value.draftLocations.single().localId
+        viewModel.updateLocationName(locationId, "Library")
+        viewModel.addTask(locationId)
+        val taskId = viewModel.uiState.value.draftTasks.single().localId
+        viewModel.updateTaskText(taskId, "2 + 2")
+        viewModel.updateTaskSolution(taskId, "4")
+        viewModel.updateTaskMiniBoss(taskId, true)
+        viewModel.addHealingTask()
+        val healingTaskId = viewModel.uiState.value.draftHealingTasks.single().localId
+        viewModel.updateHealingTaskText(healingTaskId, "Reverse LOGIC")
+        viewModel.updateHealingTaskSolution(healingTaskId, "CIGOL")
+        viewModel.addShopItem()
+        val itemId = viewModel.uiState.value.draftShopItems.single().localId
+        viewModel.updateShopItemName(itemId, "Hint")
+        viewModel.updateShopItemPrice(itemId, "3")
+        viewModel.updateShopItemMaxPerTeam(itemId, "2")
+        viewModel.updateShopItemEffectId(itemId, "9")
+
+        viewModel.createGame()
+        advanceUntilIdle()
+
+        val setup = dataSource.createdSetups.single()
+        assertEquals("Configured game", setup.name)
+        assertEquals(listOf("Library"), setup.locations.map { it.name })
+        assertEquals(listOf("2 + 2"), setup.tasks.map { it.text })
+        assertEquals(listOf("4"), setup.tasks.map { it.solution })
+        assertEquals(listOf(true), setup.tasks.map { it.isMiniBoss })
+        assertEquals(listOf("Reverse LOGIC"), setup.healingTasks.map { it.text })
+        assertEquals(listOf("Hint"), setup.shopItems.map { it.name })
+        assertEquals(listOf("3"), setup.shopItems.map { it.price })
+        assertEquals(listOf("2"), setup.shopItems.map { it.maxPerTeam })
+        assertEquals(listOf("9"), setup.shopItems.map { it.itemEffectId })
+    }
+
+    @Test
+    fun createGameRejectsInvalidShopNumbers() = runGameSelectionViewModelTest {
+        val dataSource = FakeGameSelectionDataSource()
+        val viewModel = GameSelectionViewModel(dataSource)
+
+        viewModel.onGameNameChange("Game")
+        viewModel.addShopItem()
+        val itemId = viewModel.uiState.value.draftShopItems.single().localId
+        viewModel.updateShopItemName(itemId, "Hint")
+        viewModel.updateShopItemPrice(itemId, "abc")
+        viewModel.updateShopItemMaxPerTeam(itemId, "2")
+
+        viewModel.createGame()
+        advanceUntilIdle()
+
+        assertEquals(emptyList(), dataSource.createdSetups)
+        assertEquals("A bolti tárgy ára legyen nem negatív egész szám", viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun shopNumericFieldsIgnoreNonDigits() = runGameSelectionViewModelTest {
+        val viewModel = GameSelectionViewModel(FakeGameSelectionDataSource())
+
+        viewModel.addShopItem()
+        val itemId = viewModel.uiState.value.draftShopItems.single().localId
+        viewModel.updateShopItemPrice(itemId, "12abc3")
+        viewModel.updateShopItemMaxPerTeam(itemId, "x2y")
+
+        val item = viewModel.uiState.value.draftShopItems.single()
+        assertEquals("123", item.price)
+        assertEquals("2", item.maxPerTeam)
     }
 
     @Test
@@ -115,18 +196,26 @@ class GameSelectionViewModelTest {
 
 private class FakeGameSelectionDataSource(
     private val games: List<Game> = emptyList(),
+    private val itemEffects: List<ItemEffect> = emptyList(),
     private val loadError: Exception? = null,
 ) : GameSelectionDataSource {
     val createdGameNames = mutableListOf<String>()
+    val createdSetups = mutableListOf<CreateGameSetup>()
 
     override suspend fun getGames(): List<Game> {
         loadError?.let { throw it }
         return games
     }
 
-    override suspend fun createGame(name: String): Game {
-        createdGameNames += name
-        return Game(id = createdGameNames.size.toLong(), name = name)
+    override suspend fun getItemEffects(): List<ItemEffect> {
+        loadError?.let { throw it }
+        return itemEffects
+    }
+
+    override suspend fun createGame(setup: CreateGameSetup): Game {
+        createdSetups += setup
+        createdGameNames += setup.name
+        return Game(id = createdGameNames.size.toLong(), name = setup.name)
     }
 }
 
