@@ -22,6 +22,8 @@
     <RunAsTest>false</RunAsTest>
     <GradleProfilingDisabled>false</GradleProfilingDisabled>
     <GradleCoverageDisabled>false</GradleCoverageDisabled>
-    <method v="2" />
+    <method v="2">
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_supabase start" />
+    </method>
   </configuration>
 </component>
