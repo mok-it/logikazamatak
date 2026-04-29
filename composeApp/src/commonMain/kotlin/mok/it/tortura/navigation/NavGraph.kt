@@ -141,14 +141,14 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onSelectLocation = { location ->
                     activeGame = joinGame
                     activeLocation = location
-                    pendingJoinGame = null
-                    pendingJoinLocations = emptyList()
                     navController.navigate(Screen.MainMenu) {
                         popUpTo(Screen.GameSelection) {
                             inclusive = false
                         }
                         launchSingleTop = true
                     }
+                    pendingJoinGame = null
+                    pendingJoinLocations = emptyList()
                 },
                 onBack = {
                     pendingJoinGame = null
