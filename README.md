@@ -57,6 +57,14 @@ supabase db reset
 Then, you can visit the Studio link in your console, and navigate to the Table Editor to view your local data (for me,
 it's http://127.0.0.1:54323/project/default/editor/)
 
+4 - Run the desktop app with Compose Hot Reload:
+
+```shell
+./gradlew :composeApp:hotRunDesktop --auto -Psupabase.env=local
+```
+
+This uses the desktop JVM target and automatically reloads UI changes when you save files.
+
 # Supported Platforms
 
 Must have:
