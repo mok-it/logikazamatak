@@ -16,10 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Game
+import mok.it.tortura.model.Location
+import mok.it.tortura.ui.components.ActiveGameLocationHeader
 
 @Composable
 fun MainMenu(
     activeGame: Game,
+    activeLocation: Location?,
     authUiState: AuthUiState = AuthUiState(isInitializing = false, isAuthenticated = true),
     onSignInWithGoogle: () -> Unit = {},
     onSignOut: () -> Unit = {},
@@ -27,6 +30,7 @@ fun MainMenu(
     onChangeGame: (() -> Unit),
     onSetUp: (() -> Unit),
     onCompetition: (() -> Unit),
+    onChangeLocation: () -> Unit,
 ) {
     if (authUiState.errorMessage != null) {
         AlertDialog(
@@ -58,9 +62,10 @@ fun MainMenu(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = "Aktív játék: ${activeGame.name ?: "#${activeGame.id ?: "-"}"}",
-                style = MaterialTheme.typography.titleMedium,
+            ActiveGameLocationHeader(
+                activeGameName = activeGame.name ?: "#${activeGame.id ?: "-"}",
+                activeLocationName = activeLocation?.name,
+                onChangeLocation = onChangeLocation,
             )
             TextButton(
                 onClick = onChangeGame,

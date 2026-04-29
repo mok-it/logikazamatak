@@ -10,11 +10,17 @@ import mok.it.tortura.data.supabase.mapper.toInsertDto
 import mok.it.tortura.data.supabase.mapper.toModel
 import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
 import mok.it.tortura.model.Game
+import mok.it.tortura.model.Location
 import mok.it.tortura.model.HealingTask
 import mok.it.tortura.model.Item
 import mok.it.tortura.model.ItemEffect
 import mok.it.tortura.model.Location
 import mok.it.tortura.model.Task
+
+data class PendingGameJoin(
+    val game: Game,
+    val locations: List<Location>,
+)
 
 data class CreateLocationDraft(
     val localId: Long,
@@ -61,6 +67,7 @@ data class GameSelectionUiState(
     val itemEffects: List<ItemEffect> = emptyList(),
     val games: List<Game> = emptyList(),
     val selectedGame: Game? = null,
+    val pendingGameJoin: PendingGameJoin? = null,
     val message: String? = null,
     val errorMessage: String? = null,
 )
@@ -84,6 +91,7 @@ fun GameSelectionUiState.createGameValidationError(): String? {
 
 interface GameSelectionDataSource {
     suspend fun getGames(): List<Game>
+    suspend fun getLocations(gameId: Long): List<Location>
     suspend fun getItemEffects(): List<ItemEffect>
     suspend fun createGame(setup: CreateGameSetup): Game
 }
@@ -95,6 +103,8 @@ class SupabaseGameSelectionDataSource(
     override suspend fun getGames(): List<Game> =
         repositories.games.getAll().map { it.toModel() }
 
+    override suspend fun getLocations(gameId: Long): List<Location> =
+        repositories.locations.getByGameId(gameId).map { it.toModel() }
     override suspend fun getItemEffects(): List<ItemEffect> =
         repositories.itemEffects.getAll().map { it.toModel() }
 
@@ -311,7 +321,43 @@ class GameSelectionViewModel(
             return
         }
 
-        _uiState.update { it.copy(selectedGame = game, message = null, errorMessage = null) }
+        runRepositoryAction {
+            val locations = dataSource.getLocations(game.id)
+            if (locations.isEmpty()) {
+                _uiState.update {
+                    it.copy(errorMessage = "Ehhez a játékhoz még nincs választható állomás")
+                }
+                return@runRepositoryAction
+            }
+
+            _uiState.update {
+                it.copy(
+                    pendingGameJoin = PendingGameJoin(
+                        game = game,
+                        locations = locations,
+                    ),
+                    message = null,
+                    errorMessage = null,
+                )
+            }
+        }
+    }
+
+    fun confirmGameJoin(location: Location) {
+        val pendingJoin = uiState.value.pendingGameJoin
+        if (pendingJoin == null) {
+            _uiState.update { it.copy(errorMessage = "Nincs folyamatban lévő csatlakozás") }
+            return
+        }
+
+        _uiState.update {
+            it.copy(
+                selectedGame = pendingJoin.game,
+                pendingGameJoin = null,
+                message = null,
+                errorMessage = null,
+            )
+        }
     }
 
     fun createGame() {
@@ -365,6 +411,10 @@ class GameSelectionViewModel(
 
     fun clearSelection() {
         _uiState.update { it.copy(selectedGame = null) }
+    }
+
+    fun clearPendingJoin() {
+        _uiState.update { it.copy(pendingGameJoin = null) }
     }
 
     private fun runRepositoryAction(action: suspend () -> Unit) {

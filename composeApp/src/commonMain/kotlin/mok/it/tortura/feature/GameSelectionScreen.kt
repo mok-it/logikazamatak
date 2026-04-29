@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Game
+import mok.it.tortura.model.Location
 import mok.it.tortura.model.ItemEffect
 
 @Composable
@@ -43,6 +44,7 @@ fun GameSelectionScreen(
     onRemoveShopItem: (Long) -> Unit = {},
     onSelectGame: (Game) -> Unit = {},
     onGameSelected: (Game) -> Unit = {},
+    onLocationSelectionRequired: (Game, List<Location>) -> Unit = { _, _ -> },
     onClearMessages: () -> Unit = {},
 ) {
     LaunchedEffect(Unit) {
@@ -51,6 +53,12 @@ fun GameSelectionScreen(
 
     LaunchedEffect(uiState.selectedGame) {
         uiState.selectedGame?.let(onGameSelected)
+    }
+
+    LaunchedEffect(uiState.pendingGameJoin) {
+        uiState.pendingGameJoin?.let { pendingJoin ->
+            onLocationSelectionRequired(pendingJoin.game, pendingJoin.locations)
+        }
     }
 
     Scaffold(
