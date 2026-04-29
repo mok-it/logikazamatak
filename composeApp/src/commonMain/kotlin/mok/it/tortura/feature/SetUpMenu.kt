@@ -17,17 +17,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import mok.it.tortura.ui.components.ActiveGameLocationHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetUpMenu(
     activeGameName: String,
+    activeLocationName: String?,
     uiState: SetupUiState = SetupUiState(),
     onLoad: () -> Unit = {},
     onBaseTeamCounterChange: (String) -> Unit = {},
     onTeamCreation: () -> Unit = {},
     onClearMessages: () -> Unit = {},
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    onChangeLocation: () -> Unit = {},
 ) {
     LaunchedEffect(Unit) {
         onLoad()
@@ -72,7 +75,11 @@ fun SetUpMenu(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            Text("Aktív játék: $activeGameName", style = MaterialTheme.typography.titleMedium)
+            ActiveGameLocationHeader(
+                activeGameName = activeGameName,
+                activeLocationName = activeLocationName,
+                onChangeLocation = onChangeLocation,
+            )
 
             HorizontalDivider()
 

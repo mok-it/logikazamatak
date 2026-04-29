@@ -13,17 +13,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.HealingTask
 import mok.it.tortura.model.Team
+import mok.it.tortura.ui.components.ActiveGameLocationHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HealerTasksScreen(
     activeGameName: String,
+    activeLocationName: String?,
     uiState: HealerTasksUiState = HealerTasksUiState(),
     onLoad: () -> Unit = {},
     onSelectHealingTask: (Long) -> Unit = {},
     onCompleteHealing: (Long, Long) -> Unit = { _, _ -> },
     onClearMessages: () -> Unit = {},
     onBack: () -> Unit = {},
+    onChangeLocation: () -> Unit = {},
 ) {
     var isHealDialogVisible by rememberSaveable { mutableStateOf(false) }
     var selectedFailedLedgerId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -133,7 +136,11 @@ fun HealerTasksScreen(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            Text("Aktív játék: $activeGameName", style = MaterialTheme.typography.titleMedium)
+            ActiveGameLocationHeader(
+                activeGameName = activeGameName,
+                activeLocationName = activeLocationName,
+                onChangeLocation = onChangeLocation,
+            )
             Text(
                 "Csapat: ${uiState.team?.name ?: "Csapat #${uiState.team?.id ?: "-"}"}",
                 style = MaterialTheme.typography.titleLarge,
@@ -274,6 +281,7 @@ private fun HealerTasksScreenPreview() {
     MaterialTheme {
         HealerTasksScreen(
             activeGameName = "Tortura 2026",
+            activeLocationName = "Várkapu",
             uiState = HealerTasksUiState(
                 team = Team(
                     id = 107,

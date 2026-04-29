@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -13,6 +14,9 @@ import androidx.navigation.toRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
+import mok.it.tortura.data.supabase.mapper.toModel
+import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
 import mok.it.tortura.feature.AuthUiState
 import mok.it.tortura.feature.GameSelectionScreen
 import mok.it.tortura.feature.GameSelectionViewModel
@@ -20,19 +24,56 @@ import mok.it.tortura.feature.HealerTasksScreen
 import mok.it.tortura.feature.HealerTasksViewModel
 import mok.it.tortura.feature.HealerTeamSelectionScreen
 import mok.it.tortura.feature.HealerTeamSelectionViewModel
+import mok.it.tortura.feature.LocationSelectionScreen
 import mok.it.tortura.feature.MainMenu
 import mok.it.tortura.feature.SetUpMenu
 import mok.it.tortura.feature.SetupViewModel
 import mok.it.tortura.model.Game
+import mok.it.tortura.model.Location
+import mok.it.tortura.ui.components.LocationPickerDialog
 
 @Composable
 fun NavGraph(navController: NavHostController = rememberNavController()) {
     var activeGame by remember { mutableStateOf<Game?>(null) }
+    var activeLocation by remember { mutableStateOf<Location?>(null) }
+    var pendingJoinGame by remember { mutableStateOf<Game?>(null) }
+    var pendingJoinLocations by remember { mutableStateOf<List<Location>>(emptyList()) }
+    var isLocationPickerOpen by remember { mutableStateOf(false) }
+    var switchableLocations by remember { mutableStateOf<List<Location>>(emptyList()) }
+    val coroutineScope = rememberCoroutineScope()
+    val repositories = remember { TorturaSupabaseRepositories() }
     val authUiState = AuthUiState(
         isInitializing = false,
         isAuthenticated = true,
         email = "Auth kikapcsolva",
     )
+
+    fun resetActiveContext() {
+        activeGame = null
+        activeLocation = null
+    }
+
+    fun openLocationPickerForActiveGame() {
+        val gameId = activeGame?.id ?: return
+        coroutineScope.launch {
+            switchableLocations = repositories.locations.getByGameId(gameId).map { it.toModel() }
+            if (switchableLocations.isNotEmpty()) {
+                isLocationPickerOpen = true
+            }
+        }
+    }
+
+    if (isLocationPickerOpen) {
+        LocationPickerDialog(
+            locations = switchableLocations,
+            selectedLocationId = activeLocation?.id,
+            onSelectLocation = { location ->
+                activeLocation = location
+                isLocationPickerOpen = false
+            },
+            onDismiss = { isLocationPickerOpen = false },
+        )
+    }
 
     NavHost(
         navController = navController,
@@ -69,11 +110,51 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onGameSelected = { game ->
                     gameSelectionViewModel.clearSelection()
                     activeGame = game
+                    activeLocation = null
                     navController.navigate(Screen.MainMenu) {
                         launchSingleTop = true
                     }
                 },
+                onLocationSelectionRequired = { game, locations ->
+                    gameSelectionViewModel.clearPendingJoin()
+                    pendingJoinGame = game
+                    pendingJoinLocations = locations
+                    navController.navigate(Screen.LocationSelection) {
+                        launchSingleTop = true
+                    }
+                },
                 onClearMessages = gameSelectionViewModel::clearMessages,
+            )
+        }
+        composable<Screen.LocationSelection> {
+            val joinGame = pendingJoinGame
+            if (joinGame == null || pendingJoinLocations.isEmpty()) {
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
+                return@composable
+            }
+
+            LocationSelectionScreen(
+                game = joinGame,
+                locations = pendingJoinLocations,
+                onSelectLocation = { location ->
+                    activeGame = joinGame
+                    activeLocation = location
+                    pendingJoinGame = null
+                    pendingJoinLocations = emptyList()
+                    navController.navigate(Screen.MainMenu) {
+                        popUpTo(Screen.GameSelection) {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
+                },
+                onBack = {
+                    pendingJoinGame = null
+                    pendingJoinLocations = emptyList()
+                    navController.popBackStack()
+                },
             )
         }
 
@@ -97,12 +178,14 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
 
             SetUpMenu(
                 activeGameName = selectedGame.name ?: "#$selectedGameId",
+                activeLocationName = activeLocation?.name,
                 uiState = setupUiState.value,
                 onLoad = setupViewModel::loadSetupData,
                 onBaseTeamCounterChange = setupViewModel::onBaseTeamCounterChange,
                 onTeamCreation = setupViewModel::createTeamAssignment,
                 onClearMessages = setupViewModel::clearMessages,
                 onBack = { navController.popBackStack() },
+                onChangeLocation = ::openLocationPickerForActiveGame,
             )
         }
         composable<Screen.HealerTeamSelection> {
@@ -126,11 +209,13 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
 
             HealerTeamSelectionScreen(
                 activeGameName = selectedGame.name ?: "#$selectedGameId",
+                activeLocationName = activeLocation?.name,
                 uiState = healerTeamSelectionUiState.value,
                 onLoad = healerTeamSelectionViewModel::loadTeams,
                 onSelectTeam = { team -> team.id?.let { navController.navigate(Screen.HealerTasks(teamId = it)) } },
                 onClearMessages = healerTeamSelectionViewModel::clearMessages,
                 onBack = { navController.popBackStack() },
+                onChangeLocation = ::openLocationPickerForActiveGame,
             )
         }
         composable<Screen.HealerTasks> { backStackEntry ->
@@ -154,12 +239,14 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
 
             HealerTasksScreen(
                 activeGameName = selectedGame.name ?: "#$selectedGameId",
+                activeLocationName = activeLocation?.name,
                 uiState = healerTasksUiState.value,
                 onLoad = healerTasksViewModel::load,
                 onSelectHealingTask = healerTasksViewModel::selectHealingTask,
                 onCompleteHealing = healerTasksViewModel::completeHealing,
                 onClearMessages = healerTasksViewModel::clearMessages,
                 onBack = { navController.popBackStack() },
+                onChangeLocation = ::openLocationPickerForActiveGame,
             )
         }
         composable<Screen.MainMenu> {
@@ -175,15 +262,17 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
 
             MainMenu(
                 activeGame = selectedGame,
+                activeLocation = activeLocation,
                 authUiState = authUiState,
                 onChangeGame = {
-                    activeGame = null
+                    resetActiveContext()
                     navController.navigate(Screen.GameSelection) {
                         launchSingleTop = true
                     }
                 },
                 onSetUp = { navController.navigate(Screen.SetUpMenu) },
                 onCompetition = { navController.navigate(Screen.HealerTeamSelection) },
+                onChangeLocation = ::openLocationPickerForActiveGame,
             )
         }
     }

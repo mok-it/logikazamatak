@@ -194,6 +194,11 @@ class LocationRepository(
             filter { eq("id", id) }
         }.decodeSingleOrNull()
 
+    suspend fun getByGameId(gameId: Long): List<LocationDto> =
+        client.from(SupabaseTables.LOCATIONS).select {
+            filter { eq("gameId", gameId) }
+        }.decodeList()
+
     suspend fun create(location: LocationInsertDto): LocationDto =
         client.from(SupabaseTables.LOCATIONS).insert(location) { select() }.decodeSingle()
 

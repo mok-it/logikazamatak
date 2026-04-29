@@ -7,6 +7,9 @@ object Screen {
     object GameSelection
 
     @Serializable
+    object LocationSelection
+
+    @Serializable
     object HealerTeamSelection
 
     @Serializable

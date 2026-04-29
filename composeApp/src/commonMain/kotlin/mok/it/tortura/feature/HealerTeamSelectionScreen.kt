@@ -26,16 +26,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Team
+import mok.it.tortura.ui.components.ActiveGameLocationHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HealerTeamSelectionScreen(
     activeGameName: String,
+    activeLocationName: String?,
     uiState: HealerTeamSelectionUiState = HealerTeamSelectionUiState(),
     onLoad: () -> Unit = {},
     onSelectTeam: (Team) -> Unit = {},
     onClearMessages: () -> Unit = {},
     onBack: () -> Unit = {},
+    onChangeLocation: () -> Unit = {},
 ) {
     LaunchedEffect(Unit) {
         onLoad()
@@ -79,7 +82,11 @@ fun HealerTeamSelectionScreen(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            Text("Aktív játék: $activeGameName", style = MaterialTheme.typography.titleMedium)
+            ActiveGameLocationHeader(
+                activeGameName = activeGameName,
+                activeLocationName = activeLocationName,
+                onChangeLocation = onChangeLocation,
+            )
             Text(
                 "Válassz csapatot a gyógyító feladatokhoz.",
                 style = MaterialTheme.typography.bodyMedium,

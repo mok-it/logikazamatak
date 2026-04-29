@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import mok.it.tortura.model.Game
+import mok.it.tortura.model.Location
 import mok.it.tortura.model.ItemEffect
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -150,11 +151,20 @@ class GameSelectionViewModelTest {
     @Test
     fun selectGameStoresExistingGame() = runGameSelectionViewModelTest {
         val game = Game(id = 3, name = "Existing game")
-        val viewModel = GameSelectionViewModel(FakeGameSelectionDataSource())
+        val viewModel = GameSelectionViewModel(
+            FakeGameSelectionDataSource(
+                locationsByGameId = mapOf(
+                    3L to listOf(Location(id = 10, name = "Castle", gameId = 3)),
+                ),
+            ),
+        )
 
         viewModel.selectGame(game)
+        advanceUntilIdle()
 
-        assertEquals(game, viewModel.uiState.value.selectedGame)
+        assertEquals(game, viewModel.uiState.value.pendingGameJoin?.game)
+        assertEquals(listOf("Castle"), viewModel.uiState.value.pendingGameJoin?.locations?.map { it.name })
+        assertNull(viewModel.uiState.value.selectedGame)
         assertNull(viewModel.uiState.value.errorMessage)
     }
 
@@ -180,6 +190,20 @@ class GameSelectionViewModelTest {
     }
 
     @Test
+    fun selectGameRejectsGameWithoutLocations() = runGameSelectionViewModelTest {
+        val viewModel = GameSelectionViewModel(FakeGameSelectionDataSource())
+
+        viewModel.selectGame(Game(id = 3, name = "Existing game"))
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.pendingGameJoin)
+        assertEquals(
+            "Ehhez a játékhoz még nincs választható állomás",
+            viewModel.uiState.value.errorMessage,
+        )
+    }
+
+    @Test
     fun repositoryErrorIsExposedInStateAndLoadingStops() = runGameSelectionViewModelTest {
         val viewModel = GameSelectionViewModel(
             FakeGameSelectionDataSource(loadError = IllegalStateException("database unavailable")),
@@ -196,6 +220,7 @@ class GameSelectionViewModelTest {
 
 private class FakeGameSelectionDataSource(
     private val games: List<Game> = emptyList(),
+    private val locationsByGameId: Map<Long, List<Location>> = emptyMap(),
     private val itemEffects: List<ItemEffect> = emptyList(),
     private val loadError: Exception? = null,
 ) : GameSelectionDataSource {
@@ -210,6 +235,10 @@ private class FakeGameSelectionDataSource(
     override suspend fun getItemEffects(): List<ItemEffect> {
         loadError?.let { throw it }
         return itemEffects
+    override suspend fun getLocations(gameId: Long): List<Location> {
+        loadError?.let { throw it }
+        return locationsByGameId[gameId].orEmpty()
+    }
     }
 
     override suspend fun createGame(setup: CreateGameSetup): Game {
