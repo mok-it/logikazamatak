@@ -131,17 +131,18 @@ fun GameSelectionScreen(
                     Text("Nincs még mentett játék", style = MaterialTheme.typography.bodyMedium)
                 }
                 uiState.games.forEach { game ->
-                    GameRow(
-                        game = game,
-                        isLoading = uiState.isLoading,
-                        onSelectGame = onSelectGame,
+                    SelectionRow(
+                        title = game.name ?: "Névtelen játék",
+                        subtitle = "ID ${game.id ?: "-"}",
+                        actionLabel = "Csatlakozás",
+                        enabled = !uiState.isLoading && game.id != null,
+                        onAction = { onSelectGame(game) },
                     )
                 }
             }
         }
     }
 }
-
 @Composable
 private fun CreateGameEditor(
     uiState: GameSelectionUiState,

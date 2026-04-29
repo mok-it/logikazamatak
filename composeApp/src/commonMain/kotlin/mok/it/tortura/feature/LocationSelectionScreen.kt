@@ -1,12 +1,19 @@
 package mok.it.tortura.feature
 
 import NavigateBackIcon
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Game
@@ -50,31 +57,13 @@ fun LocationSelectionScreen(
             )
 
             locations.forEach { location ->
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-//                    Column(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(16.dp),
-//                        verticalArrangement = Arrangement.spacedBy(12.dp),
-//                    ) {
-                    Text(
-                        text = location.name ?: "Állomás #${location.id ?: "-"}",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Button(
-                        onClick = { onSelectLocation(location) },
-                        enabled = location.id != null,
-                        modifier = Modifier.align(Alignment.End),
-                    ) {
-                        Text("Kiválasztás")
-                    }
-//                    }
-                }
+                SelectionRow(
+                    title = location.name ?: "Állomás #${location.id ?: "-"}",
+                    subtitle = if (location.id != null) "ID ${location.id}" else null,
+                    actionLabel = "Kiválasztás",
+                    enabled = location.id != null,
+                    onAction = { onSelectLocation(location) },
+                )
             }
         }
     }
