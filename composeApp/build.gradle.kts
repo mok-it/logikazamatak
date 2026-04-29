@@ -3,7 +3,8 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-val generatedSupabaseConfigDir = layout.buildDirectory.dir("generated/supabaseConfig/commonMain/kotlin")
+val generatedSupabaseConfigDir =
+    layout.buildDirectory.dir("generated/supabaseConfig/commonMain/kotlin")
 
 val generateSupabaseConfig by tasks.registering {
     val supabaseEnvironment = providers.gradleProperty("supabase.env")
@@ -14,7 +15,9 @@ val generateSupabaseConfig by tasks.registering {
         .orElse("http://127.0.0.1:54321")
     val localKey = providers.gradleProperty("supabase.local.key")
         .orElse(providers.environmentVariable("SUPABASE_LOCAL_KEY"))
-        .orElse("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0")
+        .orElse(
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0",
+        )
     val prodUrl = providers.gradleProperty("supabase.prod.url")
         .orElse(providers.environmentVariable("SUPABASE_PROD_URL"))
         .orElse("https://nnhvnqpczerqrofxkbki.supabase.co")
@@ -141,6 +144,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.cio)
+            implementation(libs.slf4j.simple)
         }
         jsMain.dependencies {
             implementation(libs.ktor.client.js)
