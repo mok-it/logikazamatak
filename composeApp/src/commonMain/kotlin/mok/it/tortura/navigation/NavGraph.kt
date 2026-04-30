@@ -23,6 +23,8 @@ import mok.it.tortura.feature.HealerTeamSelectionViewModel
 import mok.it.tortura.feature.MainMenu
 import mok.it.tortura.feature.SetUpMenu
 import mok.it.tortura.feature.SetupViewModel
+import mok.it.tortura.feature.TeamCompositionScreen
+import mok.it.tortura.feature.TeamCompositionViewModel
 import mok.it.tortura.model.Game
 
 @Composable
@@ -105,6 +107,46 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onBack = { navController.popBackStack() },
             )
         }
+        composable<Screen.TeamComposition> {
+            val selectedGame = activeGame
+            val selectedGameId = selectedGame?.id
+
+            if (selectedGame == null || selectedGameId == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.GameSelection) {
+                        launchSingleTop = true
+                    }
+                }
+                return@composable
+            }
+
+            val teamCompositionViewModel = viewModel(key = "team-composition-$selectedGameId") {
+                TeamCompositionViewModel(activeGameId = selectedGameId)
+            }
+            val teamCompositionUiState = teamCompositionViewModel.uiState.collectAsStateWithLifecycle()
+
+            TeamCompositionScreen(
+                activeGameName = selectedGame.name ?: "#$selectedGameId",
+                uiState = teamCompositionUiState.value,
+                onLoad = teamCompositionViewModel::load,
+                onBaseTeamCounterChange = teamCompositionViewModel::onBaseTeamCounterChange,
+                onImportTextChange = teamCompositionViewModel::onImportTextChange,
+                onImportFromText = teamCompositionViewModel::importFromText,
+                onReadClipboard = teamCompositionViewModel::readClipboard,
+                onImportFromFile = teamCompositionViewModel::importFromFile,
+                onAddTeam = teamCompositionViewModel::addTeam,
+                onRemoveTeam = teamCompositionViewModel::removeTeam,
+                onTeamNameChange = teamCompositionViewModel::updateTeamName,
+                onTeamGroupChange = teamCompositionViewModel::updateTeamGroup,
+                onTeamKlassChange = teamCompositionViewModel::updateTeamKlass,
+                onAddStudent = teamCompositionViewModel::addStudent,
+                onRemoveStudent = teamCompositionViewModel::removeStudent,
+                onStudentNameChange = teamCompositionViewModel::updateStudentName,
+                onSave = teamCompositionViewModel::save,
+                onClearMessages = teamCompositionViewModel::clearMessages,
+                onBack = { navController.popBackStack() },
+            )
+        }
         composable<Screen.HealerTeamSelection> {
             val selectedGame = activeGame
             val selectedGameId = selectedGame?.id
@@ -182,7 +224,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                         launchSingleTop = true
                     }
                 },
-                onSetUp = { navController.navigate(Screen.SetUpMenu) },
+                onSetUp = { navController.navigate(Screen.TeamComposition) },
                 onCompetition = { navController.navigate(Screen.HealerTeamSelection) },
             )
         }

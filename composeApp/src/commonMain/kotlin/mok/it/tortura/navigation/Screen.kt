@@ -24,5 +24,8 @@ object Screen {
     object SetUpMenu
 
     @Serializable
+    object TeamComposition
+
+    @Serializable
     object MainMenu
 }
