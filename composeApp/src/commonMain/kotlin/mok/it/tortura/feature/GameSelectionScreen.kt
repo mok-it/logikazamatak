@@ -44,7 +44,7 @@ fun GameSelectionScreen(
     onRemoveShopItem: (Long) -> Unit = {},
     onSelectGame: (Game) -> Unit = {},
     onGameSelected: (Game) -> Unit = {},
-    onLocationSelectionRequired: (Game, List<Location>) -> Unit = { _, _ -> },
+    onLocationSelectionRequired: (Long) -> Unit = {},
     onClearMessages: () -> Unit = {},
 ) {
     LaunchedEffect(Unit) {
@@ -55,9 +55,9 @@ fun GameSelectionScreen(
         uiState.selectedGame?.let(onGameSelected)
     }
 
-    LaunchedEffect(uiState.pendingGameJoin) {
-        uiState.pendingGameJoin?.let { pendingJoin ->
-            onLocationSelectionRequired(pendingJoin.game, pendingJoin.locations)
+    LaunchedEffect(uiState.locationSelectionGameId) {
+        uiState.locationSelectionGameId?.let { gameId ->
+            onLocationSelectionRequired(gameId)
         }
     }
 

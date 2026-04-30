@@ -67,7 +67,7 @@ data class GameSelectionUiState(
     val itemEffects: List<ItemEffect> = emptyList(),
     val games: List<Game> = emptyList(),
     val selectedGame: Game? = null,
-    val pendingGameJoin: PendingGameJoin? = null,
+    val locationSelectionGameId: Long? = null,
     val message: String? = null,
     val errorMessage: String? = null,
 )
@@ -332,31 +332,11 @@ class GameSelectionViewModel(
 
             _uiState.update {
                 it.copy(
-                    pendingGameJoin = PendingGameJoin(
-                        game = game,
-                        locations = locations,
-                    ),
+                    locationSelectionGameId = game.id,
                     message = null,
                     errorMessage = null,
                 )
             }
-        }
-    }
-
-    fun confirmGameJoin(location: Location) {
-        val pendingJoin = uiState.value.pendingGameJoin
-        if (pendingJoin == null) {
-            _uiState.update { it.copy(errorMessage = "Nincs folyamatban lévő csatlakozás") }
-            return
-        }
-
-        _uiState.update {
-            it.copy(
-                selectedGame = pendingJoin.game,
-                pendingGameJoin = null,
-                message = null,
-                errorMessage = null,
-            )
         }
     }
 
@@ -413,8 +393,8 @@ class GameSelectionViewModel(
         _uiState.update { it.copy(selectedGame = null) }
     }
 
-    fun clearPendingJoin() {
-        _uiState.update { it.copy(pendingGameJoin = null) }
+    fun clearLocationSelectionRequest() {
+        _uiState.update { it.copy(locationSelectionGameId = null) }
     }
 
     private fun runRepositoryAction(action: suspend () -> Unit) {

@@ -25,6 +25,7 @@ import mok.it.tortura.feature.HealerTasksViewModel
 import mok.it.tortura.feature.HealerTeamSelectionScreen
 import mok.it.tortura.feature.HealerTeamSelectionViewModel
 import mok.it.tortura.feature.LocationSelectionScreen
+import mok.it.tortura.feature.LocationSelectionViewModel
 import mok.it.tortura.feature.MainMenu
 import mok.it.tortura.feature.SetUpMenu
 import mok.it.tortura.feature.SetupViewModel
@@ -36,8 +37,6 @@ import mok.it.tortura.ui.components.LocationPickerDialog
 fun NavGraph(navController: NavHostController = rememberNavController()) {
     var activeGame by remember { mutableStateOf<Game?>(null) }
     var activeLocation by remember { mutableStateOf<Location?>(null) }
-    var pendingJoinGame by remember { mutableStateOf<Game?>(null) }
-    var pendingJoinLocations by remember { mutableStateOf<List<Location>>(emptyList()) }
     var isLocationPickerOpen by remember { mutableStateOf(false) }
     var switchableLocations by remember { mutableStateOf<List<Location>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
@@ -115,46 +114,40 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                         launchSingleTop = true
                     }
                 },
-                onLocationSelectionRequired = { game, locations ->
-                    gameSelectionViewModel.clearPendingJoin()
-                    pendingJoinGame = game
-                    pendingJoinLocations = locations
-                    navController.navigate(Screen.LocationSelection) {
+                onLocationSelectionRequired = { gameId ->
+                    gameSelectionViewModel.clearLocationSelectionRequest()
+                    navController.navigate(Screen.LocationSelection(gameId = gameId)) {
                         launchSingleTop = true
                     }
                 },
                 onClearMessages = gameSelectionViewModel::clearMessages,
             )
         }
-        composable<Screen.LocationSelection> {
-            val joinGame = pendingJoinGame
-            if (joinGame == null || pendingJoinLocations.isEmpty()) {
-                LaunchedEffect(Unit) {
-                    navController.popBackStack()
-                }
-                return@composable
+        composable<Screen.LocationSelection> { backStackEntry ->
+            val screen = backStackEntry.toRoute<Screen.LocationSelection>()
+            val locationSelectionViewModel = viewModel(key = "location-selection-${screen.gameId}") {
+                LocationSelectionViewModel(gameId = screen.gameId)
             }
+            val locationSelectionUiState = locationSelectionViewModel.uiState.collectAsStateWithLifecycle()
 
             LocationSelectionScreen(
-                game = joinGame,
-                locations = pendingJoinLocations,
-                onSelectLocation = { location ->
-                    activeGame = joinGame
-                    activeLocation = location
+                uiState = locationSelectionUiState.value,
+                onLoad = locationSelectionViewModel::load,
+                onSelectLocation = { locationId ->
+                    val selectedGame = locationSelectionUiState.value.game ?: return@LocationSelectionScreen
+                    val selectedLocation = locationSelectionUiState.value.locations
+                        .firstOrNull { it.id == locationId }
+                        ?: return@LocationSelectionScreen
+                    activeGame = selectedGame
+                    activeLocation = selectedLocation
                     navController.navigate(Screen.MainMenu) {
                         popUpTo(Screen.GameSelection) {
                             inclusive = false
                         }
                         launchSingleTop = true
                     }
-                    pendingJoinGame = null
-                    pendingJoinLocations = emptyList()
                 },
-                onBack = {
-                    pendingJoinGame = null
-                    pendingJoinLocations = emptyList()
-                    navController.popBackStack()
-                },
+                onBack = { navController.popBackStack() },
             )
         }
 
