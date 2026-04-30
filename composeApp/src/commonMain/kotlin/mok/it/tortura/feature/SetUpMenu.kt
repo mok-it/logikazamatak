@@ -1,12 +1,7 @@
 package mok.it.tortura.feature
 
 import NavigateBackIcon
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -17,7 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import mok.it.tortura.ui.components.ActiveGameLocationHeader
+import mok.it.tortura.ui.components.ActiveGameLocationTopBarTitle
+import mok.it.tortura.ui.components.ChangeLocationTopBarAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,12 +35,22 @@ fun SetUpMenu(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Előkókányolás") },
+                title = {
+                    ActiveGameLocationTopBarTitle(
+                        activeGameName = activeGameName,
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         NavigateBackIcon()
                     }
-                }
+                },
+                actions = {
+                    ChangeLocationTopBarAction(
+                        activeLocationName = activeLocationName,
+                        onChangeLocation = onChangeLocation,
+                    )
+                },
             )
         },
         snackbarHost = {
@@ -74,14 +80,6 @@ fun SetUpMenu(
             if (uiState.isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
-
-            ActiveGameLocationHeader(
-                activeGameName = activeGameName,
-                activeLocationName = activeLocationName,
-                onChangeLocation = onChangeLocation,
-            )
-
-            HorizontalDivider()
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),

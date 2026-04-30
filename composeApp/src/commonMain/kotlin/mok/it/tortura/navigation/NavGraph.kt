@@ -4,16 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.toRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import kotlinx.coroutines.launch
 import mok.it.tortura.data.supabase.mapper.toModel
 import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
@@ -125,16 +125,18 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
         }
         composable<Screen.LocationSelection> { backStackEntry ->
             val screen = backStackEntry.toRoute<Screen.LocationSelection>()
-            val locationSelectionViewModel = viewModel(key = "location-selection-${screen.gameId}") {
-                LocationSelectionViewModel(gameId = screen.gameId)
-            }
+            val locationSelectionViewModel =
+                viewModel(key = "location-selection-${screen.gameId}") {
+                    LocationSelectionViewModel(gameId = screen.gameId)
+                }
             val locationSelectionUiState = locationSelectionViewModel.uiState.collectAsStateWithLifecycle()
 
             LocationSelectionScreen(
                 uiState = locationSelectionUiState.value,
                 onLoad = locationSelectionViewModel::load,
                 onSelectLocation = { locationId ->
-                    val selectedGame = locationSelectionUiState.value.game ?: return@LocationSelectionScreen
+                    val selectedGame =
+                        locationSelectionUiState.value.game ?: return@LocationSelectionScreen
                     val selectedLocation = locationSelectionUiState.value.locations
                         .firstOrNull { it.id == locationId }
                         ?: return@LocationSelectionScreen
@@ -194,9 +196,10 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 return@composable
             }
 
-            val healerTeamSelectionViewModel = viewModel(key = "healer-team-selection-$selectedGameId") {
-                HealerTeamSelectionViewModel(activeGameId = selectedGameId)
-            }
+            val healerTeamSelectionViewModel =
+                viewModel(key = "healer-team-selection-$selectedGameId") {
+                    HealerTeamSelectionViewModel(activeGameId = selectedGameId)
+                }
             val healerTeamSelectionUiState =
                 healerTeamSelectionViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -205,7 +208,9 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 activeLocationName = activeLocation?.name,
                 uiState = healerTeamSelectionUiState.value,
                 onLoad = healerTeamSelectionViewModel::loadTeams,
-                onSelectTeam = { team -> team.id?.let { navController.navigate(Screen.HealerTasks(teamId = it)) } },
+                onSelectTeam = { team ->
+                    team.id?.let { navController.navigate(Screen.HealerTasks(teamId = it)) }
+                },
                 onClearMessages = healerTeamSelectionViewModel::clearMessages,
                 onBack = { navController.popBackStack() },
                 onChangeLocation = ::openLocationPickerForActiveGame,

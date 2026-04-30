@@ -1,24 +1,17 @@
 package mok.it.tortura.feature
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Game
 import mok.it.tortura.model.Location
-import mok.it.tortura.ui.components.ActiveGameLocationHeader
+import mok.it.tortura.ui.components.ActiveGameLocationTopBarTitle
+import mok.it.tortura.ui.components.ChangeLocationTopBarAction
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMenu(
     activeGame: Game,
@@ -45,47 +38,62 @@ fun MainMenu(
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.SpaceAround,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        AuthSection(
-            authUiState = authUiState,
-            onSignInWithGoogle = onSignInWithGoogle,
-            onSignOut = onSignOut,
-        )
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ActiveGameLocationHeader(
-                activeGameName = activeGame.name ?: "#${activeGame.id ?: "-"}",
-                activeLocationName = activeLocation?.name,
-                onChangeLocation = onChangeLocation,
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    ActiveGameLocationTopBarTitle(
+                        activeGameName = activeGame.name ?: "#${activeGame.id ?: "-"}",
+                    )
+                },
+                actions = {
+                    ChangeLocationTopBarAction(
+                        activeLocationName = activeLocation?.name,
+                        onChangeLocation = onChangeLocation,
+                    )
+                },
             )
-            TextButton(
-                onClick = onChangeGame,
+        },
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.SpaceAround,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            AuthSection(
+                authUiState = authUiState,
+                onSignInWithGoogle = onSignInWithGoogle,
+                onSignOut = onSignOut,
+            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                TextButton(
+                    onClick = onChangeGame,
+                    enabled = authUiState.isAuthenticated && !authUiState.isBusy,
+                ) {
+                    Text("Másik játék választása")
+                }
+            }
+
+            Button(
+                onClick = onSetUp,
                 enabled = authUiState.isAuthenticated && !authUiState.isBusy,
             ) {
-                Text("Másik játék választása")
+                Text(text = "Előkészítés")
             }
-        }
-
-        Button(
-            onClick = onSetUp,
-            enabled = authUiState.isAuthenticated && !authUiState.isBusy,
-        ) {
-            Text(text = "Előkészítés")
-        }
-        Button(
-            onClick = onCompetition,
-            enabled = authUiState.isAuthenticated && !authUiState.isBusy,
-        ) {
-            Text(text = "Gyógyító feladatok")
+            Button(
+                onClick = onCompetition,
+                enabled = authUiState.isAuthenticated && !authUiState.isBusy,
+            ) {
+                Text(text = "Gyógyító feladatok")
+            }
         }
     }
 }
