@@ -13,7 +13,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.HealingTask
 import mok.it.tortura.model.Team
-import mok.it.tortura.ui.components.ActiveGameLocationHeader
+import mok.it.tortura.ui.components.ActiveGameLocationTopBarTitle
+import mok.it.tortura.ui.components.ChangeLocationTopBarAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,11 +102,21 @@ fun HealerTasksScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gyógyító feladat") },
+                title = {
+                    ActiveGameLocationTopBarTitle(
+                        activeGameName = activeGameName,
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         NavigateBackIcon()
                     }
+                },
+                actions = {
+                    ChangeLocationTopBarAction(
+                        activeLocationName = activeLocationName,
+                        onChangeLocation = onChangeLocation,
+                    )
                 },
             )
         },
@@ -136,11 +147,6 @@ fun HealerTasksScreen(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            ActiveGameLocationHeader(
-                activeGameName = activeGameName,
-                activeLocationName = activeLocationName,
-                onChangeLocation = onChangeLocation,
-            )
             Text(
                 "Csapat: ${uiState.team?.name ?: "Csapat #${uiState.team?.id ?: "-"}"}",
                 style = MaterialTheme.typography.titleLarge,
