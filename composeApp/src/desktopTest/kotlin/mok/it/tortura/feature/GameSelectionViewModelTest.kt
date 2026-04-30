@@ -162,8 +162,7 @@ class GameSelectionViewModelTest {
         viewModel.selectGame(game)
         advanceUntilIdle()
 
-        assertEquals(game, viewModel.uiState.value.pendingGameJoin?.game)
-        assertEquals(listOf("Castle"), viewModel.uiState.value.pendingGameJoin?.locations?.map { it.name })
+        assertEquals(3L, viewModel.uiState.value.locationSelectionGameId)
         assertNull(viewModel.uiState.value.selectedGame)
         assertNull(viewModel.uiState.value.errorMessage)
     }
@@ -196,7 +195,7 @@ class GameSelectionViewModelTest {
         viewModel.selectGame(Game(id = 3, name = "Existing game"))
         advanceUntilIdle()
 
-        assertNull(viewModel.uiState.value.pendingGameJoin)
+        assertNull(viewModel.uiState.value.locationSelectionGameId)
         assertEquals(
             "Ehhez a játékhoz még nincs választható állomás",
             viewModel.uiState.value.errorMessage,

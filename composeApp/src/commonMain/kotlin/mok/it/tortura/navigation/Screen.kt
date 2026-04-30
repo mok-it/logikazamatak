@@ -7,7 +7,9 @@ object Screen {
     object GameSelection
 
     @Serializable
-    object LocationSelection
+    data class LocationSelection(
+        val gameId: Long,
+    )
 
     @Serializable
     object HealerTeamSelection
