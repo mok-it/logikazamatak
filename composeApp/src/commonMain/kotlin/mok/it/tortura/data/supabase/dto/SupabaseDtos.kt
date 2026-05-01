@@ -139,7 +139,6 @@ data class StudentDto(
     val createdAt: Instant? = null,
     val name: String? = null,
     val group: String? = null,
-    val klass: String? = null,
     val teamId: Long? = null,
 )
 
@@ -147,7 +146,6 @@ data class StudentDto(
 data class StudentInsertDto(
     val name: String? = null,
     val group: String? = null,
-    val klass: String? = null,
     val teamId: Long? = null,
 )
 

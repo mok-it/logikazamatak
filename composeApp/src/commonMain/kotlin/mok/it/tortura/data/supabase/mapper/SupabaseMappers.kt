@@ -81,21 +81,18 @@ fun StudentDto.toModel(): Student = Student(
     createdAt = createdAt,
     name = name.orEmpty(),
     group = group.orEmpty(),
-    klass = klass.orEmpty(),
     teamId = teamId,
 )
 
 fun Student.toInsertDto(): StudentInsertDto = StudentInsertDto(
     name = name,
     group = group,
-    klass = klass,
     teamId = teamId,
 )
 
 fun Student.toUpdateDto(): StudentInsertDto = StudentInsertDto(
     name = name,
     group = group,
-    klass = klass,
     teamId = teamId,
 )
 

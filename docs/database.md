@@ -107,8 +107,7 @@ Key columns:
 
 - `id`: primary key
 - `name`: display name
-- `group`: group identifier
-- `klass`: class identifier (i.e. grade)
+- `group`: group identifier (e.g. group B)
 - `teamId`: references `Teams.id`
 
 ### `TasksLedger`
