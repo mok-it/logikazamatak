@@ -9,6 +9,5 @@ data class Student(
     val createdAt: Instant? = null,
     val name: String = "",
     val group: String = "",
-    val klass: String = "",
     val teamId: Long? = null,
 )

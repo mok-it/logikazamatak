@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -19,7 +18,6 @@ fun StudentCard(
     student: Student,
     onChangeName: (String) -> Unit,
     onChangeGroup: (String) -> Unit,
-    onChangeKlass: (String) -> Unit,
     onDeleteStudent: () -> Unit
 ) {
 
@@ -42,13 +40,6 @@ fun StudentCard(
                     leadingIcon = { Icon(Icons.Filled.Home, "Csoport") },
                     onValueChange = onChangeGroup,
                     label = { Text("Csoport") }
-                )
-                TextField(
-                    modifier = Modifier.padding(8.dp),
-                    value = student.klass,
-                    leadingIcon = { Icon(Icons.Filled.DateRange, "Osztály") },
-                    onValueChange = onChangeKlass,
-                    label = { Text("Osztály") }
                 )
             }
         }

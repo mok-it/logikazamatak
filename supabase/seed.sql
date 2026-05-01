@@ -73,21 +73,20 @@ set
   "name" = excluded."name",
   "teamAssignmentId" = excluded."teamAssignmentId";
 
-insert into "public"."Students" ("id", "name", "group", "klass", "teamId")
+insert into "public"."Students" ("id", "name", "group", "teamId")
 values
-  (900001, 'Anna Kovacs', 'A', '7', 900001),
-  (900002, 'Bence Toth', 'A', '7', 900001),
-  (900003, 'Csenge Nagy', 'B', '7', 900002),
-  (900004, 'Daniel Szabo', 'B', '7', 900002),
-  (900005, 'Emma Varga', 'C', '8', 900003),
-  (900006, 'Ferenc Kiss', 'C', '8', 900003),
-  (900007, 'Greta Farkas', 'A', '8', 900004),
-  (900008, 'Hanna Balogh', 'B', '8', 900005)
+  (900001, 'Anna Kovacs', 'A', 900001),
+  (900002, 'Bence Toth', 'A', 900001),
+  (900003, 'Csenge Nagy', 'B', 900002),
+  (900004, 'Daniel Szabo', 'B', 900002),
+  (900005, 'Emma Varga', 'C', 900003),
+  (900006, 'Ferenc Kiss', 'C', 900003),
+  (900007, 'Greta Farkas', 'A', 900004),
+  (900008, 'Hanna Balogh', 'B', 900005)
 on conflict ("id") do update
 set
   "name" = excluded."name",
   "group" = excluded."group",
-  "klass" = excluded."klass",
   "teamId" = excluded."teamId";
 
 insert into "public"."TasksLedger" ("id", "taskId", "teamId", "userId", "isSuccess")
