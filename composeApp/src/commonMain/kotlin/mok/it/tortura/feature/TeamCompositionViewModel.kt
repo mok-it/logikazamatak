@@ -315,11 +315,6 @@ class TeamCompositionViewModel(
         value: String,
     ) = updateTeam(index) { it.copy(group = value) }
 
-    fun updateTeamKlass(
-        index: Int,
-        value: String,
-    ) = updateTeam(index) { it.copy(klass = value) }
-
     fun addStudent(teamIndex: Int) {
         updateTeam(teamIndex) { team ->
             team.copy(students = team.students + StudentDraft())
@@ -367,7 +362,6 @@ class TeamCompositionViewModel(
                 team.copy(
                     name = team.name.trim(),
                     group = team.group.trim(),
-                    klass = team.klass.trim(),
                     students = team.students.map { it.copy(name = it.name.trim()) },
                 )
             },

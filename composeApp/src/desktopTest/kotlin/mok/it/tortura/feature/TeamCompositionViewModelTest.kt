@@ -1,20 +1,12 @@
 package mok.it.tortura.feature
 
+import kotlin.test.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.*
 import mok.it.tortura.model.Student
 import mok.it.tortura.model.Team
 import mok.it.tortura.model.TeamAssignment
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TeamCompositionViewModelTest {
@@ -30,7 +22,7 @@ class TeamCompositionViewModelTest {
                         name = "Red",
                         teamAssignmentId = 1,
                         students = listOf(
-                            Student(id = 100, name = "Anna", group = "A", klass = "7", teamId = 10),
+                            Student(id = 100, name = "Anna", group = "A", teamId = 10),
                         ),
                     ),
                 ),
@@ -51,7 +43,6 @@ class TeamCompositionViewModelTest {
         assertEquals(1, state.teams.size)
         assertEquals("Red", state.teams.single().name)
         assertEquals("A", state.teams.single().group)
-        assertEquals("7", state.teams.single().klass)
         assertEquals("Csapatbeosztás betöltve", state.message)
         assertFalse(state.isLoading)
     }
@@ -66,8 +57,8 @@ class TeamCompositionViewModelTest {
 
         viewModel.onImportTextChange(
             """
-                name	group	klass	team
-                Anna	A	7	Red
+                name	group	team
+                Anna	A	Red
                 Bela	A	7	Red
             """.trimIndent(),
         )
@@ -94,7 +85,6 @@ class TeamCompositionViewModelTest {
         viewModel.addTeam()
         viewModel.updateTeamName(0, "Red")
         viewModel.updateTeamGroup(0, "A")
-        viewModel.updateTeamKlass(0, "7")
         viewModel.updateStudentName(0, 0, "Anna")
         viewModel.save()
         advanceUntilIdle()
@@ -151,7 +141,6 @@ class TeamCompositionViewModelTest {
         assertEquals(1, state.teams.size)
         assertEquals("101", state.teams.single().name)
         assertEquals("A", state.teams.single().group)
-        assertEquals("", state.teams.single().klass)
         assertTrue(state.message?.contains("Batkabank") == true)
     }
 }
@@ -206,7 +195,10 @@ private class FakeBatkabankTeamCompositionSource : BatkabankTeamCompositionSourc
         ),
     )
 
-    override suspend fun getCampRoster(campId: String, assignmentId: String): Result<CampRosterDto> = Result.success(
+    override suspend fun getCampRoster(
+        campId: String,
+        assignmentId: String,
+    ): Result<CampRosterDto> = Result.success(
         CampRosterDto(
             campId = campId,
             assignmentId = assignmentId,
@@ -228,8 +220,10 @@ private object DisabledBatkabankTeamCompositionSource : BatkabankTeamComposition
 
     override suspend fun getCamps(year: Int): Result<List<CampSearchResultDto>> = Result.success(emptyList())
 
-    override suspend fun getCampRoster(campId: String, assignmentId: String): Result<CampRosterDto> =
-        Result.failure(IllegalStateException("disabled"))
+    override suspend fun getCampRoster(
+        campId: String,
+        assignmentId: String,
+    ): Result<CampRosterDto> = Result.failure(IllegalStateException("disabled"))
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

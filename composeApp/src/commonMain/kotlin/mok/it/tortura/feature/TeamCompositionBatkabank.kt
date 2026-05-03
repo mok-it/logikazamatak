@@ -227,13 +227,12 @@ class BatkabankRosterImportMapper {
             TeamDraft(
                 name = key.second,
                 group = key.first,
-                klass = "",
                 students = students.toList(),
             )
         }
 
         val categories = teams
-            .map { TeamCategory(group = it.group, klass = it.klass) }
+            .map { TeamCategory(group = it.group) }
             .distinct()
             .sortedBy { it.group }
 
