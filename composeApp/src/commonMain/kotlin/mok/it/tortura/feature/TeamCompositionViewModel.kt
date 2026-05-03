@@ -2,10 +2,13 @@ package mok.it.tortura.feature
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone.Companion.currentSystemDefault
+import kotlinx.datetime.toLocalDateTime
 import mok.it.tortura.data.supabase.mapper.toInsertDto
 import mok.it.tortura.data.supabase.mapper.toModel
 import mok.it.tortura.data.supabase.mapper.toUpdateDto
@@ -30,6 +33,7 @@ data class TeamCompositionUiState(
     val batkabankSelectedYear: Int? = null,
     val batkabankAvailableCamps: List<CampSearchResultDto> = emptyList(),
     val batkabankSelectedCampId: String? = null,
+    val isBatkabankLoading: Boolean = false,
 )
 
 interface TeamCompositionDataSource {
@@ -154,14 +158,22 @@ class TeamCompositionViewModel(
                 emptyList()
             }
 
+            val currentYear = Clock.System.now().toLocalDateTime(currentSystemDefault()).year
+            val selectedYear = if (currentYear in availableYears) currentYear else null
+
             _uiState.update {
                 it.copy(
                     baseTeamCounter = draft.baseTeamCounter?.toString().orEmpty(),
                     teams = draft.teams,
                     persistedSnapshot = snapshot,
                     batkabankAvailableYears = availableYears,
+                    batkabankSelectedYear = selectedYear,
                     message = "Csapatbeosztás betöltve",
                 )
+            }
+
+            if (selectedYear != null) {
+                selectBatkabankYear(selectedYear)
             }
         }
     }
@@ -227,7 +239,7 @@ class TeamCompositionViewModel(
             return
         }
 
-        runAction(loading = true) {
+        runAction(batkabankLoading = true) {
             val camps = batkabankSource.getCamps(year).getOrElse { throw it }
             _uiState.update {
                 it.copy(
@@ -258,7 +270,7 @@ class TeamCompositionViewModel(
         camp: CampSearchResultDto,
         assignment: CampSearchAssignmentDto,
     ) {
-        runAction(loading = true) {
+        runAction(batkabankLoading = true) {
             val roster = batkabankSource.getCampRoster(
                 campId = camp.id,
                 assignmentId = assignment.id,
@@ -415,9 +427,11 @@ class TeamCompositionViewModel(
         state.teams.forEachIndexed { teamIndex, team ->
             if (team.name.isBlank()) return "A(z) ${teamIndex + 1}. csapat neve hiányzik."
             if (team.group.isBlank()) {
-                return "A(z) ${team.name.ifBlank {
-                    "${teamIndex + 1}. csapat"
-                }} csoportja hiányzik."
+                return "A(z) ${
+                    team.name.ifBlank {
+                        "${teamIndex + 1}. csapat"
+                    }
+                } csoportja hiányzik."
             }
             if (team.students.isEmpty()) return "A(z) ${team.name} csapatban nincs tanuló."
             team.students.forEachIndexed { studentIndex, student ->
@@ -447,6 +461,7 @@ class TeamCompositionViewModel(
     private fun runAction(
         loading: Boolean = false,
         saving: Boolean = false,
+        batkabankLoading: Boolean = false,
         action: suspend () -> Unit,
     ) {
         viewModelScope.launch {
@@ -454,6 +469,7 @@ class TeamCompositionViewModel(
                 it.copy(
                     isLoading = loading,
                     isSaving = saving,
+                    isBatkabankLoading = batkabankLoading,
                     message = null,
                     errorMessage = null,
                 )
@@ -465,7 +481,13 @@ class TeamCompositionViewModel(
                     it.copy(errorMessage = exception.message ?: "A művelet nem sikerült.")
                 }
             } finally {
-                _uiState.update { it.copy(isLoading = false, isSaving = false) }
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isSaving = false,
+                        isBatkabankLoading = false,
+                    )
+                }
             }
         }
     }
