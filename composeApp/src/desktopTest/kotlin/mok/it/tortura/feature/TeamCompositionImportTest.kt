@@ -2,6 +2,7 @@ package mok.it.tortura.feature
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class TeamCompositionImportTest {
 
@@ -43,5 +44,29 @@ class TeamCompositionImportTest {
 
         assertEquals(1, result.draft.teams.size)
         assertEquals("Green", result.draft.teams.single().name)
+    }
+
+    @Test
+    fun batkabankRosterImportGroupsStudentsByLectureGroupAndTeam() {
+        val result = BatkabankRosterImportMapper().import(
+            sourceLabel = "Batkabank",
+            roster = CampRosterDto(
+                campId = "camp-1",
+                assignmentId = "assignment-1",
+                students = listOf(
+                    CampRosterStudentDto(name = "Anna", group = "A", teamName = "101"),
+                    CampRosterStudentDto(name = "Bela", group = "A", teamName = "101"),
+                    CampRosterStudentDto(name = "Csenge", group = "B", teamName = null),
+                ),
+            ),
+        )
+
+        assertEquals(1L, result.draft.baseTeamCounter)
+        assertEquals(1, result.draft.teams.size)
+        assertEquals("101", result.draft.teams.single().name)
+        assertEquals("A", result.draft.teams.single().group)
+        assertEquals("", result.draft.teams.single().klass)
+        assertEquals(2, result.draft.teams.single().students.size)
+        assertTrue(result.preview.rowErrors.single().message.contains("nincs csapatba sorolva"))
     }
 }
