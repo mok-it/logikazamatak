@@ -68,10 +68,6 @@ interface TeamCompositionImportSource {
     fun import(payload: ImportedRosterPayload): TeamCompositionImportResult
 }
 
-interface BatkabankTeamCompositionSource {
-    suspend fun fetchTeamComposition(): Result<ImportedRosterPayload>
-}
-
 interface TeamCompositionPlatformBridge {
     val supportsClipboardRead: Boolean
     val supportsFileImport: Boolean

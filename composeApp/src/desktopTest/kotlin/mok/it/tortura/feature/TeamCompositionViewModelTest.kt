@@ -14,6 +14,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TeamCompositionViewModelTest {
@@ -39,6 +40,7 @@ class TeamCompositionViewModelTest {
             activeGameId = 42,
             platformBridge = UnsupportedTeamCompositionPlatformBridge,
             dataSource = dataSource,
+            batkabankSource = DisabledBatkabankTeamCompositionSource,
         )
 
         viewModel.load()
@@ -118,6 +120,40 @@ class TeamCompositionViewModelTest {
         assertEquals("Az alap csapatszám legyen pozitív egész szám.", viewModel.uiState.value.errorMessage)
         assertNull(dataSource.savedDraft)
     }
+
+    @Test
+    fun batkabankSelectionAndImportPopulateDraft() = runTeamCompositionTest {
+        val viewModel = TeamCompositionViewModel(
+            activeGameId = 42,
+            platformBridge = UnsupportedTeamCompositionPlatformBridge,
+            dataSource = FakeTeamCompositionDataSource(),
+            batkabankSource = FakeBatkabankTeamCompositionSource(),
+        )
+
+        viewModel.load()
+        advanceUntilIdle()
+
+        assertEquals(listOf(2026, 2025), viewModel.uiState.value.batkabankAvailableYears)
+
+        viewModel.selectBatkabankYear(2026)
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.uiState.value.batkabankAvailableCamps.size)
+
+        val camp = viewModel.uiState.value.batkabankAvailableCamps.single()
+        viewModel.selectBatkabankCamp(camp.id)
+        val assignment = camp.assignments.single()
+        viewModel.importFromBatkabank(camp, assignment)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("1", state.baseTeamCounter)
+        assertEquals(1, state.teams.size)
+        assertEquals("101", state.teams.single().name)
+        assertEquals("A", state.teams.single().group)
+        assertEquals("", state.teams.single().klass)
+        assertTrue(state.message?.contains("Batkabank") == true)
+    }
 }
 
 private class FakeTeamCompositionDataSource(
@@ -145,6 +181,55 @@ private class FakeTeamCompositionDataSource(
             },
         )
     }
+}
+
+private class FakeBatkabankTeamCompositionSource : BatkabankTeamCompositionSource {
+    override val isConfigured: Boolean = true
+
+    override suspend fun getAvailableYears(): Result<List<Int>> = Result.success(listOf(2025, 2026))
+
+    override suspend fun getCamps(year: Int): Result<List<CampSearchResultDto>> = Result.success(
+        listOf(
+            CampSearchResultDto(
+                id = "camp-1",
+                name = "Sástó 2.",
+                startsAt = "2026-07-14",
+                endsAt = "2026-07-20",
+                assignments = listOf(
+                    CampSearchAssignmentDto(
+                        id = "lecture",
+                        name = "Foglalkozás csoportok",
+                        groupCount = 8,
+                    ),
+                ),
+            ),
+        ),
+    )
+
+    override suspend fun getCampRoster(campId: String, assignmentId: String): Result<CampRosterDto> = Result.success(
+        CampRosterDto(
+            campId = campId,
+            assignmentId = assignmentId,
+            students = listOf(
+                CampRosterStudentDto(
+                    name = "Anna",
+                    group = "A",
+                    teamName = "101",
+                ),
+            ),
+        ),
+    )
+}
+
+private object DisabledBatkabankTeamCompositionSource : BatkabankTeamCompositionSource {
+    override val isConfigured: Boolean = false
+
+    override suspend fun getAvailableYears(): Result<List<Int>> = Result.success(emptyList())
+
+    override suspend fun getCamps(year: Int): Result<List<CampSearchResultDto>> = Result.success(emptyList())
+
+    override suspend fun getCampRoster(campId: String, assignmentId: String): Result<CampRosterDto> =
+        Result.failure(IllegalStateException("disabled"))
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

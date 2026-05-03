@@ -25,12 +25,19 @@ data class TeamCompositionUiState(
     val errorMessage: String? = null,
     val clipboardSupported: Boolean = false,
     val fileImportSupported: Boolean = false,
-    val batkabankMessage: String = "Batkabank API integráció későbbi feladatként csatlakoztatható ehhez az importfolyamathoz.",
+    val batkabankEnabled: Boolean = false,
+    val batkabankAvailableYears: List<Int> = emptyList(),
+    val batkabankSelectedYear: Int? = null,
+    val batkabankAvailableCamps: List<CampSearchResultDto> = emptyList(),
+    val batkabankSelectedCampId: String? = null,
 )
 
 interface TeamCompositionDataSource {
     suspend fun loadTeamComposition(gameId: Long): TeamCompositionSnapshot
-    suspend fun saveTeamComposition(gameId: Long, draft: TeamCompositionDraft): TeamCompositionSnapshot
+    suspend fun saveTeamComposition(
+        gameId: Long,
+        draft: TeamCompositionDraft,
+    ): TeamCompositionSnapshot
 }
 
 class SupabaseTeamCompositionDataSource(
@@ -43,10 +50,13 @@ class SupabaseTeamCompositionDataSource(
             ?.toModel()
             ?: return TeamCompositionSnapshot()
 
-        val teams = repositories.teams.getByTeamAssignmentId(assignment.id ?: return TeamCompositionSnapshot(assignment))
+        val teams = repositories.teams.getByTeamAssignmentId(
+            assignment.id ?: return TeamCompositionSnapshot(assignment),
+        )
             .map { teamDto ->
-                val students = (teamDto.id?.let { repositories.students.getByTeamId(it) } ?: emptyList())
-                    .map { it.toModel() }
+                val students =
+                    (teamDto.id?.let { repositories.students.getByTeamId(it) } ?: emptyList())
+                        .map { it.toModel() }
                 teamDto.toModel(students = students)
             }
 
@@ -83,7 +93,8 @@ class SupabaseTeamCompositionDataSource(
             ).toModel()
         }
 
-        val assignmentId = assignment.id ?: error("A csapatbeosztás mentése nem adott vissza azonosítót.")
+        val assignmentId =
+            assignment.id ?: error("A csapatbeosztás mentése nem adott vissza azonosítót.")
         val existingTeams = repositories.teams.getByTeamAssignmentId(assignmentId)
 
         existingTeams.forEach { teamDto ->
@@ -117,13 +128,18 @@ class TeamCompositionViewModel(
     private val activeGameId: Long,
     private val platformBridge: TeamCompositionPlatformBridge = teamCompositionPlatformBridge(),
     private val dataSource: TeamCompositionDataSource = SupabaseTeamCompositionDataSource(),
-    private val importCoordinator: TeamCompositionImportCoordinator = TeamCompositionImportCoordinator(),
+    private val importCoordinator: TeamCompositionImportCoordinator =
+        TeamCompositionImportCoordinator(),
+    private val batkabankSource: BatkabankTeamCompositionSource =
+        FirebaseBatkabankTeamCompositionSource(),
+    private val batkabankImportMapper: BatkabankRosterImportMapper = BatkabankRosterImportMapper(),
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
         TeamCompositionUiState(
             clipboardSupported = platformBridge.supportsClipboardRead,
             fileImportSupported = platformBridge.supportsFileImport,
+            batkabankEnabled = batkabankSource.isConfigured,
         ),
     )
     val uiState: StateFlow<TeamCompositionUiState> = _uiState
@@ -132,12 +148,18 @@ class TeamCompositionViewModel(
         runAction(loading = true) {
             val snapshot = dataSource.loadTeamComposition(activeGameId)
             val draft = snapshot.toDraft()
+            val availableYears = if (batkabankSource.isConfigured) {
+                batkabankSource.getAvailableYears().getOrElse { throw it }.sortedDescending()
+            } else {
+                emptyList()
+            }
 
             _uiState.update {
                 it.copy(
                     baseTeamCounter = draft.baseTeamCounter?.toString().orEmpty(),
                     teams = draft.teams,
                     persistedSnapshot = snapshot,
+                    batkabankAvailableYears = availableYears,
                     message = "Csapatbeosztás betöltve",
                 )
             }
@@ -155,7 +177,9 @@ class TeamCompositionViewModel(
     fun importFromText() {
         val text = uiState.value.importText.trim()
         if (text.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Illessz be CSV/TSV tartalmat vagy olvasd be a vágólapról.") }
+            _uiState.update {
+                it.copy(errorMessage = "Illessz be CSV/TSV tartalmat vagy olvasd be a vágólapról.")
+            }
             return
         }
 
@@ -189,6 +213,66 @@ class TeamCompositionViewModel(
         }
     }
 
+    fun selectBatkabankYear(year: Int?) {
+        if (year == null) {
+            _uiState.update {
+                it.copy(
+                    batkabankSelectedYear = null,
+                    batkabankAvailableCamps = emptyList(),
+                    batkabankSelectedCampId = null,
+                    message = null,
+                    errorMessage = null,
+                )
+            }
+            return
+        }
+
+        runAction(loading = true) {
+            val camps = batkabankSource.getCamps(year).getOrElse { throw it }
+            _uiState.update {
+                it.copy(
+                    batkabankSelectedYear = year,
+                    batkabankAvailableCamps = camps,
+                    batkabankSelectedCampId = null,
+                    message = if (camps.isEmpty()) {
+                        "Nincs Batkabank tábor a(z) $year. évben."
+                    } else {
+                        "${camps.size} Batkabank tábor érhető el a(z) $year. évben."
+                    },
+                )
+            }
+        }
+    }
+
+    fun selectBatkabankCamp(campId: String?) {
+        _uiState.update {
+            it.copy(
+                batkabankSelectedCampId = campId,
+                message = null,
+                errorMessage = null,
+            )
+        }
+    }
+
+    fun importFromBatkabank(
+        camp: CampSearchResultDto,
+        assignment: CampSearchAssignmentDto,
+    ) {
+        runAction(loading = true) {
+            val roster = batkabankSource.getCampRoster(
+                campId = camp.id,
+                assignmentId = assignment.id,
+            ).getOrElse { throw it }
+
+            applyImport(
+                batkabankImportMapper.import(
+                    sourceLabel = "Batkabank: ${camp.name} / ${assignment.name}",
+                    roster = roster,
+                ),
+            )
+        }
+    }
+
     fun addTeam() {
         _uiState.update {
             it.copy(
@@ -209,11 +293,20 @@ class TeamCompositionViewModel(
         }
     }
 
-    fun updateTeamName(index: Int, value: String) = updateTeam(index) { it.copy(name = value) }
+    fun updateTeamName(
+        index: Int,
+        value: String,
+    ) = updateTeam(index) { it.copy(name = value) }
 
-    fun updateTeamGroup(index: Int, value: String) = updateTeam(index) { it.copy(group = value) }
+    fun updateTeamGroup(
+        index: Int,
+        value: String,
+    ) = updateTeam(index) { it.copy(group = value) }
 
-    fun updateTeamKlass(index: Int, value: String) = updateTeam(index) { it.copy(klass = value) }
+    fun updateTeamKlass(
+        index: Int,
+        value: String,
+    ) = updateTeam(index) { it.copy(klass = value) }
 
     fun addStudent(teamIndex: Int) {
         updateTeam(teamIndex) { team ->
@@ -221,13 +314,25 @@ class TeamCompositionViewModel(
         }
     }
 
-    fun removeStudent(teamIndex: Int, studentIndex: Int) {
+    fun removeStudent(
+        teamIndex: Int,
+        studentIndex: Int,
+    ) {
         updateTeam(teamIndex) { team ->
-            team.copy(students = team.students.filterIndexed { currentIndex, _ -> currentIndex != studentIndex })
+            team.copy(
+                students = team.students.filterIndexed { currentIndex, _ ->
+                    currentIndex !=
+                        studentIndex
+                },
+            )
         }
     }
 
-    fun updateStudentName(teamIndex: Int, studentIndex: Int, value: String) {
+    fun updateStudentName(
+        teamIndex: Int,
+        studentIndex: Int,
+        value: String,
+    ) {
         updateTeam(teamIndex) { team ->
             team.copy(
                 students = team.students.mapIndexed { currentIndex, student ->
@@ -277,12 +382,22 @@ class TeamCompositionViewModel(
 
     private fun applyImport(payload: ImportedRosterPayload) {
         val result = importCoordinator.import(payload)
+        applyImport(
+            result = result,
+            importText = payload.content,
+        )
+    }
+
+    private fun applyImport(
+        result: TeamCompositionImportResult,
+        importText: String? = null,
+    ) {
         _uiState.update {
             it.copy(
                 baseTeamCounter = result.draft.baseTeamCounter?.toString().orEmpty(),
                 teams = result.draft.teams,
                 importPreview = result.preview,
-                importText = payload.content,
+                importText = importText ?: it.importText,
                 message = "Import feldolgozva: ${result.preview.sourceLabel}",
                 errorMessage = null,
             )
@@ -299,8 +414,11 @@ class TeamCompositionViewModel(
         }
         state.teams.forEachIndexed { teamIndex, team ->
             if (team.name.isBlank()) return "A(z) ${teamIndex + 1}. csapat neve hiányzik."
-            if (team.group.isBlank()) return "A(z) ${team.name.ifBlank { "${teamIndex + 1}. csapat" }} csoportja hiányzik."
-            if (team.klass.isBlank()) return "A(z) ${team.name.ifBlank { "${teamIndex + 1}. csapat" }} osztálya hiányzik."
+            if (team.group.isBlank()) {
+                return "A(z) ${team.name.ifBlank {
+                    "${teamIndex + 1}. csapat"
+                }} csoportja hiányzik."
+            }
             if (team.students.isEmpty()) return "A(z) ${team.name} csapatban nincs tanuló."
             team.students.forEachIndexed { studentIndex, student ->
                 if (student.name.isBlank()) {

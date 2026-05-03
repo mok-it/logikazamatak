@@ -1,33 +1,12 @@
 package mok.it.tortura.feature
 
 import NavigateBackIcon
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -44,6 +23,9 @@ fun TeamCompositionScreen(
     onImportFromText: () -> Unit = {},
     onReadClipboard: () -> Unit = {},
     onImportFromFile: () -> Unit = {},
+    onBatkabankYearSelected: (Int?) -> Unit = {},
+    onBatkabankCampSelected: (String?) -> Unit = {},
+    onImportFromBatkabank: (CampSearchResultDto, CampSearchAssignmentDto) -> Unit = { _, _ -> },
     onAddTeam: () -> Unit = {},
     onRemoveTeam: (Int) -> Unit = {},
     onTeamNameChange: (Int, String) -> Unit = { _, _ -> },
@@ -122,6 +104,9 @@ fun TeamCompositionScreen(
                 onImportFromText = onImportFromText,
                 onReadClipboard = onReadClipboard,
                 onImportFromFile = onImportFromFile,
+                onBatkabankYearSelected = onBatkabankYearSelected,
+                onBatkabankCampSelected = onBatkabankCampSelected,
+                onImportFromBatkabank = onImportFromBatkabank,
             )
 
             HorizontalDivider()
@@ -142,7 +127,10 @@ fun TeamCompositionScreen(
                 }
 
                 if (uiState.teams.isEmpty()) {
-                    Text("Még nincs csapat a vázlatban.", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "Még nincs csapat a vázlatban.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
 
                 uiState.teams
@@ -215,6 +203,9 @@ private fun ImportSection(
     onImportFromText: () -> Unit,
     onReadClipboard: () -> Unit,
     onImportFromFile: () -> Unit,
+    onBatkabankYearSelected: (Int?) -> Unit,
+    onBatkabankCampSelected: (String?) -> Unit,
+    onImportFromBatkabank: (CampSearchResultDto, CampSearchAssignmentDto) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Import", style = MaterialTheme.typography.titleMedium)
@@ -253,10 +244,90 @@ private fun ImportSection(
             modifier = Modifier.fillMaxWidth(),
             minLines = 6,
         )
-        Text(uiState.batkabankMessage, style = MaterialTheme.typography.bodySmall)
+        HorizontalDivider()
+        Text("Batkabank import", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Válassz évet és tábort, majd importáld a kívánt feladat csapatbeosztását.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            DropdownField(
+                label = "Év",
+                value = uiState.batkabankSelectedYear?.toString().orEmpty(),
+                placeholder = "Válassz évet",
+                options = uiState.batkabankAvailableYears.map {
+                    DropdownOption(
+                        it.toString(),
+                        it.toString(),
+                    )
+                },
+                enabled =
+                    !uiState.isLoading && !uiState.isSaving &&
+                        uiState.batkabankAvailableYears.isNotEmpty(),
+                onSelected = { option -> onBatkabankYearSelected(option?.id?.toIntOrNull()) },
+                modifier = Modifier.weight(1f),
+            )
+            DropdownField(
+                label = "Tábor",
+                value = uiState.batkabankAvailableCamps
+                    .firstOrNull { it.id == uiState.batkabankSelectedCampId }
+                    ?.name
+                    .orEmpty(),
+                placeholder = if (uiState.batkabankSelectedYear == null) {
+                    "Előbb válassz évet"
+                } else {
+                    "Válassz tábort"
+                },
+                options = uiState.batkabankAvailableCamps.map { camp ->
+                    DropdownOption(
+                        id = camp.id,
+                        label = buildString {
+                            append(camp.name)
+                            val dateParts = listOfNotNull(camp.startsAt, camp.endsAt)
+                            if (dateParts.isNotEmpty()) {
+                                append(" (")
+                                append(dateParts.joinToString(" - "))
+                                append(")")
+                            }
+                        },
+                    )
+                },
+                enabled = !uiState.isLoading &&
+                    !uiState.isSaving &&
+                    uiState.batkabankSelectedYear != null &&
+                    uiState.batkabankAvailableCamps.isNotEmpty(),
+                onSelected = { option -> onBatkabankCampSelected(option?.id) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+        uiState.batkabankAvailableCamps
+            .firstOrNull { it.id == uiState.batkabankSelectedCampId }
+            ?.let { camp ->
+                BatkabankCampCard(
+                    camp = camp,
+                    onImportFromBatkabank = onImportFromBatkabank,
+                    isBusy = uiState.isLoading || uiState.isSaving,
+                )
+            }
+        if (
+            uiState.batkabankSelectedYear != null &&
+            uiState.batkabankAvailableCamps.isEmpty() &&
+            !uiState.isLoading
+        ) {
+            Text(
+                "Ebben az évben nincs importálható Batkabank tábor.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
         uiState.importPreview?.let { preview ->
             Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(
@@ -264,17 +335,131 @@ private fun ImportSection(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text("Import előnézet", style = MaterialTheme.typography.titleSmall)
-                    Text("${preview.sourceLabel}: ${preview.teamCount} csapat, ${preview.studentCount} tanuló")
+                    Text(
+                        "${preview.sourceLabel}: ${preview.teamCount} csapat, ${preview.studentCount} tanuló",
+                    )
                     if (preview.categories.isNotEmpty()) {
                         Text(
-                            "Kategóriák: ${preview.categories.joinToString { "${it.klass}/${it.group}" }}",
+                            "Kategóriák: ${
+                                preview.categories.joinToString {
+                                    "${it.klass}/${it.group}"
+                                }
+                            }",
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
                     if (preview.rowErrors.isNotEmpty()) {
                         Text("Soros hibák:", style = MaterialTheme.typography.labelLarge)
                         preview.rowErrors.take(6).forEach { error ->
-                            Text("Sor ${error.rowNumber}: ${error.message}", style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                "Sor ${error.rowNumber}: ${error.message}",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private data class DropdownOption(
+    val id: String,
+    val label: String,
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DropdownField(
+    label: String,
+    value: String,
+    placeholder: String,
+    options: List<DropdownOption>,
+    enabled: Boolean,
+    onSelected: (DropdownOption?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { if (enabled) expanded = !expanded },
+        modifier = modifier,
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            placeholder = { Text(placeholder) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            enabled = enabled,
+            modifier = Modifier
+                .menuAnchor(
+                    type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                    enabled = enabled,
+                )
+                .fillMaxWidth(),
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.label) },
+                    onClick = {
+                        expanded = false
+                        onSelected(option)
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BatkabankCampCard(
+    camp: CampSearchResultDto,
+    onImportFromBatkabank: (CampSearchResultDto, CampSearchAssignmentDto) -> Unit,
+    isBusy: Boolean,
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(camp.name, style = MaterialTheme.typography.titleSmall)
+            val dateParts = listOfNotNull(camp.startsAt, camp.endsAt)
+            if (dateParts.isNotEmpty()) {
+                Text(dateParts.joinToString(" - "), style = MaterialTheme.typography.bodySmall)
+            }
+            Text("Tábor azonosító: ${camp.id}", style = MaterialTheme.typography.bodySmall)
+            if (camp.assignments.isEmpty()) {
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        "Nincs importálható feladat a táborban.",
+                        modifier = Modifier.padding(12.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            } else {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    camp.assignments.forEach { assignment ->
+                        OutlinedButton(
+                            onClick = { onImportFromBatkabank(camp, assignment) },
+                            enabled = !isBusy,
+                        ) {
+                            Text("${assignment.name} (${assignment.groupCount})")
                         }
                     }
                 }
