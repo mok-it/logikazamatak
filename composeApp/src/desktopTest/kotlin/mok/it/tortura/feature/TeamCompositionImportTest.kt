@@ -14,10 +14,10 @@ class TeamCompositionImportTest {
             ImportedRosterPayload(
                 sourceLabel = "test.tsv",
                 content = """
-                    name	group	klass	team
-                    Anna	A	7	Red
-                    Bela	A	7	Red
-                    Csenge	B	8	Blue
+                    name	group	team
+                    Anna	A	Red
+                    Bela	A	Red
+                    Csenge	B	Blue
                 """.trimIndent(),
                 format = TeamCompositionImportFormat.DELIMITED_TEXT,
             ),
@@ -35,8 +35,8 @@ class TeamCompositionImportTest {
             ImportedRosterPayload(
                 sourceLabel = "test.xlsx",
                 content = """
-                    name	group	klass	team
-                    Dora	C	9	Green
+                    name	group	team
+                    Dora	C	Green
                 """.trimIndent(),
                 format = TeamCompositionImportFormat.XLSX,
             ),
@@ -65,7 +65,6 @@ class TeamCompositionImportTest {
         assertEquals(1, result.draft.teams.size)
         assertEquals("101", result.draft.teams.single().name)
         assertEquals("A", result.draft.teams.single().group)
-        assertEquals("", result.draft.teams.single().klass)
         assertEquals(2, result.draft.teams.single().students.size)
         assertTrue(result.preview.rowErrors.single().message.contains("nincs csapatba sorolva"))
     }

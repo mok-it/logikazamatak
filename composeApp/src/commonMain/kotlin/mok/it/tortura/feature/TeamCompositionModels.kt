@@ -14,7 +14,6 @@ data class TeamDraft(
     val id: Long? = null,
     val name: String = "",
     val group: String = "",
-    val klass: String = "",
     val students: List<StudentDraft> = emptyList(),
 )
 
@@ -30,7 +29,6 @@ data class TeamCompositionDraft(
 
 data class TeamCategory(
     val group: String,
-    val klass: String,
 )
 
 data class TeamCompositionRowError(
@@ -100,7 +98,6 @@ private fun Team.toDraft(): TeamDraft {
         id = id,
         name = name.orEmpty(),
         group = firstStudent?.group.orEmpty(),
-        klass = firstStudent?.klass.orEmpty(),
         students = students.map { student ->
             StudentDraft(
                 id = student.id,
@@ -115,6 +112,5 @@ fun TeamDraft.toStudents(): List<Student> = students.map { student ->
         id = student.id,
         name = student.name.trim(),
         group = group.trim(),
-        klass = klass.trim(),
     )
 }
