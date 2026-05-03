@@ -201,7 +201,8 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             val teamCompositionViewModel = viewModel(key = "team-composition-$selectedGameId") {
                 TeamCompositionViewModel(activeGameId = selectedGameId)
             }
-            val teamCompositionUiState = teamCompositionViewModel.uiState.collectAsStateWithLifecycle()
+            val teamCompositionUiState =
+                teamCompositionViewModel.uiState.collectAsStateWithLifecycle()
 
             TeamCompositionScreen(
                 activeGameName = selectedGame.name ?: "#$selectedGameId",
@@ -219,7 +220,6 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onRemoveTeam = teamCompositionViewModel::removeTeam,
                 onTeamNameChange = teamCompositionViewModel::updateTeamName,
                 onTeamGroupChange = teamCompositionViewModel::updateTeamGroup,
-                onTeamKlassChange = teamCompositionViewModel::updateTeamKlass,
                 onAddStudent = teamCompositionViewModel::addStudent,
                 onRemoveStudent = teamCompositionViewModel::removeStudent,
                 onStudentNameChange = teamCompositionViewModel::updateStudentName,
@@ -254,7 +254,13 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 uiState = healerTeamSelectionUiState.value,
                 onLoad = healerTeamSelectionViewModel::loadTeams,
                 onSelectTeam = { team ->
-                    team.id?.let { navController.navigate(Screen.HealerTasks(teamId = it)) }
+                    team.id?.let {
+                        navController.navigate(
+                            Screen.HealerTasks(
+                                teamId = it,
+                            ),
+                        )
+                    }
                 },
                 onClearMessages = healerTeamSelectionViewModel::clearMessages,
                 onBack = { navController.popBackStack() },

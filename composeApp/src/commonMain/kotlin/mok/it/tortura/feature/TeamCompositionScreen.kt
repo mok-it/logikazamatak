@@ -30,7 +30,6 @@ fun TeamCompositionScreen(
     onRemoveTeam: (Int) -> Unit = {},
     onTeamNameChange: (Int, String) -> Unit = { _, _ -> },
     onTeamGroupChange: (Int, String) -> Unit = { _, _ -> },
-    onTeamKlassChange: (Int, String) -> Unit = { _, _ -> },
     onAddStudent: (Int) -> Unit = {},
     onRemoveStudent: (Int, Int) -> Unit = { _, _ -> },
     onStudentNameChange: (Int, Int, String) -> Unit = { _, _, _ -> },
@@ -135,16 +134,14 @@ fun TeamCompositionScreen(
 
                 uiState.teams
                     .withIndex()
-                    .groupBy { it.value.group.trim() to it.value.klass.trim() }
+                    .groupBy { it.value.group.trim() }
                     .forEach { (category, teams) ->
                         CategorySection(
-                            group = category.first,
-                            klass = category.second,
+                            group = category,
                             teams = teams,
                             onRemoveTeam = onRemoveTeam,
                             onTeamNameChange = onTeamNameChange,
                             onTeamGroupChange = onTeamGroupChange,
-                            onTeamKlassChange = onTeamKlassChange,
                             onAddStudent = onAddStudent,
                             onRemoveStudent = onRemoveStudent,
                             onStudentNameChange = onStudentNameChange,
@@ -244,8 +241,19 @@ private fun ImportSection(
             modifier = Modifier.fillMaxWidth(),
             minLines = 6,
         )
-        HorizontalDivider()
-        Text("Batkabank import", style = MaterialTheme.typography.titleSmall)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Batkabank import", style = MaterialTheme.typography.titleSmall)
+            if (uiState.isBatkabankLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                )
+            }
+        }
         Text(
             "Válassz évet és tábort, majd importáld a kívánt feladat csapatbeosztását.",
             style = MaterialTheme.typography.bodySmall,
@@ -266,7 +274,7 @@ private fun ImportSection(
                     )
                 },
                 enabled =
-                    !uiState.isLoading && !uiState.isSaving &&
+                    !uiState.isLoading && !uiState.isSaving && !uiState.isBatkabankLoading &&
                         uiState.batkabankAvailableYears.isNotEmpty(),
                 onSelected = { option -> onBatkabankYearSelected(option?.id?.toIntOrNull()) },
                 modifier = Modifier.weight(1f),
@@ -298,6 +306,7 @@ private fun ImportSection(
                 },
                 enabled = !uiState.isLoading &&
                     !uiState.isSaving &&
+                    !uiState.isBatkabankLoading &&
                     uiState.batkabankSelectedYear != null &&
                     uiState.batkabankAvailableCamps.isNotEmpty(),
                 onSelected = { option -> onBatkabankCampSelected(option?.id) },
@@ -310,13 +319,13 @@ private fun ImportSection(
                 BatkabankCampCard(
                     camp = camp,
                     onImportFromBatkabank = onImportFromBatkabank,
-                    isBusy = uiState.isLoading || uiState.isSaving,
+                    isBusy = uiState.isLoading || uiState.isSaving || uiState.isBatkabankLoading,
                 )
             }
         if (
             uiState.batkabankSelectedYear != null &&
             uiState.batkabankAvailableCamps.isEmpty() &&
-            !uiState.isLoading
+            !uiState.isLoading && !uiState.isBatkabankLoading
         ) {
             Text(
                 "Ebben az évben nincs importálható Batkabank tábor.",
@@ -342,7 +351,7 @@ private fun ImportSection(
                         Text(
                             "Kategóriák: ${
                                 preview.categories.joinToString {
-                                    "${it.klass}/${it.group}"
+                                    it.group
                                 }
                             }",
                             style = MaterialTheme.typography.bodyMedium,
@@ -471,12 +480,10 @@ private fun BatkabankCampCard(
 @Composable
 private fun CategorySection(
     group: String,
-    klass: String,
     teams: List<IndexedValue<TeamDraft>>,
     onRemoveTeam: (Int) -> Unit,
     onTeamNameChange: (Int, String) -> Unit,
     onTeamGroupChange: (Int, String) -> Unit,
-    onTeamKlassChange: (Int, String) -> Unit,
     onAddStudent: (Int) -> Unit,
     onRemoveStudent: (Int, Int) -> Unit,
     onStudentNameChange: (Int, Int, String) -> Unit,
@@ -484,7 +491,7 @@ private fun CategorySection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            "Kategória: ${klass.ifBlank { "?" }} / ${group.ifBlank { "?" }}",
+            "Kategória: ${group.ifBlank { "?" }}",
             style = MaterialTheme.typography.titleSmall,
         )
         teams.forEach { indexedTeam ->
@@ -494,7 +501,6 @@ private fun CategorySection(
                 onRemoveTeam = onRemoveTeam,
                 onTeamNameChange = onTeamNameChange,
                 onTeamGroupChange = onTeamGroupChange,
-                onTeamKlassChange = onTeamKlassChange,
                 onAddStudent = onAddStudent,
                 onRemoveStudent = onRemoveStudent,
                 onStudentNameChange = onStudentNameChange,
@@ -511,7 +517,6 @@ private fun TeamEditorCard(
     onRemoveTeam: (Int) -> Unit,
     onTeamNameChange: (Int, String) -> Unit,
     onTeamGroupChange: (Int, String) -> Unit,
-    onTeamKlassChange: (Int, String) -> Unit,
     onAddStudent: (Int) -> Unit,
     onRemoveStudent: (Int, Int) -> Unit,
     onStudentNameChange: (Int, Int, String) -> Unit,
@@ -553,13 +558,6 @@ private fun TeamEditorCard(
                     value = team.group,
                     onValueChange = { onTeamGroupChange(teamIndex, it) },
                     label = { Text("Csoport") },
-                    enabled = !isBusy,
-                    modifier = Modifier.weight(1f),
-                )
-                OutlinedTextField(
-                    value = team.klass,
-                    onValueChange = { onTeamKlassChange(teamIndex, it) },
-                    label = { Text("Osztály") },
                     enabled = !isBusy,
                     modifier = Modifier.weight(1f),
                 )
