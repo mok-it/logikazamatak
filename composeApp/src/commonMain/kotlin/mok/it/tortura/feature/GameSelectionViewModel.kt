@@ -9,18 +9,7 @@ import kotlinx.coroutines.launch
 import mok.it.tortura.data.supabase.mapper.toInsertDto
 import mok.it.tortura.data.supabase.mapper.toModel
 import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
-import mok.it.tortura.model.Game
-import mok.it.tortura.model.Location
-import mok.it.tortura.model.HealingTask
-import mok.it.tortura.model.Item
-import mok.it.tortura.model.ItemEffect
-import mok.it.tortura.model.Location
-import mok.it.tortura.model.Task
-
-data class PendingGameJoin(
-    val game: Game,
-    val locations: List<Location>,
-)
+import mok.it.tortura.model.*
 
 data class CreateLocationDraft(
     val localId: Long,
@@ -72,21 +61,26 @@ data class GameSelectionUiState(
     val errorMessage: String? = null,
 )
 
-fun GameSelectionUiState.createGameValidationError(): String? {
-    return when {
-        gameName.trim().isEmpty() -> "Adj nevet a játéknak"
-        draftLocations.any { it.name.trim().isEmpty() } -> "Minden helyszínnek legyen neve"
-        draftTasks.any { it.text.trim().isEmpty() || it.solution.trim().isEmpty() } ->
-            "Minden feladatnak legyen szövege és megoldása"
-        draftHealingTasks.any { it.text.trim().isEmpty() || it.solution.trim().isEmpty() } ->
-            "Minden gyógyító feladatnak legyen szövege és megoldása"
-        draftShopItems.any { it.name.trim().isEmpty() } -> "Minden bolti tárgynak legyen neve"
-        draftShopItems.any { it.price.trim().toIntOrNull()?.let { price -> price >= 0 } != true } ->
-            "A bolti tárgy ára legyen nem negatív egész szám"
-        draftShopItems.any { it.maxPerTeam.trim().toIntOrNull()?.let { max -> max > 0 } != true } ->
-            "A csapatonkénti darabszám legyen pozitív egész szám"
-        else -> null
-    }
+fun GameSelectionUiState.createGameValidationError(): String? = when {
+    gameName.trim().isEmpty() -> "Adj nevet a játéknak"
+
+    draftLocations.any { it.name.trim().isEmpty() } -> "Minden helyszínnek legyen neve"
+
+    draftTasks.any { it.text.trim().isEmpty() || it.solution.trim().isEmpty() } ->
+        "Minden feladatnak legyen szövege és megoldása"
+
+    draftHealingTasks.any { it.text.trim().isEmpty() || it.solution.trim().isEmpty() } ->
+        "Minden gyógyító feladatnak legyen szövege és megoldása"
+
+    draftShopItems.any { it.name.trim().isEmpty() } -> "Minden bolti tárgynak legyen neve"
+
+    draftShopItems.any { it.price.trim().toIntOrNull()?.let { price -> price >= 0 } != true } ->
+        "A bolti tárgy ára legyen nem negatív egész szám"
+
+    draftShopItems.any { it.maxPerTeam.trim().toIntOrNull()?.let { max -> max > 0 } != true } ->
+        "A csapatonkénti darabszám legyen pozitív egész szám"
+
+    else -> null
 }
 
 interface GameSelectionDataSource {
@@ -100,13 +94,12 @@ class SupabaseGameSelectionDataSource(
     private val repositories: TorturaSupabaseRepositories = TorturaSupabaseRepositories(),
 ) : GameSelectionDataSource {
 
-    override suspend fun getGames(): List<Game> =
-        repositories.games.getAll().map { it.toModel() }
+    override suspend fun getGames(): List<Game> = repositories.games.getAll().map { it.toModel() }
 
     override suspend fun getLocations(gameId: Long): List<Location> =
         repositories.locations.getByGameId(gameId).map { it.toModel() }
-    override suspend fun getItemEffects(): List<ItemEffect> =
-        repositories.itemEffects.getAll().map { it.toModel() }
+
+    override suspend fun getItemEffects(): List<ItemEffect> = repositories.itemEffects.getAll().map { it.toModel() }
 
     override suspend fun createGame(setup: CreateGameSetup): Game {
         val createdGame = repositories.games.create(Game(name = setup.name).toInsertDto()).toModel()
@@ -193,7 +186,10 @@ class GameSelectionViewModel(
         }
     }
 
-    fun updateLocationName(localId: Long, value: String) {
+    fun updateLocationName(
+        localId: Long,
+        value: String,
+    ) {
         _uiState.update {
             it.copy(
                 draftLocations = it.draftLocations.map { draft ->
@@ -229,15 +225,24 @@ class GameSelectionViewModel(
         }
     }
 
-    fun updateTaskText(localId: Long, value: String) {
+    fun updateTaskText(
+        localId: Long,
+        value: String,
+    ) {
         updateTask(localId) { it.copy(text = value) }
     }
 
-    fun updateTaskSolution(localId: Long, value: String) {
+    fun updateTaskSolution(
+        localId: Long,
+        value: String,
+    ) {
         updateTask(localId) { it.copy(solution = value) }
     }
 
-    fun updateTaskMiniBoss(localId: Long, value: Boolean) {
+    fun updateTaskMiniBoss(
+        localId: Long,
+        value: Boolean,
+    ) {
         updateTask(localId) { it.copy(isMiniBoss = value) }
     }
 
@@ -261,11 +266,17 @@ class GameSelectionViewModel(
         }
     }
 
-    fun updateHealingTaskText(localId: Long, value: String) {
+    fun updateHealingTaskText(
+        localId: Long,
+        value: String,
+    ) {
         updateHealingTask(localId) { it.copy(text = value) }
     }
 
-    fun updateHealingTaskSolution(localId: Long, value: String) {
+    fun updateHealingTaskSolution(
+        localId: Long,
+        value: String,
+    ) {
         updateHealingTask(localId) { it.copy(solution = value) }
     }
 
@@ -289,19 +300,31 @@ class GameSelectionViewModel(
         }
     }
 
-    fun updateShopItemName(localId: Long, value: String) {
+    fun updateShopItemName(
+        localId: Long,
+        value: String,
+    ) {
         updateShopItem(localId) { it.copy(name = value) }
     }
 
-    fun updateShopItemPrice(localId: Long, value: String) {
+    fun updateShopItemPrice(
+        localId: Long,
+        value: String,
+    ) {
         updateShopItem(localId) { it.copy(price = value.filter(Char::isDigit)) }
     }
 
-    fun updateShopItemMaxPerTeam(localId: Long, value: String) {
+    fun updateShopItemMaxPerTeam(
+        localId: Long,
+        value: String,
+    ) {
         updateShopItem(localId) { it.copy(maxPerTeam = value.filter(Char::isDigit)) }
     }
 
-    fun updateShopItemEffectId(localId: Long, value: String) {
+    fun updateShopItemEffectId(
+        localId: Long,
+        value: String,
+    ) {
         updateShopItem(localId) { it.copy(itemEffectId = value) }
     }
 
@@ -412,7 +435,10 @@ class GameSelectionViewModel(
         }
     }
 
-    private fun updateTask(localId: Long, transform: (CreateTaskDraft) -> CreateTaskDraft) {
+    private fun updateTask(
+        localId: Long,
+        transform: (CreateTaskDraft) -> CreateTaskDraft,
+    ) {
         _uiState.update {
             it.copy(
                 draftTasks = it.draftTasks.map { draft ->
