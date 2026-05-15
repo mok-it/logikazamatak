@@ -6,16 +6,16 @@ import io.github.jan.supabase.postgrest.Postgrest
 object SupabaseClient {
 
     val client by lazy {
-        check(SupabaseConfig.URL.isNotBlank()) {
-            "Supabase URL is blank for environment '${SupabaseConfig.ENVIRONMENT}'."
+        check(AppConfig.SUPABASE_URL.isNotBlank()) {
+            "Supabase URL is blank for environment '${AppConfig.SUPABASE_ENVIRONMENT}'."
         }
-        check(SupabaseConfig.KEY.isNotBlank()) {
-            "Supabase key is blank for environment '${SupabaseConfig.ENVIRONMENT}'."
+        check(AppConfig.SUPABASE_KEY.isNotBlank()) {
+            "Supabase key is blank for environment '${AppConfig.SUPABASE_ENVIRONMENT}'."
         }
 
         createSupabaseClient(
-            supabaseUrl = SupabaseConfig.URL,
-            supabaseKey = SupabaseConfig.KEY,
+            supabaseUrl = AppConfig.SUPABASE_URL,
+            supabaseKey = AppConfig.SUPABASE_KEY,
         ) {
             install(Postgrest)
         }
