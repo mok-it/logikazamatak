@@ -1,85 +1,93 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import java.util.Properties
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-val generatedSupabaseConfigDir =
-    layout.buildDirectory.dir("generated/supabaseConfig/commonMain/kotlin")
+fun loadDotEnv(fileName: String): Map<String, String> {
+    val file = rootProject.file(fileName)
+    if (!file.exists()) return emptyMap()
 
-val generateSupabaseConfig by tasks.registering {
-    val supabaseEnvironment = providers.gradleProperty("supabase.env")
-        .orElse(providers.environmentVariable("SUPABASE_ENV"))
-        .orElse("local")
-    val localUrl = providers.gradleProperty("supabase.local.url")
-        .orElse(providers.environmentVariable("SUPABASE_LOCAL_URL"))
-        .orElse("http://127.0.0.1:54321")
-    val localKey = providers.gradleProperty("supabase.local.key")
-        .orElse(providers.environmentVariable("SUPABASE_LOCAL_KEY"))
-        .orElse(
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0",
-        )
-    val prodUrl = providers.gradleProperty("supabase.prod.url")
-        .orElse(providers.environmentVariable("SUPABASE_PROD_URL"))
-        .orElse("https://nnhvnqpczerqrofxkbki.supabase.co")
-    val prodKey = providers.gradleProperty("supabase.prod.key")
-        .orElse(providers.environmentVariable("SUPABASE_PROD_KEY"))
-        .orElse("sb_publishable_NyBL91k2rrDYgnpKWvYhGA_cXhLoVAq")
-
-    inputs.property("supabaseEnvironment", supabaseEnvironment)
-    inputs.property("localUrl", localUrl)
-    inputs.property("localKey", localKey)
-    inputs.property("prodUrl", prodUrl)
-    inputs.property("prodKey", prodKey)
-    outputs.dir(generatedSupabaseConfigDir)
-
-    doLast {
-        val environment = supabaseEnvironment.get().lowercase()
-        val config = when (environment) {
-            "local", "dev", "development" -> Triple("local", localUrl.get(), localKey.get())
-            "prod", "production" -> Triple("prod", prodUrl.get(), prodKey.get())
-            else -> error("Unknown Supabase environment '$environment'. Use local or prod.")
-        }
-
-        fun String.toKotlinStringLiteral() = buildString {
-            append('"')
-            this@toKotlinStringLiteral.forEach { char ->
-                when (char) {
-                    '\\' -> append("\\\\")
-                    '"' -> append("\\\"")
-                    '\n' -> append("\\n")
-                    '\r' -> append("\\r")
-                    '\t' -> append("\\t")
-                    else -> append(char)
-                }
-            }
-            append('"')
-        }
-
-        val outputFile = generatedSupabaseConfigDir.get()
-            .file("mok/it/tortura/SupabaseConfig.kt")
-            .asFile
-        outputFile.parentFile.mkdirs()
-        outputFile.writeText(
-            """
-            package mok.it.tortura
-
-            internal object SupabaseConfig {
-                const val ENVIRONMENT = ${config.first.toKotlinStringLiteral()}
-                const val URL = ${config.second.toKotlinStringLiteral()}
-                const val KEY = ${config.third.toKotlinStringLiteral()}
-            }
-            """.trimIndent() + "\n",
-        )
-    }
+    val properties = Properties()
+    file.inputStream().use(properties::load)
+    return properties.stringPropertyNames().associateWith { key -> properties.getProperty(key) }
 }
+
+fun resolveSetting(
+    gradlePropertyName: String,
+    environmentVariableName: String,
+    fallback: String? = null,
+): String? = providers.gradleProperty(gradlePropertyName).orNull
+    ?: providers.environmentVariable(environmentVariableName).orNull
+    ?: fallback
+
+fun requireSetting(
+    gradlePropertyName: String,
+    environmentVariableName: String,
+    fallback: String? = null,
+): String = resolveSetting(
+    gradlePropertyName = gradlePropertyName,
+    environmentVariableName = environmentVariableName,
+    fallback = fallback,
+) ?: error(
+    "Missing required build setting '$environmentVariableName' (or Gradle property '$gradlePropertyName'). " +
+        "Set it in your environment, pass -P$gradlePropertyName=..., or put it in the appropriate .env file.",
+)
+
+val dotEnvLocal = loadDotEnv(".env.local")
+val dotEnvProduction = loadDotEnv(".env.production")
+
+val supabaseEnvironment = requireSetting(
+    gradlePropertyName = "supabase.env",
+    environmentVariableName = "SUPABASE_ENV",
+    fallback = dotEnvLocal["SUPABASE_ENV"] ?: dotEnvProduction["SUPABASE_ENV"],
+)
+
+val activeDotEnv = when (supabaseEnvironment.lowercase()) {
+    "local", "dev", "development" -> dotEnvLocal
+    "prod", "production" -> dotEnvProduction
+    else -> error("Unknown Supabase environment '$supabaseEnvironment'. Use local or prod.")
+}
+
+val supabaseUrl = requireSetting(
+    gradlePropertyName = "supabase.url",
+    environmentVariableName = "SUPABASE_URL",
+    fallback = activeDotEnv["SUPABASE_URL"],
+)
+
+val supabaseKey = requireSetting(
+    gradlePropertyName = "supabase.key",
+    environmentVariableName = "SUPABASE_KEY",
+    fallback = activeDotEnv["SUPABASE_KEY"],
+)
+
+val batkabankApiBaseUrl = requireSetting(
+    gradlePropertyName = "batkabank.apiBaseUrl",
+    environmentVariableName = "BATKABANK_API_BASE_URL",
+    fallback = activeDotEnv["BATKABANK_API_BASE_URL"],
+)
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.buildkonfig)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+}
+
+buildkonfig {
+    packageName = "mok.it.tortura"
+    objectName = "AppConfig"
+
+    defaultConfigs {
+        buildConfigField(STRING, "SUPABASE_ENVIRONMENT", supabaseEnvironment)
+        buildConfigField(STRING, "SUPABASE_URL", supabaseUrl)
+        buildConfigField(STRING, "SUPABASE_KEY", supabaseKey)
+        buildConfigField(STRING, "BATKABANK_API_BASE_URL", batkabankApiBaseUrl)
+    }
 }
 
 kotlin {
@@ -108,9 +116,6 @@ kotlin {
         val jsMain by getting
         val wasmJsMain by getting
 
-        commonMain {
-            kotlin.srcDir(generatedSupabaseConfigDir)
-        }
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
@@ -131,6 +136,7 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
 
             implementation(libs.kotlinx.datetime)
+            implementation(libs.ktor.client.core)
 
             implementation(project.dependencies.platform(libs.supabase.bom))
             implementation(libs.supabase.auth)
@@ -186,10 +192,6 @@ dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
-    dependsOn(generateSupabaseConfig)
-}
-
 compose.desktop {
     application {
         mainClass = "mok.it.tortura.MainKt"
@@ -200,7 +202,7 @@ compose.desktop {
             packageVersion = "1.0.0"
 
             linux {
-                modules("jdk.security.auth") // needed to access file system
+                modules("jdk.security.auth")
                 iconFile.set(project.file("src/desktopMain/resources/icon.png"))
             }
 
