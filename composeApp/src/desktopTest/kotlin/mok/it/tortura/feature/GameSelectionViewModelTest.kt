@@ -6,14 +6,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.*
 import mok.it.tortura.model.Game
-import mok.it.tortura.model.Location
 import mok.it.tortura.model.ItemEffect
+import mok.it.tortura.model.Location
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GameSelectionViewModelTest {
@@ -234,10 +230,11 @@ private class FakeGameSelectionDataSource(
     override suspend fun getItemEffects(): List<ItemEffect> {
         loadError?.let { throw it }
         return itemEffects
+    }
+
     override suspend fun getLocations(gameId: Long): List<Location> {
         loadError?.let { throw it }
         return locationsByGameId[gameId].orEmpty()
-    }
     }
 
     override suspend fun createGame(setup: CreateGameSetup): Game {
@@ -248,9 +245,7 @@ private class FakeGameSelectionDataSource(
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-private fun runGameSelectionViewModelTest(
-    block: suspend kotlinx.coroutines.test.TestScope.() -> Unit,
-) = runTest {
+private fun runGameSelectionViewModelTest(block: suspend kotlinx.coroutines.test.TestScope.() -> Unit) = runTest {
     Dispatchers.setMain(StandardTestDispatcher(testScheduler))
     try {
         block()
