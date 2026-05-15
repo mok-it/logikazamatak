@@ -23,7 +23,8 @@ fun TeamCompositionScreen(
     onImportFromText: () -> Unit = {},
     onReadClipboard: () -> Unit = {},
     onImportFromFile: () -> Unit = {},
-    onBatkabankYearSelected: (Int?) -> Unit = {},
+    onBatkabankYearInputChange: (String) -> Unit = {},
+    onRefreshBatkabankCamps: () -> Unit = {},
     onBatkabankCampSelected: (String?) -> Unit = {},
     onImportFromBatkabank: (CampSearchResultDto, CampSearchAssignmentDto) -> Unit = { _, _ -> },
     onAddTeam: () -> Unit = {},
@@ -103,7 +104,8 @@ fun TeamCompositionScreen(
                 onImportFromText = onImportFromText,
                 onReadClipboard = onReadClipboard,
                 onImportFromFile = onImportFromFile,
-                onBatkabankYearSelected = onBatkabankYearSelected,
+                onBatkabankYearInputChange = onBatkabankYearInputChange,
+                onRefreshBatkabankCamps = onRefreshBatkabankCamps,
                 onBatkabankCampSelected = onBatkabankCampSelected,
                 onImportFromBatkabank = onImportFromBatkabank,
             )
@@ -200,7 +202,8 @@ private fun ImportSection(
     onImportFromText: () -> Unit,
     onReadClipboard: () -> Unit,
     onImportFromFile: () -> Unit,
-    onBatkabankYearSelected: (Int?) -> Unit,
+    onBatkabankYearInputChange: (String) -> Unit,
+    onRefreshBatkabankCamps: () -> Unit,
     onBatkabankCampSelected: (String?) -> Unit,
     onImportFromBatkabank: (CampSearchResultDto, CampSearchAssignmentDto) -> Unit,
 ) {
@@ -255,7 +258,7 @@ private fun ImportSection(
             }
         }
         Text(
-            "Válassz évet és tábort, majd importáld a kívánt feladat csapatbeosztását.",
+            "A táborok már tartalmazzák a feladatlehetőségeket. Az év mező üresen hagyva az API alapértelmezett évét használja.",
             style = MaterialTheme.typography.bodySmall,
         )
         Row(
@@ -263,33 +266,30 @@ private fun ImportSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Top,
         ) {
-            DropdownField(
-                label = "Év",
-                value = uiState.batkabankSelectedYear?.toString().orEmpty(),
-                placeholder = "Válassz évet",
-                options = uiState.batkabankAvailableYears.map {
-                    DropdownOption(
-                        it.toString(),
-                        it.toString(),
-                    )
-                },
-                enabled =
-                    !uiState.isLoading && !uiState.isSaving && !uiState.isBatkabankLoading &&
-                        uiState.batkabankAvailableYears.isNotEmpty(),
-                onSelected = { option -> onBatkabankYearSelected(option?.id?.toIntOrNull()) },
+            OutlinedTextField(
+                value = uiState.batkabankYearInput,
+                onValueChange = onBatkabankYearInputChange,
+                label = { Text("Év (opcionális)") },
+                placeholder = { Text("Pl. 2026") },
+                singleLine = true,
+                enabled = !uiState.isLoading && !uiState.isSaving && !uiState.isBatkabankLoading,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
             )
-            DropdownField(
+            OutlinedButton(
+                onClick = onRefreshBatkabankCamps,
+                enabled = !uiState.isLoading && !uiState.isSaving && !uiState.isBatkabankLoading,
+            ) {
+                Text("Táborok betöltése")
+            }
+        }
+        DropdownField(
                 label = "Tábor",
                 value = uiState.batkabankAvailableCamps
                     .firstOrNull { it.id == uiState.batkabankSelectedCampId }
                     ?.name
                     .orEmpty(),
-                placeholder = if (uiState.batkabankSelectedYear == null) {
-                    "Előbb válassz évet"
-                } else {
-                    "Válassz tábort"
-                },
+                placeholder = "Válassz tábort",
                 options = uiState.batkabankAvailableCamps.map { camp ->
                     DropdownOption(
                         id = camp.id,
@@ -307,12 +307,10 @@ private fun ImportSection(
                 enabled = !uiState.isLoading &&
                     !uiState.isSaving &&
                     !uiState.isBatkabankLoading &&
-                    uiState.batkabankSelectedYear != null &&
                     uiState.batkabankAvailableCamps.isNotEmpty(),
                 onSelected = { option -> onBatkabankCampSelected(option?.id) },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
             )
-        }
         uiState.batkabankAvailableCamps
             .firstOrNull { it.id == uiState.batkabankSelectedCampId }
             ?.let { camp ->
@@ -323,7 +321,7 @@ private fun ImportSection(
                 )
             }
         if (
-            uiState.batkabankSelectedYear != null &&
+            uiState.batkabankYearInput.isNotBlank() &&
             uiState.batkabankAvailableCamps.isEmpty() &&
             !uiState.isLoading && !uiState.isBatkabankLoading
         ) {

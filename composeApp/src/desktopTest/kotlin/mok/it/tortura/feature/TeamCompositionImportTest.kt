@@ -47,16 +47,16 @@ class TeamCompositionImportTest {
     }
 
     @Test
-    fun batkabankRosterImportGroupsStudentsByLectureGroupAndTeam() {
-        val result = BatkabankRosterImportMapper().import(
+    fun batkabankAssignmentImportGroupsStudentsByLectureGroupAndTeam() {
+        val result = BatkabankAssignmentImportMapper().import(
             sourceLabel = "Batkabank",
-            roster = CampRosterDto(
+            assignment = CampAssignmentDto(
                 campId = "camp-1",
                 assignmentId = "assignment-1",
                 students = listOf(
-                    CampRosterStudentDto(name = "Anna", group = "A", teamName = "101"),
-                    CampRosterStudentDto(name = "Bela", group = "A", teamName = "101"),
-                    CampRosterStudentDto(name = "Csenge", group = "B", teamName = null),
+                    CampAssignmentStudentDto(name = "Anna", group = "A", teamName = "101"),
+                    CampAssignmentStudentDto(name = "Bela", group = "A", teamName = "101"),
+                    CampAssignmentStudentDto(name = "Csenge", group = "B", teamName = null),
                 ),
             ),
         )

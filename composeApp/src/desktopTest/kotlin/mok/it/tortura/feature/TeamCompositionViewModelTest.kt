@@ -123,11 +123,7 @@ class TeamCompositionViewModelTest {
         viewModel.load()
         advanceUntilIdle()
 
-        assertEquals(listOf(2026, 2025), viewModel.uiState.value.batkabankAvailableYears)
-
-        viewModel.selectBatkabankYear(2026)
-        advanceUntilIdle()
-
+        assertEquals("2026", viewModel.uiState.value.batkabankYearInput)
         assertEquals(1, viewModel.uiState.value.batkabankAvailableCamps.size)
 
         val camp = viewModel.uiState.value.batkabankAvailableCamps.single()
@@ -175,9 +171,7 @@ private class FakeTeamCompositionDataSource(
 private class FakeBatkabankTeamCompositionSource : BatkabankTeamCompositionSource {
     override val isConfigured: Boolean = true
 
-    override suspend fun getAvailableYears(): Result<List<Int>> = Result.success(listOf(2025, 2026))
-
-    override suspend fun getCamps(year: Int): Result<List<CampSearchResultDto>> = Result.success(
+    override suspend fun getImportableCamps(year: Int?): Result<List<CampSearchResultDto>> = Result.success(
         listOf(
             CampSearchResultDto(
                 id = "camp-1",
@@ -195,15 +189,15 @@ private class FakeBatkabankTeamCompositionSource : BatkabankTeamCompositionSourc
         ),
     )
 
-    override suspend fun getCampRoster(
+    override suspend fun getCampAssignment(
         campId: String,
         assignmentId: String,
-    ): Result<CampRosterDto> = Result.success(
-        CampRosterDto(
+    ): Result<CampAssignmentDto> = Result.success(
+        CampAssignmentDto(
             campId = campId,
             assignmentId = assignmentId,
             students = listOf(
-                CampRosterStudentDto(
+                CampAssignmentStudentDto(
                     name = "Anna",
                     group = "A",
                     teamName = "101",
@@ -216,14 +210,12 @@ private class FakeBatkabankTeamCompositionSource : BatkabankTeamCompositionSourc
 private object DisabledBatkabankTeamCompositionSource : BatkabankTeamCompositionSource {
     override val isConfigured: Boolean = false
 
-    override suspend fun getAvailableYears(): Result<List<Int>> = Result.success(emptyList())
+    override suspend fun getImportableCamps(year: Int?): Result<List<CampSearchResultDto>> = Result.success(emptyList())
 
-    override suspend fun getCamps(year: Int): Result<List<CampSearchResultDto>> = Result.success(emptyList())
-
-    override suspend fun getCampRoster(
+    override suspend fun getCampAssignment(
         campId: String,
         assignmentId: String,
-    ): Result<CampRosterDto> = Result.failure(IllegalStateException("disabled"))
+    ): Result<CampAssignmentDto> = Result.failure(IllegalStateException("disabled"))
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
