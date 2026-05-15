@@ -29,8 +29,7 @@ data class TeamCompositionUiState(
     val clipboardSupported: Boolean = false,
     val fileImportSupported: Boolean = false,
     val batkabankEnabled: Boolean = false,
-    val batkabankAvailableYears: List<Int> = emptyList(),
-    val batkabankSelectedYear: Int? = null,
+    val batkabankYearInput: String = "",
     val batkabankAvailableCamps: List<CampSearchResultDto> = emptyList(),
     val batkabankSelectedCampId: String? = null,
     val isBatkabankLoading: Boolean = false,
@@ -136,7 +135,7 @@ class TeamCompositionViewModel(
         TeamCompositionImportCoordinator(),
     private val batkabankSource: BatkabankTeamCompositionSource =
         FirebaseBatkabankTeamCompositionSource(),
-    private val batkabankImportMapper: BatkabankRosterImportMapper = BatkabankRosterImportMapper(),
+    private val batkabankImportMapper: BatkabankAssignmentImportMapper = BatkabankAssignmentImportMapper(),
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -152,28 +151,20 @@ class TeamCompositionViewModel(
         runAction(loading = true) {
             val snapshot = dataSource.loadTeamComposition(activeGameId)
             val draft = snapshot.toDraft()
-            val availableYears = if (batkabankSource.isConfigured) {
-                batkabankSource.getAvailableYears().getOrElse { throw it }.sortedDescending()
-            } else {
-                emptyList()
-            }
-
             val currentYear = Clock.System.now().toLocalDateTime(currentSystemDefault()).year
-            val selectedYear = if (currentYear in availableYears) currentYear else null
 
             _uiState.update {
                 it.copy(
                     baseTeamCounter = draft.baseTeamCounter?.toString().orEmpty(),
                     teams = draft.teams,
                     persistedSnapshot = snapshot,
-                    batkabankAvailableYears = availableYears,
-                    batkabankSelectedYear = selectedYear,
+                    batkabankYearInput = currentYear.toString(),
                     message = "Csapatbeosztás betöltve",
                 )
             }
 
-            if (selectedYear != null) {
-                selectBatkabankYear(selectedYear)
+            if (batkabankSource.isConfigured) {
+                loadBatkabankCamps(currentYear)
             }
         }
     }
@@ -225,31 +216,41 @@ class TeamCompositionViewModel(
         }
     }
 
-    fun selectBatkabankYear(year: Int?) {
-        if (year == null) {
+    fun onBatkabankYearInputChange(value: String) {
+        _uiState.update {
+            it.copy(
+                batkabankYearInput = value,
+                message = null,
+                errorMessage = null,
+            )
+        }
+    }
+
+    fun refreshBatkabankCamps() {
+        val year = uiState.value.batkabankYearInput.trim().toIntOrNull()
+        if (uiState.value.batkabankYearInput.isNotBlank() && year == null) {
             _uiState.update {
-                it.copy(
-                    batkabankSelectedYear = null,
-                    batkabankAvailableCamps = emptyList(),
-                    batkabankSelectedCampId = null,
-                    message = null,
-                    errorMessage = null,
-                )
+                it.copy(errorMessage = "A Batkabank év mezőben adj meg egy érvényes évet.")
             }
             return
         }
 
+        loadBatkabankCamps(year)
+    }
+
+    private fun loadBatkabankCamps(year: Int?) {
         runAction(batkabankLoading = true) {
-            val camps = batkabankSource.getCamps(year).getOrElse { throw it }
+            val camps = batkabankSource.getImportableCamps(year).getOrElse { throw it }
             _uiState.update {
                 it.copy(
-                    batkabankSelectedYear = year,
                     batkabankAvailableCamps = camps,
                     batkabankSelectedCampId = null,
-                    message = if (camps.isEmpty()) {
-                        "Nincs Batkabank tábor a(z) $year. évben."
+                    message = if (camps.isEmpty() && year != null) {
+                        "Nincs importálható Batkabank tábor a(z) $year. évben."
+                    } else if (camps.isEmpty()) {
+                        "Nincs importálható Batkabank tábor az alapértelmezett évben."
                     } else {
-                        "${camps.size} Batkabank tábor érhető el a(z) $year. évben."
+                        "${camps.size} importálható Batkabank tábor érhető el."
                     },
                 )
             }
@@ -271,7 +272,7 @@ class TeamCompositionViewModel(
         assignment: CampSearchAssignmentDto,
     ) {
         runAction(batkabankLoading = true) {
-            val roster = batkabankSource.getCampRoster(
+            val campAssignment = batkabankSource.getCampAssignment(
                 campId = camp.id,
                 assignmentId = assignment.id,
             ).getOrElse { throw it }
@@ -279,7 +280,7 @@ class TeamCompositionViewModel(
             applyImport(
                 batkabankImportMapper.import(
                     sourceLabel = "Batkabank: ${camp.name} / ${assignment.name}",
-                    roster = roster,
+                    assignment = campAssignment,
                 ),
             )
         }

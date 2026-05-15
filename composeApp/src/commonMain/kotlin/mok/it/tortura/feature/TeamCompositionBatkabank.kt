@@ -3,7 +3,6 @@ package mok.it.tortura.feature
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -31,17 +30,17 @@ data class CampSearchAssignmentDto(
 )
 
 @Serializable
-data class CampRosterStudentDto(
+data class CampAssignmentStudentDto(
     val name: String,
     val group: String,
     val teamName: String? = null,
 )
 
 @Serializable
-data class CampRosterDto(
+data class CampAssignmentDto(
     val campId: String,
     val assignmentId: String,
-    val students: List<CampRosterStudentDto> = emptyList(),
+    val students: List<CampAssignmentStudentDto> = emptyList(),
 )
 
 @Serializable
@@ -81,20 +80,14 @@ private data class CampSearchResponseDto(
     val camps: List<CampSearchResultDto> = emptyList(),
 )
 
-@Serializable
-private data class CampYearsResponseDto(
-    val years: List<Int> = emptyList(),
-)
-
 interface BatkabankTeamCompositionSource {
     val isConfigured: Boolean
 
-    suspend fun getAvailableYears(): Result<List<Int>>
-    suspend fun getCamps(year: Int): Result<List<CampSearchResultDto>>
-    suspend fun getCampRoster(
+    suspend fun getImportableCamps(year: Int? = null): Result<List<CampSearchResultDto>>
+    suspend fun getCampAssignment(
         campId: String,
         assignmentId: String,
-    ): Result<CampRosterDto>
+    ): Result<CampAssignmentDto>
 }
 
 class FirebaseBatkabankTeamCompositionSource(
@@ -109,37 +102,31 @@ class FirebaseBatkabankTeamCompositionSource(
 
     override val isConfigured: Boolean = baseUrl.isNotBlank()
 
-    override suspend fun getAvailableYears(): Result<List<Int>> = runCatching {
+    override suspend fun getImportableCamps(year: Int?): Result<List<CampSearchResultDto>> = runCatching {
         checkConfiguration()
-        val response = client.get(url("getCampYears"))
-        val body = response.body<String>()
-        ensureSuccess(response.status, body)
-        json.decodeFromString<CampYearsResponseDto>(body).years
-    }
-
-    override suspend fun getCamps(year: Int): Result<List<CampSearchResultDto>> = runCatching {
-        checkConfiguration()
-        val response = client.post(url("getCampsByYear")) {
-            contentType(ContentType.Application.Json)
-            setBody(mapOf("year" to year))
+        val response = client.post(url("getImportableCamps")) {
+            if (year != null) {
+                contentType(ContentType.Application.Json)
+                setBody(mapOf("year" to year))
+            }
         }
         val body = response.body<String>()
         ensureSuccess(response.status, body)
         json.decodeFromString<CampSearchResponseDto>(body).camps
     }
 
-    override suspend fun getCampRoster(
+    override suspend fun getCampAssignment(
         campId: String,
         assignmentId: String,
-    ): Result<CampRosterDto> = runCatching {
+    ): Result<CampAssignmentDto> = runCatching {
         checkConfiguration()
-        val response = client.post(url("getCampRoster")) {
+        val response = client.post(url("getCampAssignment")) {
             contentType(ContentType.Application.Json)
             setBody(mapOf("campId" to campId, "assignmentId" to assignmentId))
         }
         val body = response.body<String>()
         ensureSuccess(response.status, body)
-        json.decodeFromString<CampRosterDto>(body)
+        json.decodeFromString<CampAssignmentDto>(body)
     }
 
     private fun checkConfiguration() {
@@ -186,16 +173,16 @@ class FirebaseBatkabankTeamCompositionSource(
     }
 }
 
-class BatkabankRosterImportMapper {
+class BatkabankAssignmentImportMapper {
 
     fun import(
         sourceLabel: String,
-        roster: CampRosterDto,
+        assignment: CampAssignmentDto,
     ): TeamCompositionImportResult {
         val rowErrors = mutableListOf<TeamCompositionRowError>()
         val teamBuckets = linkedMapOf<Pair<String, String>, MutableList<StudentDraft>>()
 
-        roster.students.forEachIndexed { index, student ->
+        assignment.students.forEachIndexed { index, student ->
             val rowNumber = index + 1
             val normalizedName = student.name.trim()
             val normalizedGroup = student.group.trim()
