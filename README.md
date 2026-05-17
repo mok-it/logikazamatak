@@ -147,11 +147,27 @@ The repository includes a GitHub Actions workflow at `.github/workflows/supabase
 It follows the Supabase CLI backup flow and uploads compressed `roles`, `schema`, and `data` dumps into a private
 Supabase Storage bucket under `database/<timestamp>/`.
 
+(The schema and data dumps are scoped to the app's `public` schema so they can be restored cleanly into an existing
+Supabase project without colliding with managed `auth` or `storage` rows.)
+
 The following GitHub repository secrets have been configured:
 
 - `SUPABASE_BACKUP_DB_URL`: remote Postgres connection string used by `supabase db dump`
 - `SUPABASE_PROJECT_URL`: project URL such as `https://<project-ref>.supabase.co`
 - `SUPABASE_SECRET_KEY`: secret key used to create the bucket if needed and upload files
 
-To restore, download one backup set from Storage and apply the files in the same order documented by Supabase:
-`roles`, then `schema`, then `data`.
+### How to restore a backup
+
+To restore, download one backup set from Storage, unzip the downloaded zip file, and run the following command with the proper `db-url` and `backup-dir`:
+
+```bash
+scripts/restore-supabase-backup.sh --db-url 'postgres://...' --backup-dir ~/Downloads/supabase-files
+```
+
+Optional flags:
+
+- `--keep-unzipped` to keep `.sql` files when the backup only contains `.sql.gz`
+- `--with-roles` to apply `roles.sql` before restoring `public` schema/data
+
+The restore helper only restores the app schema/data from `public`. This intentionally skips managed
+Supabase schemas such as `auth` and `storage`, even if those tables are somehow present in a backup file (they shouldn't be).

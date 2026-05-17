@@ -51,7 +51,7 @@ jobs:
         run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/roles.sql --role-only
 
       - name: Dump schema
-        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/schema.sql
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/schema.sql --schema public
 
       - name: Dump data
         run: >
@@ -59,6 +59,7 @@ jobs:
           --db-url "$SUPABASE_DB_URL"
           -f backup-output/data.sql
           --data-only
+          --schema public
           --use-copy
           -x "storage.buckets_vectors"
           -x "storage.vector_indexes"
