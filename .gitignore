@@ -62,6 +62,12 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 
+# Node files
+node_modules
+
+# Database backup outputs
+*.sql.gz
+
 # Supabase local runtime
 supabase/.branches
 supabase/.temp

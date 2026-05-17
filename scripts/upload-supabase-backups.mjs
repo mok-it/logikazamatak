@@ -38,7 +38,6 @@ async function ensureBucket(bucketName) {
 
     const {error: createError} = await supabase.storage.createBucket(bucketName, {
         public: false,
-        fileSizeLimit: "250MB",
         allowedMimeTypes: [
             "application/gzip",
             "application/json",
@@ -67,8 +66,24 @@ function contentTypeFor(fileName) {
     return "text/plain"
 }
 
+function formatBytes(bytes) {
+    const units = ["B", "KB", "MB", "GB", "TB"]
+    let value = bytes
+    let unitIndex = 0
+
+    while (value >= 1024 && unitIndex < units.length - 1) {
+        value /= 1024
+        unitIndex += 1
+    }
+
+    return `${value.toFixed(unitIndex === 0 ? 0 : 2)} ${units[unitIndex]}`
+}
+
 async function uploadFile(bucketName, filePath, objectPath) {
     const fileBuffer = await fs.readFile(filePath)
+    console.log(
+        `Uploading ${path.basename(filePath)} (${formatBytes(fileBuffer.byteLength)}, ${fileBuffer.byteLength} bytes) to ${objectPath}`,
+    )
     const {error} = await supabase.storage
         .from(bucketName)
         .upload(objectPath, fileBuffer, {
