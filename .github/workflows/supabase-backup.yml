@@ -1,0 +1,73 @@
+name: Supabase Backup
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Backup database to Supabase Storage
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_BACKUP_DB_URL }}
+      SUPABASE_PROJECT_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Validate required secrets
+        run: |
+          test -n "$SUPABASE_DB_URL"
+          test -n "$SUPABASE_PROJECT_URL"
+          test -n "$SUPABASE_SECRET_KEY"
+
+      - name: Prepare backup directory and timestamp
+        run: |
+          mkdir -p backup-output
+          echo "BACKUP_TIMESTAMP=$(date -u +%Y-%m-%dT%H-%M-%SZ)" >> "$GITHUB_ENV"
+
+      - name: Dump roles
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/roles.sql --role-only
+
+      - name: Dump schema
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/schema.sql
+
+      - name: Dump data
+        run: >
+          supabase db dump
+          --db-url "$SUPABASE_DB_URL"
+          -f backup-output/data.sql
+          --data-only
+          --use-copy
+          -x "storage.buckets_vectors"
+          -x "storage.vector_indexes"
+
+      - name: Compress SQL dumps
+        run: gzip -f backup-output/*.sql
+
+      - name: Install upload dependencies
+        run: npm install --no-save @supabase/supabase-js
+
+      - name: Upload backups to Supabase Storage
+        run: node scripts/upload-supabase-backups.mjs
