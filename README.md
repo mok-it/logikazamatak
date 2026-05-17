@@ -138,3 +138,20 @@ Supported overrides:
 
 Use the public `anon` or publishable key in client apps. Never use a `service_role` or secret key in Web, Android,
 iOS, or Desktop builds.
+
+## Scheduled Backups
+
+The repository includes a GitHub Actions workflow at `.github/workflows/supabase-backup.yml` that runs daily at
+`02:00 UTC` and can also be started manually from the Actions tab.
+
+It follows the Supabase CLI backup flow and uploads compressed `roles`, `schema`, and `data` dumps into a private
+Supabase Storage bucket under `database/<timestamp>/`.
+
+The following GitHub repository secrets have been configured:
+
+- `SUPABASE_BACKUP_DB_URL`: remote Postgres connection string used by `supabase db dump`
+- `SUPABASE_PROJECT_URL`: project URL such as `https://<project-ref>.supabase.co`
+- `SUPABASE_SECRET_KEY`: secret key used to create the bucket if needed and upload files
+
+To restore, download one backup set from Storage and apply the files in the same order documented by Supabase:
+`roles`, then `schema`, then `data`.
