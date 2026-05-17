@@ -5,6 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tortura</title>
     <link type="text/css" rel="stylesheet" href="styles.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script type="application/javascript">
+        function torturaReadClipboardText(onSuccess, onError) {
+            if (!navigator.clipboard || !navigator.clipboard.readText) {
+                onError("A böngésző nem támogatja a vágólap olvasását.");
+                return;
+            }
+            navigator.clipboard.readText()
+                .then(onSuccess)
+                .catch(error => onError(error?.message || "A vágólap olvasása sikertelen."));
+        }
+
+        function torturaPickRosterFile(onSuccess, onError) {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".csv,.tsv,.txt,.xlsx";
+
+            input.addEventListener("change", async () => {
+                const file = input.files && input.files[0];
+                if (!file) {
+                    onError("Nem választottál fájlt.");
+                    return;
+                }
+
+                try {
+                    const lowerName = file.name.toLowerCase();
+                    let content = "";
+                    let format = "DELIMITED_TEXT";
+
+                    if (lowerName.endsWith(".xlsx")) {
+                        const arrayBuffer = await file.arrayBuffer();
+                        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        content = XLSX.utils.sheet_to_csv(firstSheet, { FS: "\t" });
+                        format = "XLSX";
+                    } else {
+                        content = await file.text();
+                    }
+
+                    onSuccess(JSON.stringify({
+                        sourceLabel: file.name,
+                        content,
+                        format
+                    }));
+                } catch (error) {
+                    onError(error?.message || "A fájl feldolgozása sikertelen.");
+                }
+            });
+
+            input.click();
+        }
+    </script>
     <script type="application/javascript" src="composeApp.js"></script>
 </head>
 <body>

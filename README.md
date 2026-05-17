@@ -40,6 +40,8 @@ We use IntelliJ Idea, but Android Studio works just as good (apart from being so
 
 ## Local development
 
+0 - Make sure you have a `.env.local` file with the appropriate values. See `.env.example` for some of the values, as well as the structure
+
 1 - Start Docker Desktop
 
 2 - Start the local Supabase environment:
@@ -56,6 +58,18 @@ supabase db reset
 
 Then, you can visit the Studio link in your console, and navigate to the Table Editor to view your local data (for me,
 it's http://127.0.0.1:54323/project/default/editor/)
+
+### Batkabank integration - Firebase emulator
+
+If you want to test the Batkabank integration using local emulators, then do the following steps.
+
+Head into the Batkabank repo, and:
+1) set it up, based on its readme
+2) login into google cloud cli using `gcloud auth login`
+3) seed the emulator's db - from the root: `yarn import-seed`
+4) run the emulators: `yarn emulators`
+
+Then, in this repo, modify the `env.local` file's `BATKABANK_API_BASE_URL` for something like this: http://127.0.0.1:5001/batkabank/europe-west1. Use the ip and port from the console output of the `yarn emulators` command
 
 # Supported Platforms
 
@@ -91,12 +105,16 @@ This repository includes a `wrangler.jsonc` with `pages_build_output_dir` pointi
 
 ## Miscellaneous
 
-### Supabase Environments
+### Build-Time Config
 
-The shared Supabase client is configured at build time from Gradle properties or environment variables. Local Supabase
-is the default so development builds do not accidentally write to the hosted project.
+The shared client config is generated with [BuildKonfig](https://github.com/yshrsmz/BuildKonfig) from Gradle
+properties or environment variables at build time. The browser app does not load `.env` files directly at runtime.
+This repo's Gradle build reads `.env.local` and `.env.production` and passes their values into BuildKonfig.
 
-Default local configuration:
+Local Supabase is still the default so development builds do not accidentally write to the hosted project unless you
+explicitly opt into prod.
+
+Default local Supabase configuration:
 
 - URL: `http://127.0.0.1:54321`
 - Key: the Supabase CLI default local `anon` key
@@ -118,10 +136,9 @@ Build or run against production only when intentional:
 Supported overrides:
 
 - `-Psupabase.env=local|prod` or `SUPABASE_ENV`
-- `-Psupabase.local.url=...` or `SUPABASE_LOCAL_URL`
-- `-Psupabase.local.key=...` or `SUPABASE_LOCAL_KEY`
-- `-Psupabase.prod.url=...` or `SUPABASE_PROD_URL`
-- `-Psupabase.prod.key=...` or `SUPABASE_PROD_KEY`
+- `-Psupabase.url=...` or `SUPABASE_URL`
+- `-Psupabase.key=...` or `SUPABASE_KEY`
+- `-Pbatkabank.apiBaseUrl=...` or `BATKABANK_API_BASE_URL`
 
 Use the public `anon` or publishable key in client apps. Never use a `service_role` or secret key in Web, Android,
 iOS, or Desktop builds.
