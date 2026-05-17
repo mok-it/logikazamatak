@@ -1,24 +1,17 @@
 package mok.it.tortura.feature
 
 import NavigateBackIcon
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import mok.it.tortura.model.Game
+import mok.it.tortura.model.Location
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,5 +76,37 @@ fun LocationSelectionScreen(
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun LocationSelectionScreenPreview() {
+    MaterialTheme {
+        LocationSelectionScreen(
+            uiState = LocationSelectionUiState(
+                game = Game(
+                    id = 12,
+                    name = "Tortura 2026",
+                ),
+                locations = listOf(
+                    Location(
+                        id = 101,
+                        name = "Várkapu",
+                        gameId = 12,
+                    ),
+                    Location(
+                        id = 102,
+                        name = "Könyvtár",
+                        gameId = 12,
+                    ),
+                    Location(
+                        id = 103,
+                        name = "Boszorkánytorony",
+                        gameId = 12,
+                    ),
+                ),
+            ),
+        )
     }
 }
