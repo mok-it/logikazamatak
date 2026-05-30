@@ -1,0 +1,50 @@
+name: Ktlint check
+
+on:
+  pull_request: {}
+
+jobs:
+  ktlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect ktlint-relevant changes
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            ktlint:
+              - '**.kt'
+              - '**.kts'
+              - '**/.editorconfig'
+              - '.github/workflows/ktlint-check.yml'
+
+      - name: No relevant changes — pass
+        if: steps.changes.outputs.ktlint == 'false'
+        run: |
+          echo "No ktlint-relevant changes, passing check."
+          exit 0
+
+      - name: Install ktlint
+        if: steps.changes.outputs.ktlint == 'true'
+        run: |
+          curl -sSLO https://github.com/pinterest/ktlint/releases/download/1.7.1/ktlint
+          chmod a+x ktlint
+          sudo mv ktlint /usr/local/bin/
+
+      - name: Run ktlint
+        if: steps.changes.outputs.ktlint == 'true'
+        run: |
+          ktlint --reporter=checkstyle,output=build/ktlint-report.xml
+        continue-on-error: true
+
+      - name: Publish ktlint report
+        if: steps.changes.outputs.ktlint == 'true'
+        uses: yutailang0119/action-ktlint@v4
+        with:
+          report-path: build/*.xml
+          ignore-warnings: true
+          continue-on-error: false
