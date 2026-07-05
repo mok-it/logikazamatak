@@ -211,14 +211,17 @@ fun Item.toUpdateDto(): ItemInsertDto = ItemInsertDto(
 fun ItemEffectDto.toModel(): ItemEffect = ItemEffect(
     id = id,
     createdAt = createdAt,
+    code = code,
     description = description,
 )
 
 fun ItemEffect.toInsertDto(): ItemEffectInsertDto = ItemEffectInsertDto(
+    code = code,
     description = description,
 )
 
 fun ItemEffect.toUpdateDto(): ItemEffectInsertDto = ItemEffectInsertDto(
+    code = code,
     description = description,
 )
 
@@ -267,17 +270,20 @@ fun ShopDto.toModel(): ShopEntry = ShopEntry(
     createdAt = createdAt,
     itemId = itemId,
     targetId = targetId,
+    teamId = teamId,
     userId = userId,
 )
 
 fun ShopEntry.toInsertDto(): ShopInsertDto = ShopInsertDto(
     itemId = itemId,
     targetId = targetId,
+    teamId = teamId,
     userId = userId,
 )
 
 fun ShopEntry.toUpdateDto(): ShopInsertDto = ShopInsertDto(
     itemId = itemId,
     targetId = targetId,
+    teamId = teamId,
     userId = userId,
 )

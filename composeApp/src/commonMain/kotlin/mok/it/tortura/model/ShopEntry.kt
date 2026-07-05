@@ -9,5 +9,6 @@ data class ShopEntry(
     val createdAt: Instant? = null,
     val itemId: Long? = null,
     val targetId: Long? = null,
+    val teamId: Long? = null,
     val userId: Long? = null,
 )

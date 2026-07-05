@@ -138,13 +138,20 @@ Key columns:
 
 ### `ItemEffects`
 
-Global reference data for shop item effects (i.e. location doubling, area doubling). The corresponding actions are
-happening in triggers/edge functions, so that they are updatable without changing anything on frontend.
+Global reference data for shop item effects. The corresponding actions happen in database triggers so they can evolve
+without frontend releases.
 
 Key columns:
 
 - `id`: primary key
+- `code`: stable machine-readable identifier used by triggers
 - `description`: effect description
+
+Current effect codes:
+
+- `task_score_multiplier`: choose a task up front; the next successful completion for that team/task is doubled
+- `retroactive_task_score_multiplier`: choose an already completed task; doubles that earned score immediately
+- `retroactive_location_score_multiplier`: choose a location; doubles all eligible earned scores for that team/location immediately
 
 ### `Items`
 
@@ -168,7 +175,14 @@ Key columns:
 - `id`: primary key
 - `itemId`: references `Items.id`
 - `targetId`: purchase target identifier
+- `teamId`: references `Teams.id`
 - `userId`: acting user identifier
+
+Trigger-backed rules:
+
+- `maxPerTeam` is enforced per `Items.id` and `Teams.id`.
+- Purchases are validated against the selected game's tasks/locations before insert.
+- Task/location multipliers materialize as generated success rows in `TasksLedger`, linked back to both the purchase and the original success row.
 
 ## Scoping Rules
 

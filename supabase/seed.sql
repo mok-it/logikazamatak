@@ -125,19 +125,21 @@ set
   "healedTasksLedgerId" = excluded."healedTasksLedgerId",
   "userId" = excluded."userId";
 
-insert into "public"."ItemEffects" ("id", "description")
+insert into "public"."ItemEffects" ("id", "code", "description")
 values
-  (900001, 'Double points for one location'),
-  (900002, 'Double points for one team area'),
-  (900003, 'Reveal one failed answer for review')
+  (900001, 'task_score_multiplier', 'Task score multiplier'),
+  (900002, 'retroactive_task_score_multiplier', 'Retroactive task score multiplier'),
+  (900003, 'retroactive_location_score_multiplier', 'Retroactive location score multiplier')
 on conflict ("id") do update
-set "description" = excluded."description";
+set
+  "code" = excluded."code",
+  "description" = excluded."description";
 
 insert into "public"."Items" ("id", "name", "price", "itemEffectId", "gameId", "maxPerTeam")
 values
-  (900001, 'Location Multiplier', 5, 900001, 900001, 1),
-  (900002, 'Area Multiplier', 8, 900002, 900001, 1),
-  (900003, 'Hint Scroll', 3, 900003, 900001, 2)
+  (900001, 'Task Score Multiplier', 5, 900001, 900001, 1),
+  (900002, 'Retroactive Task Score Multiplier', 5, 900002, 900001, 1),
+  (900003, 'Retroactive Location Score Multiplier', 8, 900003, 900001, 1)
 on conflict ("id") do update
 set
   "name" = excluded."name",
@@ -146,15 +148,16 @@ set
   "gameId" = excluded."gameId",
   "maxPerTeam" = excluded."maxPerTeam";
 
-insert into "public"."Shop" ("id", "itemId", "targetId", "userId")
+insert into "public"."Shop" ("id", "itemId", "targetId", "teamId", "userId")
 values
-  (900001, 900001, 900001, 101),
-  (900002, 900002, 900002, 102),
-  (900003, 900003, 900005, 103)
+  (900001, 900001, 900002, 900001, 101),
+  (900002, 900002, 900003, 900002, 102),
+  (900003, 900003, 900003, 900003, 103)
 on conflict ("id") do update
 set
   "itemId" = excluded."itemId",
   "targetId" = excluded."targetId",
+  "teamId" = excluded."teamId",
   "userId" = excluded."userId";
 
 select setval('"public"."Games_id_seq"', greatest((select max("id") from "public"."Games"), 1), true);
