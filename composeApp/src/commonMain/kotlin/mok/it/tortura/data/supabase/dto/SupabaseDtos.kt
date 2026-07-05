@@ -90,11 +90,13 @@ data class ItemEffectDto(
     @SerialName("created_at")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val createdAt: Instant? = null,
+    val code: String? = null,
     val description: String? = null,
 )
 
 @Serializable
 data class ItemEffectInsertDto(
+    val code: String? = null,
     val description: String? = null,
 )
 
@@ -124,6 +126,7 @@ data class ShopDto(
     val createdAt: Instant? = null,
     val itemId: Long? = null,
     val targetId: Long? = null,
+    val teamId: Long? = null,
     val userId: Long? = null,
 )
 
@@ -131,6 +134,7 @@ data class ShopDto(
 data class ShopInsertDto(
     val itemId: Long? = null,
     val targetId: Long? = null,
+    val teamId: Long? = null,
     val userId: Long? = null,
 )
 
@@ -187,6 +191,8 @@ data class TasksLedgerDto(
     val teamId: Long? = null,
     val userId: Long? = null,
     val isSuccess: Boolean? = null,
+    val bonusSourceShopId: Long? = null,
+    val bonusSourceTasksLedgerId: Long? = null,
 )
 
 @Serializable
@@ -195,6 +201,8 @@ data class TasksLedgerInsertDto(
     val teamId: Long? = null,
     val userId: Long? = null,
     val isSuccess: Boolean? = null,
+    val bonusSourceShopId: Long? = null,
+    val bonusSourceTasksLedgerId: Long? = null,
 )
 
 @Serializable

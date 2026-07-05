@@ -90,6 +90,8 @@ e.g ledgers, editing events after they happened, etc
 
 TBD
 
+- We don't score the teams' scores explicitly - they can be calculated easily from the ledger at any time. This approach is more failsafe 
+- Points vs money - _to be documented_
 
 ## Hosting
 

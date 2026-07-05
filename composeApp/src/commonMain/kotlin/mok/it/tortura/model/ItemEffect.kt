@@ -7,5 +7,6 @@ import kotlin.time.Instant
 data class ItemEffect(
     val id: Long? = null,
     val createdAt: Instant? = null,
+    val code: String? = null,
     val description: String? = null,
 )
