@@ -84,6 +84,10 @@ to clearly mark the platform as unsupported or broken.
 - Desktop (JVM)
 - Android
 
+# Game rules
+
+We don't have it anywhere where it would be publicly accessible, but if you have Teams access, you can browse it [here](https://mokegyesulet.sharepoint.com/sites/Tboriprogramselkszts/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FTboriprogramselkszts%2FShared%20Documents%2FNy%C3%A1ri%20t%C3%A1bori%20programok%2FNy%C3%A1ri%20progik%2FTort%C3%BAra%20%C3%A9s%20Logikazamata%2FLogikazamata%5Fleiras%5F2025&p=true&ga=1)
+
 # Business Logic Decisions
 
 e.g ledgers, editing events after they happened, etc
