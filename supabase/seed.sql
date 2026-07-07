@@ -89,6 +89,52 @@ set
   "group" = excluded."group",
   "teamId" = excluded."teamId";
 
+insert into "public"."ItemEffects" ("code", "description")
+values
+  ('task_score_multiplier', 'feladatduplázó'),
+  ('retroactive_task_score_multiplier', 'feladatduplázó visszamenőleg'),
+  ('retroactive_location_score_multiplier', 'területduplázó visszamenőleg'),
+  ('miniboss_unlock', 'minibosslelőhely'),
+  ('miniboss_rewind', 'idővisszatekerő'),
+  ('boss_location_unlock', 'főbosslelőhely')
+on conflict ("code") do update
+set "description" = excluded."description";
+
+insert into "public"."Items" ("id", "name", "price", "itemEffectId", "gameId", "maxPerTeam")
+values
+  (900001, 'feladatduplázó', 5, (select "id" from "public"."ItemEffects" where "code" = 'task_score_multiplier'), 900001, 2),
+  (900002, 'feladatduplázó visszamenőleg', 10, (select "id" from "public"."ItemEffects" where "code" = 'retroactive_task_score_multiplier'), 900001, 1),
+  (900003, 'területduplázó visszamenőleg', 10, (select "id" from "public"."ItemEffects" where "code" = 'retroactive_location_score_multiplier'), 900001, 1),
+  (900004, 'minibosslelőhely', 40, (select "id" from "public"."ItemEffects" where "code" = 'miniboss_unlock'), 900001, 3),
+  (900005, 'idővisszatekerő', 20, (select "id" from "public"."ItemEffects" where "code" = 'miniboss_rewind'), 900001, 2),
+  (900006, 'főbosslelőhely', 0, (select "id" from "public"."ItemEffects" where "code" = 'boss_location_unlock'), 900001, 1),
+  (900101, 'feladatduplázó', 5, (select "id" from "public"."ItemEffects" where "code" = 'task_score_multiplier'), 900002, 2),
+  (900102, 'feladatduplázó visszamenőleg', 10, (select "id" from "public"."ItemEffects" where "code" = 'retroactive_task_score_multiplier'), 900002, 1),
+  (900103, 'területduplázó visszamenőleg', 10, (select "id" from "public"."ItemEffects" where "code" = 'retroactive_location_score_multiplier'), 900002, 1),
+  (900104, 'minibosslelőhely', 40, (select "id" from "public"."ItemEffects" where "code" = 'miniboss_unlock'), 900002, 3),
+  (900105, 'idővisszatekerő', 20, (select "id" from "public"."ItemEffects" where "code" = 'miniboss_rewind'), 900002, 2),
+  (900106, 'főbosslelőhely', 0, (select "id" from "public"."ItemEffects" where "code" = 'boss_location_unlock'), 900002, 1)
+on conflict ("id") do update
+set
+  "name" = excluded."name",
+  "price" = excluded."price",
+  "itemEffectId" = excluded."itemEffectId",
+  "gameId" = excluded."gameId",
+  "maxPerTeam" = excluded."maxPerTeam";
+
+insert into "public"."Shop" ("id", "itemId", "targetId", "teamId", "userId")
+values
+  (900009, 900004, 900005, 900001, 101),
+  (900010, 900004, 900005, 900003, 103),
+  (900011, 900104, 900008, 900004, 104),
+  (900012, 900104, 900008, 900005, 105)
+on conflict ("id") do update
+set
+  "itemId" = excluded."itemId",
+  "targetId" = excluded."targetId",
+  "teamId" = excluded."teamId",
+  "userId" = excluded."userId";
+
 insert into "public"."TasksLedger" ("id", "taskId", "teamId", "userId", "isSuccess")
 values
   (900001, 900001, 900001, 101, true),
@@ -124,29 +170,6 @@ set
   "healingTaskId" = excluded."healingTaskId",
   "healedTasksLedgerId" = excluded."healedTasksLedgerId",
   "userId" = excluded."userId";
-
-insert into "public"."ItemEffects" ("id", "code", "description")
-values
-  (900001, 'task_score_multiplier', 'Task score multiplier'),
-  (900002, 'retroactive_task_score_multiplier', 'Retroactive task score multiplier'),
-  (900003, 'retroactive_location_score_multiplier', 'Retroactive location score multiplier')
-on conflict ("id") do update
-set
-  "code" = excluded."code",
-  "description" = excluded."description";
-
-insert into "public"."Items" ("id", "name", "price", "itemEffectId", "gameId", "maxPerTeam")
-values
-  (900001, 'Task Score Multiplier', 5, 900001, 900001, 1),
-  (900002, 'Retroactive Task Score Multiplier', 5, 900002, 900001, 1),
-  (900003, 'Retroactive Location Score Multiplier', 8, 900003, 900001, 1)
-on conflict ("id") do update
-set
-  "name" = excluded."name",
-  "price" = excluded."price",
-  "itemEffectId" = excluded."itemEffectId",
-  "gameId" = excluded."gameId",
-  "maxPerTeam" = excluded."maxPerTeam";
 
 insert into "public"."Shop" ("id", "itemId", "targetId", "teamId", "userId")
 values

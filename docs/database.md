@@ -149,9 +149,12 @@ Key columns:
 
 Current effect codes:
 
-- `task_score_multiplier`: choose a task up front; the next successful completion for that team/task is doubled
-- `retroactive_task_score_multiplier`: choose an already completed task; doubles that earned score immediately
-- `retroactive_location_score_multiplier`: choose a location; doubles all eligible earned scores for that team/location immediately
+- `task_score_multiplier`: `feladatduplázó`; choose a task up front and double the next success for that team/task
+- `retroactive_task_score_multiplier`: `feladatduplázó visszamenőleg`; double an already completed task immediately
+- `retroactive_location_score_multiplier`: `területduplázó visszamenőleg`; double all eligible completed tasks in a location immediately
+- `miniboss_unlock`: `minibosslelőhely`; unlock one miniboss task for one team
+- `miniboss_rewind`: `idővisszatekerő`; allow unlimited extra retries for one already-failed miniboss task
+- `boss_location_unlock`: `főbosslelőhely`; unlock one boss location after the team defeats every miniboss
 
 ### `Items`
 
@@ -183,6 +186,8 @@ Trigger-backed rules:
 - `maxPerTeam` is enforced per `Items.id` and `Teams.id`.
 - Purchases are validated against the selected game's tasks/locations before insert.
 - Task/location multipliers materialize as generated success rows in `TasksLedger`, linked back to both the purchase and the original success row.
+- Miniboss attempts are validated against prior shop purchases in `Shop`; locked minibosses cannot be attempted.
+- After a failed miniboss attempt, additional retries require a prior `idővisszatekerő` purchase for that miniboss.
 
 ## Scoping Rules
 
