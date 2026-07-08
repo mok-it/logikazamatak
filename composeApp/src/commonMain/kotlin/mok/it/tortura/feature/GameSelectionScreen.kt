@@ -1,22 +1,51 @@
 package mok.it.tortura.feature
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Game
-import mok.it.tortura.model.Location
 import mok.it.tortura.model.ItemEffect
+import mok.it.tortura.ui.components.AppButton
+import mok.it.tortura.ui.components.AppButtonStyle
+import mok.it.tortura.ui.components.AppNumberField
+import mok.it.tortura.ui.components.AppSelectField
+import mok.it.tortura.ui.components.AppSelectOption
+import mok.it.tortura.ui.components.AppTextField
+import mok.it.tortura.ui.components.BannerTone
+import mok.it.tortura.ui.components.EmptyState
+import mok.it.tortura.ui.components.FormSection
+import mok.it.tortura.ui.components.InlineActionRow
+import mok.it.tortura.ui.components.PageHeader
+import mok.it.tortura.ui.components.PageScaffold
+import mok.it.tortura.ui.components.SectionCard
+import mok.it.tortura.ui.components.StatusBanner
+import mok.it.tortura.ui.theme.AppThemeTokens
 
 @Composable
 fun GameSelectionScreen(
@@ -47,6 +76,8 @@ fun GameSelectionScreen(
     onLocationSelectionRequired: (Long) -> Unit = {},
     onClearMessages: () -> Unit = {},
 ) {
+    val spacing = AppThemeTokens.spacing
+
     LaunchedEffect(Unit) {
         onLoad()
     }
@@ -61,88 +92,111 @@ fun GameSelectionScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = {
-            if (uiState.errorMessage != null || uiState.message != null) {
-                Snackbar(
-                    modifier = Modifier.padding(16.dp),
-                    action = {
-                        TextButton(onClick = onClearMessages) {
-                            Text("OK")
-                        }
-                    },
-                ) {
-                    Text(uiState.errorMessage ?: uiState.message.orEmpty())
-                }
-            }
-        },
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Új játék létrehozása", style = MaterialTheme.typography.headlineMedium)
-                Text(
-                    "Adj nevet a játéknak, majd szükség szerint add hozzá a helyszíneket, feladatokat és bolti tárgyakat.",
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
+    PageScaffold(
+        modifier = Modifier.verticalScroll(rememberScrollState()),
+    ) {
+        PageHeader(
+            title = "Játékok kezelése",
+            description = "Hozz létre új játékot strukturált szerkesztővel, vagy csatlakozz egy meglévőhöz.",
+        )
 
-            if (uiState.isLoading) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            }
+        if (uiState.isLoading) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
 
-            CreateGameEditor(
-                uiState = uiState,
-                onGameNameChange = onGameNameChange,
-                onCreateGame = onCreateGame,
-                onAddLocation = onAddLocation,
-                onLocationNameChange = onLocationNameChange,
-                onRemoveLocation = onRemoveLocation,
-                onAddTask = onAddTask,
-                onTaskTextChange = onTaskTextChange,
-                onTaskSolutionChange = onTaskSolutionChange,
-                onTaskMiniBossChange = onTaskMiniBossChange,
-                onRemoveTask = onRemoveTask,
-                onAddHealingTask = onAddHealingTask,
-                onHealingTaskTextChange = onHealingTaskTextChange,
-                onHealingTaskSolutionChange = onHealingTaskSolutionChange,
-                onRemoveHealingTask = onRemoveHealingTask,
-                onAddShopItem = onAddShopItem,
-                onShopItemNameChange = onShopItemNameChange,
-                onShopItemPriceChange = onShopItemPriceChange,
-                onShopItemMaxPerTeamChange = onShopItemMaxPerTeamChange,
-                onShopItemEffectIdChange = onShopItemEffectIdChange,
-                onRemoveShopItem = onRemoveShopItem,
+        val bannerMessage = uiState.errorMessage ?: uiState.message
+        if (bannerMessage != null) {
+            StatusBanner(
+                message = bannerMessage,
+                tone = if (uiState.errorMessage != null) BannerTone.Error else BannerTone.Success,
+                onDismiss = onClearMessages,
             )
+        }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Meglévő játékok", style = MaterialTheme.typography.headlineSmall)
-                if (uiState.games.isEmpty() && !uiState.isLoading) {
-                    Text("Nincs még mentett játék", style = MaterialTheme.typography.bodyMedium)
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val splitLayout = maxWidth >= 960.dp
+
+            if (splitLayout) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.xl),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1.5f),
+                        verticalArrangement = Arrangement.spacedBy(spacing.xl),
+                    ) {
+                        CreateGameEditor(
+                            uiState = uiState,
+                            onGameNameChange = onGameNameChange,
+                            onCreateGame = onCreateGame,
+                            onAddLocation = onAddLocation,
+                            onLocationNameChange = onLocationNameChange,
+                            onRemoveLocation = onRemoveLocation,
+                            onAddTask = onAddTask,
+                            onTaskTextChange = onTaskTextChange,
+                            onTaskSolutionChange = onTaskSolutionChange,
+                            onTaskMiniBossChange = onTaskMiniBossChange,
+                            onRemoveTask = onRemoveTask,
+                            onAddHealingTask = onAddHealingTask,
+                            onHealingTaskTextChange = onHealingTaskTextChange,
+                            onHealingTaskSolutionChange = onHealingTaskSolutionChange,
+                            onRemoveHealingTask = onRemoveHealingTask,
+                            onAddShopItem = onAddShopItem,
+                            onShopItemNameChange = onShopItemNameChange,
+                            onShopItemPriceChange = onShopItemPriceChange,
+                            onShopItemMaxPerTeamChange = onShopItemMaxPerTeamChange,
+                            onShopItemEffectIdChange = onShopItemEffectIdChange,
+                            onRemoveShopItem = onRemoveShopItem,
+                        )
+                    }
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(spacing.xl),
+                    ) {
+                        ExistingGamesSection(
+                            games = uiState.games,
+                            isLoading = uiState.isLoading,
+                            onSelectGame = onSelectGame,
+                        )
+                    }
                 }
-                uiState.games.forEach { game ->
-                    SelectionRow(
-                        title = game.name ?: "Névtelen játék",
-                        subtitle = "ID ${game.id ?: "-"}",
-                        actionLabel = "Csatlakozás",
-                        enabled = !uiState.isLoading && game.id != null,
-                        onAction = { onSelectGame(game) },
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.xl)) {
+                    CreateGameEditor(
+                        uiState = uiState,
+                        onGameNameChange = onGameNameChange,
+                        onCreateGame = onCreateGame,
+                        onAddLocation = onAddLocation,
+                        onLocationNameChange = onLocationNameChange,
+                        onRemoveLocation = onRemoveLocation,
+                        onAddTask = onAddTask,
+                        onTaskTextChange = onTaskTextChange,
+                        onTaskSolutionChange = onTaskSolutionChange,
+                        onTaskMiniBossChange = onTaskMiniBossChange,
+                        onRemoveTask = onRemoveTask,
+                        onAddHealingTask = onAddHealingTask,
+                        onHealingTaskTextChange = onHealingTaskTextChange,
+                        onHealingTaskSolutionChange = onHealingTaskSolutionChange,
+                        onRemoveHealingTask = onRemoveHealingTask,
+                        onAddShopItem = onAddShopItem,
+                        onShopItemNameChange = onShopItemNameChange,
+                        onShopItemPriceChange = onShopItemPriceChange,
+                        onShopItemMaxPerTeamChange = onShopItemMaxPerTeamChange,
+                        onShopItemEffectIdChange = onShopItemEffectIdChange,
+                        onRemoveShopItem = onRemoveShopItem,
+                    )
+                    ExistingGamesSection(
+                        games = uiState.games,
+                        isLoading = uiState.isLoading,
+                        onSelectGame = onSelectGame,
                     )
                 }
             }
         }
     }
 }
+
 @Composable
 private fun CreateGameEditor(
     uiState: GameSelectionUiState,
@@ -167,30 +221,31 @@ private fun CreateGameEditor(
     onShopItemEffectIdChange: (Long, String) -> Unit,
     onRemoveShopItem: (Long) -> Unit,
 ) {
+    val colors = AppThemeTokens.colors
+    val spacing = AppThemeTokens.spacing
     val validationError = uiState.createGameValidationError()
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        OutlinedTextField(
-            value = uiState.gameName,
-            onValueChange = onGameNameChange,
-            label = { Text("Játék neve") },
-            singleLine = true,
-            isError = uiState.gameName.trim().isEmpty(),
-            supportingText = {
-                if (uiState.gameName.trim().isEmpty()) {
-                    Text("Kötelező")
-                }
-            },
-            enabled = !uiState.isLoading,
-            modifier = Modifier.fillMaxWidth(),
-        )
+    Column(verticalArrangement = Arrangement.spacedBy(spacing.xl)) {
+        FormSection(
+            title = "Új játék",
+            description = "Adj nevet a játéknak, majd töltsd ki a helyszíneket, feladatokat és bolti tárgyakat.",
+        ) {
+            AppTextField(
+                value = uiState.gameName,
+                onValueChange = onGameNameChange,
+                label = "Játék neve",
+                singleLine = true,
+                isError = uiState.gameName.trim().isEmpty(),
+                supportingText = if (uiState.gameName.trim().isEmpty()) "Kötelező" else null,
+                enabled = !uiState.isLoading,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         DraftSection(
             title = "Helyszínek és feladatok",
-            emptyText = "Még nincs helyszín hozzáadva",
+            description = "Minden helyszínhez több feladat is rendelhető.",
+            emptyText = "Még nincs helyszín hozzáadva.",
             addText = "Helyszín hozzáadása",
             isEmpty = uiState.draftLocations.isEmpty(),
             enabled = !uiState.isLoading,
@@ -214,7 +269,8 @@ private fun CreateGameEditor(
 
         DraftSection(
             title = "Gyógyító feladatok",
-            emptyText = "Még nincs gyógyító feladat hozzáadva",
+            description = "Külön kezelt, globális feladatok a játékhoz.",
+            emptyText = "Még nincs gyógyító feladat hozzáadva.",
             addText = "Gyógyító feladat hozzáadása",
             isEmpty = uiState.draftHealingTasks.isEmpty(),
             enabled = !uiState.isLoading,
@@ -233,7 +289,8 @@ private fun CreateGameEditor(
 
         DraftSection(
             title = "Bolt",
-            emptyText = "Még nincs bolti tárgy hozzáadva",
+            description = "A tárgyak árát és csapatlimitet webes űrlapként, szigorú numerikus mezőkkel szerkeszd.",
+            emptyText = "Még nincs bolti tárgy hozzáadva.",
             addText = "Bolti tárgy hozzáadása",
             isEmpty = uiState.draftShopItems.isEmpty(),
             enabled = !uiState.isLoading,
@@ -253,20 +310,50 @@ private fun CreateGameEditor(
             }
         }
 
-        Button(
-            onClick = onCreateGame,
-            enabled = !uiState.isLoading && validationError == null,
-            modifier = Modifier.align(Alignment.End),
-        ) {
-            Text("Mentés és tovább")
+        SectionCard {
+            if (validationError != null) {
+                Text(
+                    text = validationError,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.danger,
+                )
+            }
+            InlineActionRow {
+                AppButton(
+                    text = "Mentés és tovább",
+                    onClick = onCreateGame,
+                    enabled = !uiState.isLoading && validationError == null,
+                )
+            }
         }
-        if (validationError != null) {
-            Text(
-                validationError,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.End),
+    }
+}
+
+@Composable
+private fun ExistingGamesSection(
+    games: List<Game>,
+    isLoading: Boolean,
+    onSelectGame: (Game) -> Unit,
+) {
+    FormSection(
+        title = "Meglévő játékok",
+        description = "Válassz egy már mentett játékot a folytatáshoz.",
+    ) {
+        if (games.isEmpty() && !isLoading) {
+            EmptyState(
+                title = "Nincs még mentett játék",
+                description = "Hozz létre egy újat a bal oldali szerkesztőben, és innen rögtön folytathatod is.",
             )
+        } else {
+            games.forEach { game ->
+                SelectionRow(
+                    title = game.name ?: "Névtelen játék",
+                    subtitle = "ID ${game.id ?: "-"}",
+                    actionLabel = "Csatlakozás",
+                    enabled = !isLoading && game.id != null,
+                    onAction = { onSelectGame(game) },
+                )
+            }
         }
     }
 }
@@ -274,6 +361,7 @@ private fun CreateGameEditor(
 @Composable
 private fun DraftSection(
     title: String,
+    description: String,
     emptyText: String,
     addText: String,
     isEmpty: Boolean,
@@ -281,45 +369,48 @@ private fun DraftSection(
     onAdd: () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val colors = AppThemeTokens.colors
+    val spacing = AppThemeTokens.spacing
     var isExpanded by remember { mutableStateOf(true) }
-    val arrowRotation by animateFloatAsState(
-        targetValue = if (isExpanded) 180f else 0f,
-    )
+    val arrowRotation by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(
-                title,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-            )
-            IconButton(
-                onClick = { isExpanded = !isExpanded },
+    FormSection(
+        title = title,
+        description = description,
+        headerAction = {
+            AppButton(
+                text = addText,
+                onClick = onAdd,
                 enabled = enabled,
-            ) {
+                style = AppButtonStyle.Secondary,
+            )
+            IconButton(onClick = { isExpanded = !isExpanded }, enabled = enabled) {
                 Icon(
                     imageVector = Icons.Filled.KeyboardArrowDown,
                     contentDescription = if (isExpanded) "Szakasz bezárása" else "Szakasz megnyitása",
                     modifier = Modifier.rotate(arrowRotation),
+                    tint = colors.textSecondary,
                 )
             }
+        },
+    ) {
+        if (!isExpanded) {
+            Text(
+                text = "A szakasz össze van csukva.",
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.textSecondary,
+            )
+            return@FormSection
         }
-        if (isExpanded) {
-            OutlinedButton(onClick = onAdd, enabled = enabled) {
-                Text(addText)
-            }
-            if (isEmpty) {
-                Text(emptyText, style = MaterialTheme.typography.bodyMedium)
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
-            }
+
+        if (isEmpty) {
+            Text(
+                text = emptyText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.textSecondary,
+            )
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.lg), content = content)
         }
     }
 }
@@ -337,49 +428,60 @@ private fun LocationDraftCard(
     onTaskMiniBossChange: (Long, Boolean) -> Unit,
     onRemoveTask: (Long) -> Unit,
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(16.dp),
+    val spacing = AppThemeTokens.spacing
+
+    SectionCard(toned = true) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing.md),
+            verticalAlignment = Alignment.Top,
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                OutlinedTextField(
-                    value = location.name,
-                    onValueChange = { onLocationNameChange(location.localId, it) },
-                    label = { Text("Helyszín neve") },
-                    singleLine = true,
-                    isError = location.name.trim().isEmpty(),
-                    supportingText = {
-                        if (location.name.trim().isEmpty()) {
-                            Text("Kötelező")
-                        }
-                    },
-                    enabled = enabled,
-                    modifier = Modifier.weight(1f),
-                )
-                TextButton(onClick = { onRemoveLocation(location.localId) }, enabled = enabled) {
-                    Text("Törlés")
+            AppTextField(
+                value = location.name,
+                onValueChange = { onLocationNameChange(location.localId, it) },
+                label = "Helyszín neve",
+                singleLine = true,
+                isError = location.name.trim().isEmpty(),
+                supportingText = if (location.name.trim().isEmpty()) "Kötelező" else null,
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+            )
+            AppButton(
+                text = "Törlés",
+                onClick = { onRemoveLocation(location.localId) },
+                enabled = enabled,
+                style = AppButtonStyle.Danger,
+            )
+        }
+
+        if (tasks.isEmpty()) {
+            Text(
+                text = "Ehhez a helyszínhez még nincs feladat.",
+                style = MaterialTheme.typography.bodySmall,
+                color = AppThemeTokens.colors.textSecondary,
+            )
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
+                tasks.forEach { task ->
+                    TaskDraftCard(
+                        task = task,
+                        enabled = enabled,
+                        onTextChange = onTaskTextChange,
+                        onSolutionChange = onTaskSolutionChange,
+                        onMiniBossChange = onTaskMiniBossChange,
+                        onRemove = onRemoveTask,
+                    )
                 }
             }
-            tasks.forEach { task ->
-                TaskDraftCard(
-                    task = task,
-                    enabled = enabled,
-                    onTextChange = onTaskTextChange,
-                    onSolutionChange = onTaskSolutionChange,
-                    onMiniBossChange = onTaskMiniBossChange,
-                    onRemove = onRemoveTask,
-                )
-            }
-            OutlinedButton(onClick = { onAddTask(location.localId) }, enabled = enabled) {
-                Text("Feladat hozzáadása")
-            }
+        }
+
+        InlineActionRow {
+            AppButton(
+                text = "Feladat hozzáadása",
+                onClick = { onAddTask(location.localId) },
+                enabled = enabled,
+                style = AppButtonStyle.Secondary,
+            )
         }
     }
 }
@@ -393,50 +495,55 @@ private fun TaskDraftCard(
     onMiniBossChange: (Long, Boolean) -> Unit,
     onRemove: (Long) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
+    val colors = AppThemeTokens.colors
+    val spacing = AppThemeTokens.spacing
+
+    SectionCard(toned = true) {
+        AppTextField(
             value = task.text,
             onValueChange = { onTextChange(task.localId, it) },
-            label = { Text("Feladat szövege") },
+            label = "Feladat szövege",
             isError = task.text.trim().isEmpty(),
-            supportingText = {
-                if (task.text.trim().isEmpty()) {
-                    Text("Kötelező")
-                }
-            },
+            supportingText = if (task.text.trim().isEmpty()) "Kötelező" else null,
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
         )
-        OutlinedTextField(
+        AppTextField(
             value = task.solution,
             onValueChange = { onSolutionChange(task.localId, it) },
-            label = { Text("Megoldás") },
+            label = "Megoldás",
             singleLine = true,
             isError = task.solution.trim().isEmpty(),
-            supportingText = {
-                if (task.solution.trim().isEmpty()) {
-                    Text("Kötelező")
-                }
-            },
+            supportingText = if (task.solution.trim().isEmpty()) "Kötelező" else null,
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
         )
         Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Checkbox(
                     checked = task.isMiniBoss,
                     onCheckedChange = { onMiniBossChange(task.localId, it) },
                     enabled = enabled,
                 )
-                Text("Mini boss")
+                Text(
+                    text = "Mini boss",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.textPrimary,
+                )
             }
-            TextButton(onClick = { onRemove(task.localId) }, enabled = enabled) {
-                Text("Feladat törlése")
-            }
+            AppButton(
+                text = "Feladat törlése",
+                onClick = { onRemove(task.localId) },
+                enabled = enabled,
+                style = AppButtonStyle.Ghost,
+            )
         }
     }
 }
@@ -449,48 +556,33 @@ private fun HealingTaskDraftCard(
     onSolutionChange: (Long, String) -> Unit,
     onRemove: (Long) -> Unit,
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(16.dp),
-        ) {
-            OutlinedTextField(
-                value = healingTask.text,
-                onValueChange = { onTextChange(healingTask.localId, it) },
-                label = { Text("Feladat szövege") },
-                isError = healingTask.text.trim().isEmpty(),
-                supportingText = {
-                    if (healingTask.text.trim().isEmpty()) {
-                        Text("Kötelező")
-                    }
-                },
-                enabled = enabled,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            OutlinedTextField(
-                value = healingTask.solution,
-                onValueChange = { onSolutionChange(healingTask.localId, it) },
-                label = { Text("Megoldás") },
-                singleLine = true,
-                isError = healingTask.solution.trim().isEmpty(),
-                supportingText = {
-                    if (healingTask.solution.trim().isEmpty()) {
-                        Text("Kötelező")
-                    }
-                },
-                enabled = enabled,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            TextButton(
+    SectionCard(toned = true) {
+        AppTextField(
+            value = healingTask.text,
+            onValueChange = { onTextChange(healingTask.localId, it) },
+            label = "Feladat szövege",
+            isError = healingTask.text.trim().isEmpty(),
+            supportingText = if (healingTask.text.trim().isEmpty()) "Kötelező" else null,
+            enabled = enabled,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        AppTextField(
+            value = healingTask.solution,
+            onValueChange = { onSolutionChange(healingTask.localId, it) },
+            label = "Megoldás",
+            singleLine = true,
+            isError = healingTask.solution.trim().isEmpty(),
+            supportingText = if (healingTask.solution.trim().isEmpty()) "Kötelező" else null,
+            enabled = enabled,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        InlineActionRow {
+            AppButton(
+                text = "Törlés",
                 onClick = { onRemove(healingTask.localId) },
                 enabled = enabled,
-                modifier = Modifier.align(Alignment.End),
-            ) {
-                Text("Törlés")
-            }
+                style = AppButtonStyle.Ghost,
+            )
         }
     }
 }
@@ -506,82 +598,95 @@ private fun ShopItemDraftCard(
     onRemove: (Long) -> Unit,
     itemEffects: List<ItemEffect>,
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(16.dp),
-        ) {
-            OutlinedTextField(
-                value = item.name,
-                onValueChange = { onNameChange(item.localId, it) },
-                label = { Text("Tárgy neve") },
-                singleLine = true,
-                isError = item.name.trim().isEmpty(),
-                supportingText = {
-                    if (item.name.trim().isEmpty()) {
-                        Text("Kötelező")
-                    }
-                },
-                enabled = enabled,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                OutlinedTextField(
+    val spacing = AppThemeTokens.spacing
+
+    SectionCard(toned = true) {
+        AppTextField(
+            value = item.name,
+            onValueChange = { onNameChange(item.localId, it) },
+            label = "Tárgy neve",
+            singleLine = true,
+            isError = item.name.trim().isEmpty(),
+            supportingText = if (item.name.trim().isEmpty()) "Kötelező" else null,
+            enabled = enabled,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        ResponsiveFieldRow(
+            first = {
+                AppNumberField(
                     value = item.price,
                     onValueChange = { onPriceChange(item.localId, it) },
-                    label = { Text("Ár") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    isError = item.price.toIntOrNull()?.let { it >= 0 } != true,
-                    supportingText = {
-                        if (item.price.toIntOrNull()?.let { it >= 0 } != true) {
-                            Text("Nem negatív egész")
-                        }
+                    label = "Ár",
+                    isError = item.price.toIntOrNull()?.let { value -> value >= 0 } != true,
+                    supportingText = if (item.price.toIntOrNull()?.let { value -> value >= 0 } != true) {
+                        "Nem negatív egész"
+                    } else {
+                        null
                     },
                     enabled = enabled,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                 )
-                OutlinedTextField(
+            },
+            second = {
+                AppNumberField(
                     value = item.maxPerTeam,
                     onValueChange = { onMaxPerTeamChange(item.localId, it) },
-                    label = { Text("Csapatonként") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    isError = item.maxPerTeam.toIntOrNull()?.let { it > 0 } != true,
-                    supportingText = {
-                        if (item.maxPerTeam.toIntOrNull()?.let { it > 0 } != true) {
-                            Text("Pozitív egész")
-                        }
+                    label = "Csapatonként",
+                    isError = item.maxPerTeam.toIntOrNull()?.let { value -> value > 0 } != true,
+                    supportingText = if (item.maxPerTeam.toIntOrNull()?.let { value -> value > 0 } != true) {
+                        "Pozitív egész"
+                    } else {
+                        null
                     },
                     enabled = enabled,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                 )
-            }
-            ItemEffectDropdown(
-                selectedItemEffectId = item.itemEffectId,
-                itemEffects = itemEffects,
-                enabled = enabled,
-                onSelect = { onEffectIdChange(item.localId, it) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            TextButton(
+            },
+        )
+        ItemEffectDropdown(
+            selectedItemEffectId = item.itemEffectId,
+            itemEffects = itemEffects,
+            enabled = enabled,
+            onSelect = { onEffectIdChange(item.localId, it) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        InlineActionRow {
+            AppButton(
+                text = "Törlés",
                 onClick = { onRemove(item.localId) },
                 enabled = enabled,
-                modifier = Modifier.align(Alignment.End),
+                style = AppButtonStyle.Ghost,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ResponsiveFieldRow(
+    first: @Composable ColumnScope.() -> Unit,
+    second: @Composable ColumnScope.() -> Unit,
+) {
+    val spacing = AppThemeTokens.spacing
+
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        if (maxWidth >= 680.dp) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing.md),
+                verticalAlignment = Alignment.Top,
             ) {
-                Text("Törlés")
+                Column(modifier = Modifier.weight(1f), content = first)
+                Column(modifier = Modifier.weight(1f), content = second)
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
+                first()
+                second()
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ItemEffectDropdown(
     selectedItemEffectId: String,
@@ -592,86 +697,28 @@ private fun ItemEffectDropdown(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     val selectedEffect = itemEffects.firstOrNull { it.id?.toString() == selectedItemEffectId }
-    val label =
-        selectedEffect?.let { "${it.id ?: "-"}: ${it.description.orEmpty()}" } ?: "Nincs effekt"
-
-    ExposedDropdownMenuBox(
-        expanded = isExpanded,
-        onExpandedChange = { if (enabled) isExpanded = it },
-        modifier = modifier,
-    ) {
-        OutlinedTextField(
-            value = label,
-            onValueChange = {},
-            readOnly = true,
-            enabled = enabled,
-            label = { Text("Effekt") },
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(
-                    type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                    enabled = enabled,
-                ),
-        )
-        ExposedDropdownMenu(
-            expanded = isExpanded,
-            onDismissRequest = { isExpanded = false },
-        ) {
-            DropdownMenuItem(
-                text = { Text("Nincs effekt") },
-                onClick = {
-                    onSelect("")
-                    isExpanded = false
-                },
-            )
-            itemEffects.forEach { effect ->
-                val id = effect.id?.toString().orEmpty()
-                DropdownMenuItem(
-                    text = { Text("${effect.id ?: "-"}: ${effect.description.orEmpty()}") },
-                    enabled = id.isNotBlank(),
-                    onClick = {
-                        onSelect(id)
-                        isExpanded = false
-                    },
+    val label = selectedEffect?.let { "${it.id ?: "-"}: ${it.description.orEmpty()}" } ?: "Nincs effekt"
+    val options = buildList {
+        add(AppSelectOption(value = "", label = "Nincs effekt"))
+        itemEffects.forEach { effect ->
+            add(
+                AppSelectOption(
+                    value = effect.id?.toString().orEmpty(),
+                    label = "${effect.id ?: "-"}: ${effect.description.orEmpty()}",
+                    enabled = effect.id != null,
                 )
-            }
+            )
         }
     }
-}
 
-@Composable
-private fun GameRow(
-    game: Game,
-    isLoading: Boolean,
-    onSelectGame: (Game) -> Unit,
-) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.weight(1f),
-            ) {
-                Text(game.name ?: "Névtelen játék", style = MaterialTheme.typography.titleSmall)
-                Text("ID ${game.id ?: "-"}", style = MaterialTheme.typography.bodySmall)
-            }
-            Button(
-                onClick = { onSelectGame(game) },
-                enabled = !isLoading && game.id != null,
-            ) {
-                Text("Csatlakozás")
-            }
-        }
-    }
+    AppSelectField(
+        value = label,
+        label = "Effekt",
+        expanded = isExpanded,
+        options = options,
+        onExpandedChange = { isExpanded = it },
+        onSelect = { option -> onSelect(option.value) },
+        modifier = modifier.widthIn(max = 520.dp),
+        enabled = enabled,
+    )
 }
