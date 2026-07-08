@@ -4,16 +4,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import mok.it.tortura.ui.components.AppButton
+import mok.it.tortura.ui.components.AppButtonStyle
+import mok.it.tortura.ui.components.SectionCard
+import mok.it.tortura.ui.theme.AppThemeTokens
 
 @Composable
 fun SelectionRow(
@@ -23,19 +22,16 @@ fun SelectionRow(
     enabled: Boolean = true,
     onAction: () -> Unit,
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
+    val spacing = AppThemeTokens.spacing
+
+    SectionCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(spacing.xs),
                 modifier = Modifier.weight(1f),
             ) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
@@ -43,12 +39,12 @@ fun SelectionRow(
                     Text(it, style = MaterialTheme.typography.bodySmall)
                 }
             }
-            Button(
+            AppButton(
+                text = actionLabel,
                 onClick = onAction,
                 enabled = enabled,
-            ) {
-                Text(actionLabel)
-            }
+                style = AppButtonStyle.Secondary,
+            )
         }
     }
 }
