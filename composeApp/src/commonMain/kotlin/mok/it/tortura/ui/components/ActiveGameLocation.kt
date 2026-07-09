@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Location
@@ -25,17 +24,11 @@ fun ChangeLocationTopBarAction(
     activeLocationName: String?,
     onChangeLocation: () -> Unit,
 ) {
-    TextButton(onClick = onChangeLocation) {
-        Text(
-            text = if (activeLocationName !==
-                null
-            ) {
-                "Helyszín: $activeLocationName"
-            } else {
-                "Nincs helyszin kivalasztva"
-            },
-        )
-    }
+    AppButton(
+        text = activeLocationName?.let { "Helyszín: $it" } ?: "Nincs helyszín kiválasztva",
+        onClick = onChangeLocation,
+        style = AppButtonStyle.Ghost,
+    )
 }
 
 @Composable
@@ -52,21 +45,25 @@ fun LocationPickerDialog(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 locations.forEach { location ->
                     val isSelected = location.id == selectedLocationId
-                    TextButton(
+                    AppButton(
+                        text = run {
+                            val label = location.name ?: "Állomás #${location.id ?: "-"}"
+                            if (isSelected) "$label (jelenlegi)" else label
+                        },
                         onClick = { onSelectLocation(location) },
                         enabled = location.id != null,
-                    ) {
-                        val label = location.name ?: "Állomás #${location.id ?: "-"}"
-                        Text(if (isSelected) "$label (jelenlegi)" else label)
-                    }
+                        style = if (isSelected) AppButtonStyle.Primary else AppButtonStyle.Ghost,
+                    )
                 }
             }
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Bezárás")
-            }
+            AppButton(
+                text = "Bezárás",
+                onClick = onDismiss,
+                style = AppButtonStyle.Ghost,
+            )
         },
     )
 }

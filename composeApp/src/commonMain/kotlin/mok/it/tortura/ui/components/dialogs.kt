@@ -1,9 +1,7 @@
 package mok.it.tortura.ui.components
 
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 
 @Composable
@@ -13,13 +11,15 @@ fun HelpDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         text = {
-            Text( "Ha idáig eljutottál inkább kérj segítséget!" )
+            Text("Ha idáig eljutottál inkább kérj segítséget!")
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Megyek segítséget kérni")
-            }
-        }
+            AppButton(
+                text = "Megyek segítséget kérni",
+                onClick = onDismiss,
+                style = AppButtonStyle.Ghost,
+            )
+        },
     )
 }
 
@@ -57,17 +57,18 @@ fun SaveErrorPopup(onDismiss: () -> Unit) {
 fun GenericErrorPopup(
     title: String,
     text: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         title = { Text(title) },
         text = { Text(text) },
         onDismissRequest = onDismiss,
         confirmButton = {
-            Button(
+            AppButton(
+                text = "Rendben",
                 onClick = onDismiss,
-            ) { Text("Rendben") }
-        }
+            )
+        },
     )
 }
 

@@ -71,6 +71,15 @@ class SetupViewModelTest {
     }
 
     @Test
+    fun baseTeamCounterFiltersNonNumericCharactersImmediately() = runViewModelTest {
+        val viewModel = SetupViewModel(activeGameId = 7, dataSource = FakeSetupDataSource())
+
+        viewModel.onBaseTeamCounterChange("a1b2c")
+
+        assertEquals("12", viewModel.uiState.value.baseTeamCounter)
+    }
+
+    @Test
     fun repositoryErrorIsExposedInStateAndLoadingStops() = runViewModelTest {
         val viewModel = SetupViewModel(
             activeGameId = 7,
