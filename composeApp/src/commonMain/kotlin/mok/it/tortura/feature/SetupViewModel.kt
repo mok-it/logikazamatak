@@ -10,6 +10,7 @@ import mok.it.tortura.data.supabase.mapper.toInsertDto
 import mok.it.tortura.data.supabase.mapper.toModel
 import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
 import mok.it.tortura.model.TeamAssignment
+import mok.it.tortura.ui.components.sanitizeNumericInput
 
 data class SetupUiState(
     val isLoading: Boolean = false,
@@ -69,7 +70,13 @@ class SetupViewModel(
     }
 
     fun onBaseTeamCounterChange(value: String) {
-        _uiState.update { it.copy(baseTeamCounter = value, message = null, errorMessage = null) }
+        _uiState.update {
+            it.copy(
+                baseTeamCounter = sanitizeNumericInput(value),
+                message = null,
+                errorMessage = null,
+            )
+        }
     }
 
     fun createTeamAssignment() {

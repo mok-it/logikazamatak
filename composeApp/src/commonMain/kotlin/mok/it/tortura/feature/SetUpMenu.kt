@@ -1,21 +1,31 @@
 package mok.it.tortura.feature
 
-import NavigateBackIcon
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import mok.it.tortura.ui.components.ActiveGameLocationTopBarTitle
-import mok.it.tortura.ui.components.ChangeLocationTopBarAction
+import mok.it.tortura.ui.components.AppButton
+import mok.it.tortura.ui.components.AppButtonStyle
+import mok.it.tortura.ui.components.AppNumberField
+import mok.it.tortura.ui.components.BannerTone
+import mok.it.tortura.ui.components.EmptyState
+import mok.it.tortura.ui.components.FormSection
+import mok.it.tortura.ui.components.PageHeader
+import mok.it.tortura.ui.components.PageScaffold
+import mok.it.tortura.ui.components.StatusBanner
+import mok.it.tortura.ui.theme.AppThemeTokens
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetUpMenu(
     activeGameName: String,
@@ -28,85 +38,90 @@ fun SetUpMenu(
     onBack: () -> Unit = {},
     onChangeLocation: () -> Unit = {},
 ) {
+    val spacing = AppThemeTokens.spacing
+
     LaunchedEffect(Unit) {
         onLoad()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    ActiveGameLocationTopBarTitle(
-                        activeGameName = activeGameName,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        NavigateBackIcon()
-                    }
-                },
-                actions = {
-                    ChangeLocationTopBarAction(
-                        activeLocationName = activeLocationName,
-                        onChangeLocation = onChangeLocation,
-                    )
-                },
-            )
-        },
-        snackbarHost = {
-            if (uiState.errorMessage != null || uiState.message != null) {
-                Snackbar(
-                    modifier = Modifier.padding(16.dp),
-                    action = {
-                        TextButton(onClick = onClearMessages) {
-                            Text("OK")
-                        }
-                    },
-                ) {
-                    Text(uiState.errorMessage ?: uiState.message.orEmpty())
-                }
-            }
-        },
-    ) { paddingValues ->
+    PageScaffold(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        PageHeader(
+            title = activeGameName,
+            description = activeLocationName?.let { "Aktív helyszín: $it" } ?: "Még nincs kiválasztott helyszín.",
+            trailingContent = {
+                AppButton(
+                    text = "Vissza",
+                    onClick = onBack,
+                    style = AppButtonStyle.Ghost,
+                )
+                AppButton(
+                    text = "Helyszín váltása",
+                    onClick = onChangeLocation,
+                    style = AppButtonStyle.Secondary,
+                )
+            },
+        )
+
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(spacing.xl),
         ) {
             if (uiState.isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth(),
+            if (uiState.errorMessage != null || uiState.message != null) {
+                StatusBanner(
+                    message = uiState.errorMessage ?: uiState.message.orEmpty(),
+                    tone = if (uiState.errorMessage != null) BannerTone.Error else BannerTone.Success,
+                    onDismiss = onClearMessages,
+                )
+            }
+
+            FormSection(
+                title = "Csapatok",
+                description = "Állítsd be az alap csapatszámot, majd mentsd el a jelenlegi játékhoz.",
             ) {
-                Text("Csapatok", style = MaterialTheme.typography.titleMedium)
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    OutlinedTextField(
-                        value = uiState.baseTeamCounter,
-                        onValueChange = onBaseTeamCounterChange,
-                        label = { Text("Alap csapatszám") },
-                        singleLine = true,
-                        enabled = !uiState.isLoading,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(1f),
-                    )
-                    Button(
-                        onClick = onTeamCreation,
-                        enabled = !uiState.isLoading,
-                    ) {
-                        Text("Mentés")
+                BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                    if (maxWidth >= 680.dp) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(spacing.md),
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            AppNumberField(
+                                value = uiState.baseTeamCounter,
+                                onValueChange = onBaseTeamCounterChange,
+                                label = "Alap csapatszám",
+                                enabled = !uiState.isLoading,
+                                modifier = Modifier.weight(1f),
+                            )
+                            AppButton(
+                                text = "Mentés",
+                                onClick = onTeamCreation,
+                                enabled = !uiState.isLoading,
+                            )
+                        }
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
+                            AppNumberField(
+                                value = uiState.baseTeamCounter,
+                                onValueChange = onBaseTeamCounterChange,
+                                label = "Alap csapatszám",
+                                enabled = !uiState.isLoading,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            AppButton(
+                                text = "Mentés",
+                                onClick = onTeamCreation,
+                                enabled = !uiState.isLoading,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                     }
                 }
+
                 ExistingRows(
                     title = "Mentett csapatbeosztások",
                     rows = uiState.teamAssignments.map { assignment ->
@@ -115,13 +130,13 @@ fun SetUpMenu(
                 )
             }
 
-            OutlinedButton(
+            AppButton(
+                text = "Frissítés",
                 onClick = onLoad,
                 enabled = !uiState.isLoading,
+                style = AppButtonStyle.Secondary,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-            ) {
-                Text("Frissítés")
-            }
+            )
         }
     }
 }
@@ -133,11 +148,14 @@ private fun ExistingRows(
 ) {
     Text(title, style = MaterialTheme.typography.labelLarge)
     if (rows.isEmpty()) {
-        Text("Nincs mentett adat", style = MaterialTheme.typography.bodyMedium)
+        EmptyState(
+            title = "Nincs mentett adat",
+            description = "A mentés után itt jelennek meg a csapatbeosztások.",
+        )
         return
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(AppThemeTokens.spacing.sm)) {
         rows.forEach { row ->
             Text(row, style = MaterialTheme.typography.bodyMedium)
         }

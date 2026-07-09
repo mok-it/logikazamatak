@@ -6,7 +6,7 @@ import mok.it.tortura.navigation.NavGraph
 import mok.it.tortura.ui.theme.AppTheme
 
 @Composable
-@Preview
+@Preview(showBackground = true)
 fun App() {
     AppTheme {
         NavGraph()

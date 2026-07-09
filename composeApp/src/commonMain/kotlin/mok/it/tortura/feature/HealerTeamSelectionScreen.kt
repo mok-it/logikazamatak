@@ -1,20 +1,28 @@
 package mok.it.tortura.feature
 
-import NavigateBackIcon
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Team
-import mok.it.tortura.ui.components.ActiveGameLocationTopBarTitle
-import mok.it.tortura.ui.components.ChangeLocationTopBarAction
+import mok.it.tortura.ui.components.AppButton
+import mok.it.tortura.ui.components.AppButtonStyle
+import mok.it.tortura.ui.components.BannerTone
+import mok.it.tortura.ui.components.EmptyState
+import mok.it.tortura.ui.components.FormSection
+import mok.it.tortura.ui.components.PageHeader
+import mok.it.tortura.ui.components.PageScaffold
+import mok.it.tortura.ui.components.SectionCard
+import mok.it.tortura.ui.components.StatusBanner
+import mok.it.tortura.ui.theme.AppThemeTokens
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HealerTeamSelectionScreen(
     activeGameName: String,
@@ -30,72 +38,58 @@ fun HealerTeamSelectionScreen(
         onLoad()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    ActiveGameLocationTopBarTitle(
-                        activeGameName = activeGameName,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        NavigateBackIcon()
-                    }
-                },
-                actions = {
-                    ChangeLocationTopBarAction(
-                        activeLocationName = activeLocationName,
-                        onChangeLocation = onChangeLocation,
-                    )
-                },
-            )
-        },
-        snackbarHost = {
-            if (uiState.errorMessage != null || uiState.message != null) {
-                Snackbar(
-                    modifier = Modifier.padding(16.dp),
-                    action = {
-                        TextButton(onClick = onClearMessages) {
-                            Text("OK")
-                        }
-                    },
-                ) {
-                    Text(uiState.errorMessage ?: uiState.message.orEmpty())
-                }
-            }
-        },
-    ) { paddingValues ->
+    PageScaffold(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        PageHeader(
+            title = activeGameName,
+            description = activeLocationName?.let { "Aktív helyszín: $it" } ?: "Még nincs kiválasztott helyszín.",
+            trailingContent = {
+                AppButton(
+                    text = "Vissza",
+                    onClick = onBack,
+                    style = AppButtonStyle.Ghost,
+                )
+                AppButton(
+                    text = "Helyszín váltása",
+                    onClick = onChangeLocation,
+                    style = AppButtonStyle.Secondary,
+                )
+            },
+        )
+
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(AppThemeTokens.spacing.xl),
         ) {
             if (uiState.isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            Text(
-                "Válassz csapatot a gyógyító feladatokhoz.",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-
-            if (uiState.teams.isEmpty() && !uiState.isLoading) {
-                Text(
-                    "Ehhez a játékhoz még nincs csapat.",
-                    style = MaterialTheme.typography.bodyLarge,
+            if (uiState.errorMessage != null || uiState.message != null) {
+                StatusBanner(
+                    message = uiState.errorMessage ?: uiState.message.orEmpty(),
+                    tone = if (uiState.errorMessage != null) BannerTone.Error else BannerTone.Success,
+                    onDismiss = onClearMessages,
                 )
             }
 
-            uiState.teams.forEach { team ->
-                TeamSelectionRow(
-                    team = team,
-                    isLoading = uiState.isLoading,
-                    onSelectTeam = onSelectTeam,
-                )
+            FormSection(
+                title = "Gyógyító csapatok",
+                description = "Válassz csapatot a gyógyító feladatokhoz.",
+            ) {
+                if (uiState.teams.isEmpty() && !uiState.isLoading) {
+                    EmptyState(
+                        title = "Ehhez a játékhoz még nincs csapat",
+                        description = "Előbb hozd létre a csapatokat az előkészítés képernyőn.",
+                    )
+                } else {
+                    uiState.teams.forEach { team ->
+                        TeamSelectionRow(
+                            team = team,
+                            isLoading = uiState.isLoading,
+                            onSelectTeam = onSelectTeam,
+                        )
+                    }
+                }
             }
         }
     }
@@ -107,15 +101,10 @@ private fun TeamSelectionRow(
     isLoading: Boolean,
     onSelectTeam: (Team) -> Unit,
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
+    SectionCard(modifier = Modifier.fillMaxWidth(), toned = true) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(AppThemeTokens.spacing.md),
         ) {
             Text(
                 text = team.name ?: "Csapat #${team.id ?: "-"}",
@@ -125,13 +114,11 @@ private fun TeamSelectionRow(
                 text = "ID ${team.id ?: "-"}",
                 style = MaterialTheme.typography.bodySmall,
             )
-            Button(
+            AppButton(
+                text = "Megnyitás",
                 onClick = { onSelectTeam(team) },
                 enabled = !isLoading && team.id != null,
-                modifier = Modifier.align(Alignment.End),
-            ) {
-                Text("Megnyitás")
-            }
+            )
         }
     }
 }
