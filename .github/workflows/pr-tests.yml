@@ -27,4 +27,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Run desktop tests
+        env:
+          SUPABASE_ENV: ${{ secrets.SUPABASE_ENV }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          BATKABANK_API_BASE_URL: ${{ secrets.BATKABANK_API_BASE_URL }}
         run: ./gradlew desktopTest
