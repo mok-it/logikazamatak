@@ -26,6 +26,7 @@ import mok.it.tortura.feature.HealerTeamSelectionScreen
 import mok.it.tortura.feature.HealerTeamSelectionViewModel
 import mok.it.tortura.feature.LocationSelectionScreen
 import mok.it.tortura.feature.LocationSelectionViewModel
+import mok.it.tortura.feature.LocationTasksScreen
 import mok.it.tortura.feature.MainMenu
 import mok.it.tortura.feature.SetUpMenu
 import mok.it.tortura.feature.SetupViewModel
@@ -74,10 +75,16 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 if (location.isShop) {
                     activeLocation = location
                     navController.navigate(Screen.Shop) {
+                        popUpTo(Screen.LocationTasks) {
+                            inclusive = true
+                        }
                         launchSingleTop = true
                     }
                 } else {
                     activeLocation = location
+                    navController.navigate(Screen.LocationTasks) {
+                        launchSingleTop = true
+                    }
                 }
             },
             onDismiss = { isLocationPickerOpen = false },
@@ -163,7 +170,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                         ?: return@LocationSelectionScreen
                     activeGame = selectedGame
                     activeLocation = selectedLocation
-                    navController.navigate(Screen.MainMenu) {
+                    navController.navigate(Screen.LocationTasks) {
                         popUpTo(Screen.GameSelection) {
                             inclusive = false
                         }
@@ -293,6 +300,26 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onSetUp = { navController.navigate(Screen.SetUpMenu) },
                 onCompetition = { navController.navigate(Screen.HealerTeamSelection) },
                 onShop = { navController.navigate(Screen.Shop) },
+                onChangeLocation = ::openLocationPickerForActiveGame,
+            )
+        }
+        composable<Screen.LocationTasks> {
+            val selectedGame = activeGame
+            val selectedLocation = activeLocation
+
+            if (selectedGame?.id == null || selectedLocation == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.GameSelection) {
+                        launchSingleTop = true
+                    }
+                }
+                return@composable
+            }
+
+            LocationTasksScreen(
+                activeGameName = selectedGame.name ?: "#${selectedGame.id}",
+                activeLocation = selectedLocation,
+                onBack = { navController.popBackStack() },
                 onChangeLocation = ::openLocationPickerForActiveGame,
             )
         }
