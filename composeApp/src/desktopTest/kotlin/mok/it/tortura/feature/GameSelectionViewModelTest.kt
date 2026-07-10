@@ -29,7 +29,7 @@ class GameSelectionViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(listOf("Main game"), state.games.map { it.name })
         assertEquals(listOf("Double points"), state.itemEffects.map { it.description })
-        assertEquals("Játékok betöltve", state.message)
+        assertNull(state.message)
         assertNull(state.errorMessage)
         assertFalse(state.isLoading)
     }

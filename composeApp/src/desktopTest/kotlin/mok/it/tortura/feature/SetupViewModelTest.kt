@@ -33,7 +33,7 @@ class SetupViewModelTest {
         assertEquals(listOf(4L), state.teamAssignments.map { it.baseTeamCounter })
         assertEquals(listOf(7L), state.teamAssignments.map { it.gameId })
         assertEquals(listOf(7L), dataSource.loadedGameIds)
-        assertEquals("Adatok betöltve", state.message)
+        assertNull(state.message)
         assertNull(state.errorMessage)
         assertFalse(state.isLoading)
     }

@@ -28,7 +28,11 @@ class ShopViewModelTest {
         val dataSource = FakeShopDataSource(
             catalog = sampleCatalog(),
             purchasesByTeamId = mapOf(1L to listOf(ShopEntry(itemId = 101, teamId = 1))),
-            taskEventsByTeamId = mapOf(1L to List(12) { TaskEvent(teamId = 1, isSuccess = true, taskId = it.toLong()) }),
+            taskEventsByTeamId = mapOf(
+                1L to List(12) {
+                    TaskEvent(teamId = 1, isSuccess = true, taskId = it.toLong())
+                },
+            ),
         )
         val viewModel = ShopViewModel(activeGameId = 44, dataSource = dataSource)
 
@@ -51,7 +55,11 @@ class ShopViewModelTest {
     fun applyScoreAdjustmentUpdatesDerivedBudgetAndClearsInput() = runShopViewModelTest {
         val dataSource = FakeShopDataSource(
             catalog = sampleCatalog(),
-            taskEventsByTeamId = mapOf(1L to List(12) { TaskEvent(teamId = 1, isSuccess = true, taskId = it.toLong()) }),
+            taskEventsByTeamId = mapOf(
+                1L to List(12) {
+                    TaskEvent(teamId = 1, isSuccess = true, taskId = it.toLong())
+                },
+            ),
         )
         val viewModel = ShopViewModel(activeGameId = 44, dataSource = dataSource)
 
@@ -87,7 +95,11 @@ class ShopViewModelTest {
     fun purchaseRefreshesDerivedBudgetFromScoreAndPurchases() = runShopViewModelTest {
         val dataSource = FakeShopDataSource(
             catalog = sampleCatalog(),
-            taskEventsByTeamId = mapOf(1L to List(12) { TaskEvent(teamId = 1, isSuccess = true, taskId = it.toLong()) }),
+            taskEventsByTeamId = mapOf(
+                1L to List(12) {
+                    TaskEvent(teamId = 1, isSuccess = true, taskId = it.toLong())
+                },
+            ),
         )
         val viewModel = ShopViewModel(activeGameId = 44, dataSource = dataSource)
 
@@ -147,10 +159,16 @@ private class FakeShopDataSource(
 
     override suspend fun getTaskEvents(teamId: Long): List<TaskEvent> = taskEventsByTeamId[teamId].orEmpty()
 
-    override suspend fun adjustAdditionalScoreAwarded(teamId: Long, delta: Int): Team {
+    override suspend fun adjustAdditionalScoreAwarded(
+        teamId: Long,
+        delta: Int,
+    ): Team {
         scoreAdjustments += teamId to delta
         val index = mutableTeams.indexOfFirst { it.id == teamId }
-        val updatedTeam = mutableTeams[index].copy(additionalScoreAwarded = mutableTeams[index].additionalScoreAwarded + delta)
+        val updatedTeam = mutableTeams[index].copy(
+            additionalScoreAwarded =
+            mutableTeams[index].additionalScoreAwarded + delta,
+        )
         mutableTeams[index] = updatedTeam
         return updatedTeam
     }
