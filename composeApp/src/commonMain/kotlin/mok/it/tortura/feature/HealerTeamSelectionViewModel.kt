@@ -8,30 +8,56 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import mok.it.tortura.data.supabase.mapper.toModel
 import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
+import mok.it.tortura.model.TeamProgressSummary
+import mok.it.tortura.model.TeamProgressSummaryCalculator
 import mok.it.tortura.model.Team
+
+data class HealerTeamListItem(
+    val team: Team,
+    val progress: TeamProgressSummary,
+)
 
 data class HealerTeamSelectionUiState(
     val isLoading: Boolean = false,
-    val teams: List<Team> = emptyList(),
+    val teams: List<HealerTeamListItem> = emptyList(),
     val message: String? = null,
     val errorMessage: String? = null,
 )
 
 interface HealerTeamSelectionDataSource {
-    suspend fun getTeams(gameId: Long): List<Team>
+    suspend fun getTeams(gameId: Long): List<HealerTeamListItem>
 }
 
 class SupabaseHealerTeamSelectionDataSource(
     private val repositories: TorturaSupabaseRepositories = TorturaSupabaseRepositories(),
 ) : HealerTeamSelectionDataSource {
 
-    override suspend fun getTeams(gameId: Long): List<Team> {
+    override suspend fun getTeams(gameId: Long): List<HealerTeamListItem> {
         val assignments = repositories.teamAssignments.getByGameId(gameId)
+        val allGameTasks = repositories.tasks.getByGameId(gameId).map { it.toModel() }
+        val allItems = repositories.items.getByGameId(gameId).map { it.toModel() }
         return assignments
             .mapNotNull { it.id }
             .flatMap { repositories.teams.getByTeamAssignmentId(it) }
-            .map { it.toModel() }
-            .sortedBy { it.id ?: Long.MAX_VALUE }
+            .map { teamDto ->
+                val teamId = teamDto.id ?: error("A csapat azonosítója hiányzik")
+                val team = teamDto.toModel(
+                    students = repositories.students.getByTeamId(teamId).map { it.toModel() },
+                )
+                val taskEvents = repositories.tasksLedger.getByTeamId(teamId).map { it.toModel() }
+                val purchases = repositories.shop.getByTeamId(teamId).map { it.toModel() }
+                HealerTeamListItem(
+                    team = team,
+                    progress = TeamProgressSummaryCalculator.calculate(
+                        team = team,
+                        allGameTasks = allGameTasks,
+                        allItems = allItems,
+                        taskEvents = taskEvents,
+                        purchases = purchases,
+                    ),
+                )
+            }
+            .sortedBy { it.team.id ?: Long.MAX_VALUE }
     }
 }
 

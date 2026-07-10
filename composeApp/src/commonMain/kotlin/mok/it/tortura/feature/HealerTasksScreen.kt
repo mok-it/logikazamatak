@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.HealingTask
 import mok.it.tortura.model.Team
+import mok.it.tortura.model.TeamProgressSummary
 import mok.it.tortura.ui.components.*
 import mok.it.tortura.ui.theme.AppTheme
 import mok.it.tortura.ui.theme.AppThemeTokens
@@ -101,7 +102,8 @@ fun HealerTasksScreen(
             )
 
             SummarySection(
-                teamName = uiState.team?.name ?: "Csapat #${uiState.team?.id ?: "-"}",
+                team = uiState.team,
+                progress = uiState.teamProgress,
                 healableCount = uiState.healableFailedTasks.size,
                 hasHealableFailedTask = hasHealableFailedTask,
             )
@@ -161,7 +163,8 @@ private fun currentLocationButtonLabel(activeLocationName: String?): String =
 
 @Composable
 private fun SummarySection(
-    teamName: String,
+    team: Team?,
+    progress: TeamProgressSummary?,
     healableCount: Int,
     hasHealableFailedTask: Boolean,
 ) {
@@ -171,7 +174,7 @@ private fun SummarySection(
     SectionCard {
         Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
             Text(
-                text = teamName,
+                text = team?.name ?: "Csapat #${team?.id ?: "-"}",
                 style = MaterialTheme.typography.titleLarge,
             )
             Text(
@@ -191,6 +194,7 @@ private fun SummarySection(
                     color = colors.textSecondary,
                 )
             }
+            TeamInfoDisclosure(team = team, progress = progress)
         }
     }
 }
