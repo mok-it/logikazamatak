@@ -19,10 +19,14 @@ import mok.it.tortura.ui.components.AppButton
 import mok.it.tortura.ui.components.AppButtonStyle
 import mok.it.tortura.ui.components.AppNumberField
 import mok.it.tortura.ui.components.BannerTone
+import mok.it.tortura.ui.components.ChangeLocationIcon
 import mok.it.tortura.ui.components.EmptyState
 import mok.it.tortura.ui.components.FormSection
+import mok.it.tortura.ui.components.NavigateBackIcon
 import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
+import mok.it.tortura.ui.components.RefreshIcon
+import mok.it.tortura.ui.components.SaveIcon
 import mok.it.tortura.ui.components.StatusBanner
 import mok.it.tortura.ui.theme.AppThemeTokens
 
@@ -53,11 +57,13 @@ fun SetUpMenu(
                     text = "Vissza",
                     onClick = onBack,
                     style = AppButtonStyle.Ghost,
+                    leadingIcon = { NavigateBackIcon() },
                 )
                 AppButton(
                     text = "Helyszín váltása",
                     onClick = onChangeLocation,
                     style = AppButtonStyle.Secondary,
+                    leadingIcon = { ChangeLocationIcon() },
                 )
             },
         )
@@ -101,6 +107,7 @@ fun SetUpMenu(
                                 text = "Mentés",
                                 onClick = onTeamCreation,
                                 enabled = !uiState.isLoading,
+                                leadingIcon = { SaveIcon() },
                             )
                         }
                     } else {
@@ -117,6 +124,7 @@ fun SetUpMenu(
                                 onClick = onTeamCreation,
                                 enabled = !uiState.isLoading,
                                 modifier = Modifier.fillMaxWidth(),
+                                leadingIcon = { SaveIcon() },
                             )
                         }
                     }
@@ -136,6 +144,7 @@ fun SetUpMenu(
                 enabled = !uiState.isLoading,
                 style = AppButtonStyle.Secondary,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
+                leadingIcon = { RefreshIcon() },
             )
         }
     }

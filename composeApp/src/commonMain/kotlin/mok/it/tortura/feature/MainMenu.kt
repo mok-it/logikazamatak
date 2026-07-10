@@ -11,11 +11,18 @@ import mok.it.tortura.model.Location
 import mok.it.tortura.ui.components.AppButton
 import mok.it.tortura.ui.components.AppButtonStyle
 import mok.it.tortura.ui.components.BannerTone
+import mok.it.tortura.ui.components.ChangeLocationIcon
 import mok.it.tortura.ui.components.FormSection
+import mok.it.tortura.ui.components.GamesIcon
+import mok.it.tortura.ui.components.HealerIcon
+import mok.it.tortura.ui.components.LoginIcon
+import mok.it.tortura.ui.components.LogoutIcon
 import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
 import mok.it.tortura.ui.components.SectionCard
+import mok.it.tortura.ui.components.SetupIcon
 import mok.it.tortura.ui.components.StatusBanner
+import mok.it.tortura.ui.components.ShopIcon
 import mok.it.tortura.ui.theme.AppThemeTokens
 
 @Composable
@@ -45,6 +52,7 @@ fun MainMenu(
                     onClick = onChangeLocation,
                     style = AppButtonStyle.Secondary,
                     enabled = canUseActions,
+                    leadingIcon = { ChangeLocationIcon() },
                 )
             },
         )
@@ -79,12 +87,14 @@ fun MainMenu(
                     enabled = canUseActions,
                     style = AppButtonStyle.Ghost,
                     modifier = Modifier.align(Alignment.Start),
+                    leadingIcon = { GamesIcon() },
                 )
                 AppButton(
                     text = "Előkészítés",
                     onClick = onSetUp,
                     enabled = canUseActions,
                     modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { SetupIcon() },
                 )
                 AppButton(
                     text = "Gyógyító feladatok",
@@ -92,6 +102,7 @@ fun MainMenu(
                     enabled = canUseActions,
                     style = AppButtonStyle.Secondary,
                     modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { HealerIcon() },
                 )
             }
             AppButton(
@@ -100,6 +111,7 @@ fun MainMenu(
                 enabled = canUseActions,
                 style = AppButtonStyle.Secondary,
                 modifier = Modifier.fillMaxWidth(),
+                leadingIcon = { ShopIcon() },
             )
         }
     }
@@ -139,6 +151,7 @@ private fun AuthSection(
                         onClick = onSignOut,
                         enabled = !authUiState.isBusy,
                         style = AppButtonStyle.Ghost,
+                        leadingIcon = { LogoutIcon() },
                     )
                 }
             } else {
@@ -146,6 +159,7 @@ private fun AuthSection(
                     text = if (authUiState.isBusy) "Megnyitás..." else "Bejelentkezés Google-lel",
                     onClick = onSignInWithGoogle,
                     enabled = !authUiState.isBusy,
+                    leadingIcon = { LoginIcon() },
                 )
             }
         }

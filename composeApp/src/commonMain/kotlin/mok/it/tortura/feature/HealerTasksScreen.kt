@@ -75,11 +75,13 @@ fun HealerTasksScreen(
                     text = "Vissza",
                     onClick = onBack,
                     style = AppButtonStyle.Ghost,
+                    leadingIcon = { NavigateBackIcon() },
                 )
                 AppButton(
                     text = "Helyszín váltása",
                     onClick = onChangeLocation,
                     style = AppButtonStyle.Secondary,
+                    leadingIcon = { ChangeLocationIcon() },
                 )
             },
         )
@@ -149,6 +151,7 @@ fun HealerTasksScreen(
                     },
                     enabled = !uiState.isLoading && selectedHealingTask?.task?.id != null && hasHealableFailedTask,
                     modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { HealerIcon() },
                 )
             }
         }
@@ -209,6 +212,13 @@ private fun HealingTaskRow(
             enabled = enabled,
             style = if (isSelected) AppButtonStyle.Primary else AppButtonStyle.Secondary,
             modifier = Modifier.fillMaxWidth(),
+            leadingIcon = {
+                if (isSelected) {
+                    CorrectIcon(selected = false, iconSize = 18.dp)
+                } else {
+                    NavigateForwardIcon()
+                }
+            },
         )
     }
 }

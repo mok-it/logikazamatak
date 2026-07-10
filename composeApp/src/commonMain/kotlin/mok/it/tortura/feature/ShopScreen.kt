@@ -38,10 +38,14 @@ import mok.it.tortura.ui.components.AppSelectField
 import mok.it.tortura.ui.components.AppSelectOption
 import mok.it.tortura.ui.components.AppTextField
 import mok.it.tortura.ui.components.BannerTone
+import mok.it.tortura.ui.components.ChangeLocationIcon
 import mok.it.tortura.ui.components.EmptyState
+import mok.it.tortura.ui.components.NavigateBackIcon
 import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
+import mok.it.tortura.ui.components.SaveIcon
 import mok.it.tortura.ui.components.SectionCard
+import mok.it.tortura.ui.components.ShopIcon
 import mok.it.tortura.ui.components.StatusBanner
 import mok.it.tortura.ui.theme.AppTheme
 import mok.it.tortura.ui.theme.AppThemeTokens
@@ -89,11 +93,13 @@ fun ShopScreen(
                     text = "Vissza",
                     onClick = onBack,
                     style = AppButtonStyle.Ghost,
+                    leadingIcon = { NavigateBackIcon() },
                 )
                 AppButton(
                     text = "Helyszín váltása",
                     onClick = onChangeLocation,
                     style = AppButtonStyle.Secondary,
+                    leadingIcon = { ChangeLocationIcon() },
                 )
             },
         )
@@ -384,6 +390,7 @@ private fun ScoreAdjustmentRow(
             onClick = onApply,
             enabled = enabled && value.isNotBlank() && value != "-",
             style = AppButtonStyle.Secondary,
+            leadingIcon = { SaveIcon() },
         )
     }
 }
@@ -533,6 +540,7 @@ private fun ShopTableRow(
                 text = "Vásárlás",
                 onClick = { itemId?.let(onPurchaseClick) },
                 enabled = purchaseEnabled,
+                leadingIcon = { ShopIcon() },
             )
         }
     }
@@ -619,6 +627,7 @@ private fun PurchaseDialog(
                 text = "Vásárlás",
                 onClick = { onPurchase(itemId) },
                 enabled = canConfirmPurchase,
+                leadingIcon = { ShopIcon() },
             )
         },
         dismissButton = {

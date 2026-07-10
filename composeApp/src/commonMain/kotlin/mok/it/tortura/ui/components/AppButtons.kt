@@ -2,7 +2,9 @@ package mok.it.tortura.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,6 +32,8 @@ fun AppButton(
     style: AppButtonStyle = AppButtonStyle.Primary,
     enabled: Boolean = true,
     loading: Boolean = false,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
 ) {
     AppButton(
         onClick = onClick,
@@ -38,7 +42,15 @@ fun AppButton(
         enabled = enabled,
         loading = loading,
     ) {
+        if (leadingIcon != null) {
+            leadingIcon()
+            Spacer(modifier = Modifier.width(8.dp))
+        }
         Text(text)
+        if (trailingIcon != null) {
+            Spacer(modifier = Modifier.width(8.dp))
+            trailingIcon()
+        }
     }
 }
 
