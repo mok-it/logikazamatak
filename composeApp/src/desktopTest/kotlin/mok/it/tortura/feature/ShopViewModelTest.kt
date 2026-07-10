@@ -6,8 +6,19 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
-import mok.it.tortura.model.*
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import mok.it.tortura.model.Item
+import mok.it.tortura.model.ItemEffect
+import mok.it.tortura.model.ItemEffectCode
+import mok.it.tortura.model.ShopEntry
+import mok.it.tortura.model.Task
+import mok.it.tortura.model.TaskEvent
+import mok.it.tortura.model.Team
+import mok.it.tortura.model.TeamScoreCalculator
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ShopViewModelTest {
@@ -156,7 +167,7 @@ private class FakeShopDataSource(
         val index = mutableTeams.indexOfFirst { it.id == teamId }
         val updatedTeam = mutableTeams[index].copy(
             additionalScoreAwarded =
-                mutableTeams[index].additionalScoreAwarded + delta,
+            mutableTeams[index].additionalScoreAwarded + delta,
         )
         mutableTeams[index] = updatedTeam
         return updatedTeam
