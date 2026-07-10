@@ -181,7 +181,10 @@ class HealerTasksViewModel(
         _uiState.update { it.copy(selectedHealingTaskId = healingTaskId, message = null, errorMessage = null) }
     }
 
-    fun completeHealing(healingTaskId: Long, healedTasksLedgerId: Long) {
+    fun completeHealing(
+        healingTaskId: Long,
+        healedTasksLedgerId: Long,
+    ) {
         runRepositoryAction(
             clearSelection = true,
             action = {

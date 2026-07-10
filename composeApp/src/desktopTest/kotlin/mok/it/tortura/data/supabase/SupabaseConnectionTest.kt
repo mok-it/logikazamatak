@@ -1,9 +1,9 @@
 package mok.it.tortura.data.supabase
 
-import kotlinx.coroutines.test.runTest
-import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
 import kotlin.test.Test
 import kotlin.test.assertNotNull
+import kotlinx.coroutines.test.runTest
+import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
 
 class SupabaseConnectionTest {
 

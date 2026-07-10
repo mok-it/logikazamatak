@@ -27,11 +27,10 @@ class SupabaseLocationSelectionDataSource(
     private val repositories: TorturaSupabaseRepositories = TorturaSupabaseRepositories(),
 ) : LocationSelectionDataSource {
 
-    override suspend fun getGame(gameId: Long): Game? =
-        repositories.games.getById(gameId)?.toModel()
+    override suspend fun getGame(gameId: Long): Game? = repositories.games.getById(gameId)?.toModel()
 
     override suspend fun getLocations(gameId: Long): List<Location> =
-        repositories.locations.getByGameId(gameId).map { it.toModel() }
+        listOf(Location.shop(gameId)) + repositories.locations.getByGameId(gameId).map { it.toModel() }
 }
 
 class LocationSelectionViewModel(

@@ -21,22 +21,22 @@ fun CorrectIcon(
     selected: Boolean,
     iconSize: Dp,
     modifier: Modifier = Modifier,
-){
-    if( selected ){
+) {
+    if (selected) {
         Icon(
             Icons.Filled.Check,
             contentDescription = null,
             tint = Color.White,
             modifier = modifier
                 .background(color = Color.Green, shape = RoundedCornerShape(iconSize / 2))
-                .size( iconSize )
+                .size(iconSize),
         )
     } else {
         Icon(
             Icons.Filled.Check,
             contentDescription = null,
             tint = Color.Green,
-            modifier = modifier.size(iconSize)
+            modifier = modifier.size(iconSize),
         )
     }
 }
@@ -46,8 +46,8 @@ fun IncorrectIcon(
     selected: Boolean,
     iconSize: Dp,
     modifier: Modifier = Modifier,
-){
-    if( selected ) {
+) {
+    if (selected) {
         Icon(
             Icons.Filled.Close,
             contentDescription = null,
@@ -60,27 +60,23 @@ fun IncorrectIcon(
         Icon(
             Icons.Filled.Close,
             contentDescription = null,
-            tint = Color.Red ,
+            tint = Color.Red,
             modifier = modifier.size(iconSize),
         )
     }
 }
 
 @Composable
-fun DeleteIcon(
-    modifier: Modifier = Modifier
-){
+fun DeleteIcon(modifier: Modifier = Modifier) {
     Icon(
         Icons.Filled.DeleteForever,
         contentDescription = null,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
 @Composable
-fun NavigateBackIcon(
-    modifier: Modifier = Modifier
-){
+fun NavigateBackIcon(modifier: Modifier = Modifier) {
     Icon(
         Icons.AutoMirrored.Filled.ArrowBack,
         contentDescription = null,
@@ -89,34 +85,28 @@ fun NavigateBackIcon(
 }
 
 @Composable
-fun NavigateForwardIcon(
-    modifier: Modifier = Modifier
-){
+fun NavigateForwardIcon(modifier: Modifier = Modifier) {
     Icon(
         Icons.AutoMirrored.Filled.ArrowForward,
         contentDescription = null,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
 @Composable
-fun HelpIcon(
-    modifier: Modifier = Modifier
-){
+fun HelpIcon(modifier: Modifier = Modifier) {
     Icon(
         Icons.AutoMirrored.Filled.Help,
         contentDescription = null,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
 @Composable
-fun AddIcon(
-    modifier: Modifier = Modifier
-){
+fun AddIcon(modifier: Modifier = Modifier) {
     Icon(
         Icons.Filled.Add,
         contentDescription = null,
-        modifier = modifier
+        modifier = modifier,
     )
 }

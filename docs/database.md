@@ -100,6 +100,7 @@ Key columns:
 - `id`: primary key
 - `name`: display name
 - `teamAssignmentId`: references `TeamAssignment.id`
+- `additionalScoreAwarded`: signed manual score correction applied on top of ledger-derived score
 
 ### `Students`
 
@@ -184,6 +185,10 @@ Key columns:
 Trigger-backed rules:
 
 - `maxPerTeam` is enforced per `Items.id` and `Teams.id`.
+- A team's shop budget is derived from gameplay, not stored separately:
+  successful `TasksLedger` rows count as score, `Teams.additionalScoreAwarded` applies manual score corrections,
+  and current spend is the sum of purchased item prices.
+- Purchases fail when `team score - prior purchase total` is below the selected item's price.
 - Purchases are validated against the selected game's tasks/locations before insert.
 - Task/location multipliers materialize as generated success rows in `TasksLedger`, linked back to both the purchase and the original success row.
 - Miniboss attempts are validated against prior shop purchases in `Shop`; locked minibosses cannot be attempted.
@@ -215,6 +220,7 @@ Current temporary policies:
 - `ItemEffects`: anonymous and authenticated users can read rows.
 - `Items`: anonymous and authenticated users can read and create rows when `gameId` is present.
 - `TeamAssignment`: anonymous and authenticated users can read and create rows when `gameId` is present.
+- `Teams`: anonymous and authenticated users can read and update rows when `teamAssignmentId` is present.
 
 These policies match the current app state where authentication is disabled/stubbed in navigation. Before enabling real
 multi-user access, replace the public policies with authenticated access or explicit game membership rules.

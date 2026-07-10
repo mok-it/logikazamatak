@@ -1,9 +1,9 @@
 package mok.it.tortura.data.supabase.dto
 
+import kotlin.time.Instant
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.time.Instant
 
 @Serializable
 data class GameDto(
@@ -231,10 +231,12 @@ data class TeamDto(
     val createdAt: Instant? = null,
     val name: String? = null,
     val teamAssignmentId: Long? = null,
+    val additionalScoreAwarded: Int? = null,
 )
 
 @Serializable
 data class TeamInsertDto(
     val name: String? = null,
     val teamAssignmentId: Long? = null,
+    val additionalScoreAwarded: Int? = null,
 )

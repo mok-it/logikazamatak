@@ -1,7 +1,7 @@
 package mok.it.tortura.model
 
-import kotlinx.serialization.Serializable
 import kotlin.time.Instant
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class ItemEffect(

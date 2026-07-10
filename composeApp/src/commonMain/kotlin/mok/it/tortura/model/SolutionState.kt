@@ -3,9 +3,8 @@ package mok.it.tortura.model
 enum class SolutionState {
     CORRECT,
     INCORRECT,
-    EMPTY;
+    EMPTY,
+    ;
 
-    fun toBoolean(): Boolean {
-        return this == CORRECT
-    }
+    fun toBoolean(): Boolean = this == CORRECT
 }

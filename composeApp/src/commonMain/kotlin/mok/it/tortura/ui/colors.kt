@@ -10,35 +10,34 @@ data class CategoryColors(
     val textColor: Color,
     @Serializable(with = ColorAsStringSerializer::class)
     val backgroundColor: Color,
-    val name: String = "Egyedi"
-    ){
+    val name: String = "Egyedi",
+) {
 
     companion object {
         val BOCS = CategoryColors(
-            backgroundColor =  Color(171, 32, 17),
+            backgroundColor = Color(171, 32, 17),
             textColor = Color.White,
-            name = "Medvebocs"
+            name = "Medvebocs",
         )
         val KIS = CategoryColors(
             backgroundColor = Color(207, 198, 35),
-            textColor =  Color.White,
-            name = "Kismedve"
+            textColor = Color.White,
+            name = "Kismedve",
         )
         val NAGY = CategoryColors(
-            backgroundColor = Color(12,135,47),
+            backgroundColor = Color(12, 135, 47),
             textColor = Color.White,
-            name = "Nagymedve"
+            name = "Nagymedve",
         )
         val JEGES = CategoryColors(
             backgroundColor = Color(37, 195, 219),
             textColor = Color.White,
-            name = "Jegesmedve"
+            name = "Jegesmedve",
         )
         val UNDIFINED = CategoryColors(
             backgroundColor = Color.Unspecified,
             textColor = Color.Unspecified,
-            name = "Válasz színt!"
+            name = "Válasz színt!",
         )
     }
-
 }

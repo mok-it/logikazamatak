@@ -122,29 +122,28 @@ fun Task.toUpdateDto(): TaskInsertDto = TaskInsertDto(
     locationId = locationId,
 )
 
-fun TeamDto.toModel(
-    students: List<Student> = emptyList(),
-): Team = Team(
+fun TeamDto.toModel(students: List<Student> = emptyList()): Team = Team(
     id = id,
     createdAt = createdAt,
     name = name,
     teamAssignmentId = teamAssignmentId,
+    additionalScoreAwarded = additionalScoreAwarded ?: 0,
     students = students,
 )
 
 fun Team.toInsertDto(): TeamInsertDto = TeamInsertDto(
     name = name,
     teamAssignmentId = teamAssignmentId,
+    additionalScoreAwarded = additionalScoreAwarded,
 )
 
 fun Team.toUpdateDto(): TeamInsertDto = TeamInsertDto(
     name = name,
     teamAssignmentId = teamAssignmentId,
+    additionalScoreAwarded = additionalScoreAwarded,
 )
 
-fun TeamAssignmentDto.toModel(
-    teams: List<Team> = emptyList(),
-): TeamAssignment = TeamAssignment(
+fun TeamAssignmentDto.toModel(teams: List<Team> = emptyList()): TeamAssignment = TeamAssignment(
     id = id,
     createdAt = createdAt,
     baseTeamCounter = baseTeamCounter,
@@ -162,9 +161,7 @@ fun TeamAssignment.toUpdateDto(): TeamAssignmentInsertDto = TeamAssignmentInsert
     gameId = gameId,
 )
 
-fun LocationDto.toModel(
-    tasks: List<Task> = emptyList(),
-): Location = Location(
+fun LocationDto.toModel(tasks: List<Task> = emptyList()): Location = Location(
     id = id,
     createdAt = createdAt,
     name = name,
@@ -225,9 +222,7 @@ fun ItemEffect.toUpdateDto(): ItemEffectInsertDto = ItemEffectInsertDto(
     description = description,
 )
 
-fun TasksLedgerDto.toModel(
-    task: Task? = null,
-): TaskEvent = TaskEvent(
+fun TasksLedgerDto.toModel(task: Task? = null): TaskEvent = TaskEvent(
     id = id,
     createdAt = createdAt,
     userId = userId,

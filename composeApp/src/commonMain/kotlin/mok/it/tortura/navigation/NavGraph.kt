@@ -29,6 +29,8 @@ import mok.it.tortura.feature.LocationSelectionViewModel
 import mok.it.tortura.feature.MainMenu
 import mok.it.tortura.feature.SetUpMenu
 import mok.it.tortura.feature.SetupViewModel
+import mok.it.tortura.feature.ShopScreen
+import mok.it.tortura.feature.ShopViewModel
 import mok.it.tortura.model.Game
 import mok.it.tortura.model.Location
 import mok.it.tortura.ui.components.LocationPickerDialog
@@ -55,7 +57,8 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
     fun openLocationPickerForActiveGame() {
         val gameId = activeGame?.id ?: return
         coroutineScope.launch {
-            switchableLocations = repositories.locations.getByGameId(gameId).map { it.toModel() }
+            switchableLocations =
+                listOf(Location.shop(gameId)) + repositories.locations.getByGameId(gameId).map { it.toModel() }
             if (switchableLocations.isNotEmpty()) {
                 isLocationPickerOpen = true
             }
@@ -67,8 +70,15 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             locations = switchableLocations,
             selectedLocationId = activeLocation?.id,
             onSelectLocation = { location ->
-                activeLocation = location
                 isLocationPickerOpen = false
+                if (location.isShop) {
+                    activeLocation = location
+                    navController.navigate(Screen.Shop) {
+                        launchSingleTop = true
+                    }
+                } else {
+                    activeLocation = location
+                }
             },
             onDismiss = { isLocationPickerOpen = false },
         )
@@ -137,6 +147,17 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onSelectLocation = { locationId ->
                     val selectedGame =
                         locationSelectionUiState.value.game ?: return@LocationSelectionScreen
+                    if (locationId == Location.SHOP_ID) {
+                        activeGame = selectedGame
+                        activeLocation = Location.shop(selectedGame.id)
+                        navController.navigate(Screen.Shop) {
+                            popUpTo(Screen.GameSelection) {
+                                inclusive = false
+                            }
+                            launchSingleTop = true
+                        }
+                        return@LocationSelectionScreen
+                    }
                     val selectedLocation = locationSelectionUiState.value.locations
                         .firstOrNull { it.id == locationId }
                         ?: return@LocationSelectionScreen
@@ -270,6 +291,40 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 },
                 onSetUp = { navController.navigate(Screen.SetUpMenu) },
                 onCompetition = { navController.navigate(Screen.HealerTeamSelection) },
+                onShop = { navController.navigate(Screen.Shop) },
+                onChangeLocation = ::openLocationPickerForActiveGame,
+            )
+        }
+        composable<Screen.Shop> {
+            val selectedGame = activeGame
+            val selectedGameId = selectedGame?.id
+
+            if (selectedGame == null || selectedGameId == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.GameSelection) {
+                        launchSingleTop = true
+                    }
+                }
+                return@composable
+            }
+
+            val shopViewModel = viewModel(key = "shop-$selectedGameId") {
+                ShopViewModel(activeGameId = selectedGameId)
+            }
+            val shopUiState = shopViewModel.uiState.collectAsStateWithLifecycle()
+
+            ShopScreen(
+                activeGameName = selectedGame.name ?: "#$selectedGameId",
+                activeLocationName = activeLocation?.name,
+                uiState = shopUiState.value,
+                onLoad = shopViewModel::load,
+                onSelectTeam = shopViewModel::selectTeam,
+                onScoreAdjustmentInputChange = shopViewModel::onScoreAdjustmentInputChange,
+                onApplyScoreAdjustment = shopViewModel::applyScoreAdjustment,
+                onTargetChange = shopViewModel::selectTarget,
+                onPurchase = shopViewModel::purchaseItem,
+                onClearMessages = shopViewModel::clearMessages,
+                onBack = { navController.popBackStack() },
                 onChangeLocation = ::openLocationPickerForActiveGame,
             )
         }
