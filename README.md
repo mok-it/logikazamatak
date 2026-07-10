@@ -67,6 +67,18 @@ it's http://127.0.0.1:54323/project/default/editor/)
 
 This uses the desktop JVM target and automatically reloads UI changes when you save files.
 
+### Batkabank integration - Firebase emulator
+
+If you want to test the Batkabank integration using local emulators, then do the following steps.
+
+Head into the Batkabank repo, and:
+1) set it up, based on its readme
+2) login into google cloud cli using `gcloud auth login`
+3) seed the emulator's db - from the root: `yarn import-seed`
+4) run the emulators: `yarn emulators`
+
+Then, in this repo, modify the `env.local` file's `BATKABANK_API_BASE_URL` for something like this: http://127.0.0.1:5001/batkabank/europe-west1. Use the ip and port from the console output of the `yarn emulators` command
+
 # Supported Platforms
 
 Must have:
