@@ -27,6 +27,7 @@ import mok.it.tortura.feature.HealerTeamSelectionViewModel
 import mok.it.tortura.feature.LocationSelectionScreen
 import mok.it.tortura.feature.LocationSelectionViewModel
 import mok.it.tortura.feature.LocationTasksScreen
+import mok.it.tortura.feature.LocationTasksViewModel
 import mok.it.tortura.feature.MainMenu
 import mok.it.tortura.feature.SetUpMenu
 import mok.it.tortura.feature.SetupViewModel
@@ -325,9 +326,33 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 return@composable
             }
 
+            val locationId = selectedLocation.id
+            if (locationId == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.GameSelection) {
+                        launchSingleTop = true
+                    }
+                }
+                return@composable
+            }
+
+            val locationTasksViewModel = viewModel(key = "location-tasks-$locationId") {
+                LocationTasksViewModel(
+                    activeGameId = selectedGame.id,
+                    locationId = locationId,
+                )
+            }
+            val locationTasksUiState = locationTasksViewModel.uiState.collectAsStateWithLifecycle()
+
             LocationTasksScreen(
                 activeGameName = selectedGame.name ?: "#${selectedGame.id}",
                 activeLocation = selectedLocation,
+                uiState = locationTasksUiState.value,
+                onLoad = locationTasksViewModel::load,
+                onSelectTeam = locationTasksViewModel::selectTeam,
+                onAnswerChange = locationTasksViewModel::onAnswerChange,
+                onSubmitAnswer = locationTasksViewModel::submitAnswer,
+                onClearMessages = locationTasksViewModel::clearMessages,
                 onBack = { navController.popBackStack() },
                 onChangeLocation = ::openLocationPickerForActiveGame,
             )
