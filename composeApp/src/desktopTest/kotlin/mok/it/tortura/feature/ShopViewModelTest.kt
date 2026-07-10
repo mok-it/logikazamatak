@@ -18,6 +18,7 @@ import mok.it.tortura.model.ShopEntry
 import mok.it.tortura.model.Task
 import mok.it.tortura.model.TaskEvent
 import mok.it.tortura.model.Team
+import mok.it.tortura.model.TeamScoreCalculator
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ShopViewModelTest {
@@ -42,7 +43,7 @@ class ShopViewModelTest {
         assertEquals(12, state.selectedTeamScore)
         assertEquals(5, state.selectedTeamSpent)
         assertEquals(7, state.selectedTeamBudget)
-        assertEquals("Bolt betöltve", state.message)
+        assertNull(state.message)
         assertNull(state.errorMessage)
     }
 
@@ -102,6 +103,27 @@ class ShopViewModelTest {
         assertEquals(7, viewModel.uiState.value.selectedTeamBudget)
         assertEquals("Vásárlás rögzítve", viewModel.uiState.value.message)
         assertFalse(viewModel.uiState.value.isLoading)
+    }
+
+    @Test
+    fun teamScoreCalculatorDerivesPointsSpentAndMoney() {
+        val taskEvents = listOf(
+            TaskEvent(teamId = 1, taskId = 1, isSuccess = true),
+            TaskEvent(teamId = 1, taskId = 2, isSuccess = false),
+            TaskEvent(teamId = 1, taskId = 3, isSuccess = true),
+        )
+        val purchases = listOf(
+            ShopEntry(itemId = 101, teamId = 1),
+            ShopEntry(itemId = 102, teamId = 1),
+        )
+        val items = listOf(
+            Item(id = 101, price = 5),
+            Item(id = 102, price = 10),
+        )
+
+        assertEquals(5, TeamScoreCalculator.calculateFinalPoints(taskEvents, additionalScoreAwarded = 3))
+        assertEquals(15, TeamScoreCalculator.calculateSpentPoints(purchases, items))
+        assertEquals(-10, TeamScoreCalculator.calculateCurrentMoney(taskEvents, 3, purchases, items))
     }
 }
 

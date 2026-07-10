@@ -10,14 +10,7 @@ import mok.it.tortura.data.supabase.dto.ShopInsertDto
 import mok.it.tortura.data.supabase.mapper.toModel
 import mok.it.tortura.data.supabase.mapper.toUpdateDto
 import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
-import mok.it.tortura.model.Item
-import mok.it.tortura.model.ItemEffect
-import mok.it.tortura.model.ItemEffectCode
-import mok.it.tortura.model.Location
-import mok.it.tortura.model.ShopEntry
-import mok.it.tortura.model.Task
-import mok.it.tortura.model.TaskEvent
-import mok.it.tortura.model.Team
+import mok.it.tortura.model.*
 
 enum class ShopTargetType {
     NONE,
@@ -73,7 +66,10 @@ interface ShopDataSource {
 
     suspend fun getTaskEvents(teamId: Long): List<TaskEvent>
 
-    suspend fun adjustAdditionalScoreAwarded(teamId: Long, delta: Int): Team
+    suspend fun adjustAdditionalScoreAwarded(
+        teamId: Long,
+        delta: Int,
+    ): Team
 
     suspend fun purchaseItem(
         teamId: Long,
@@ -121,7 +117,10 @@ class SupabaseShopDataSource(
     override suspend fun getTaskEvents(teamId: Long): List<TaskEvent> =
         repositories.tasksLedger.getByTeamId(teamId).map { it.toModel() }
 
-    override suspend fun adjustAdditionalScoreAwarded(teamId: Long, delta: Int): Team {
+    override suspend fun adjustAdditionalScoreAwarded(
+        teamId: Long,
+        delta: Int,
+    ): Team {
         val team = repositories.teams.getById(teamId)?.toModel() ?: error("A csapat nem található")
         return repositories.teams.update(
             id = teamId,
@@ -142,7 +141,6 @@ class SupabaseShopDataSource(
             ),
         )
     }
-
 }
 
 class ShopViewModel(
@@ -245,7 +243,11 @@ class ShopViewModel(
         }
 
         if (!itemRow.isEligibleForPurchase) {
-            _uiState.update { it.copy(errorMessage = itemRow.purchaseBlockedReason ?: "Ez a tárgy most nem vásárolható meg") }
+            _uiState.update {
+                it.copy(
+                    errorMessage = itemRow.purchaseBlockedReason ?: "Ez a tárgy most nem vásárolható meg",
+                )
+            }
             return
         }
 
@@ -283,7 +285,19 @@ class ShopViewModel(
         scoreAdjustmentInput: String = uiState.value.scoreAdjustmentInput,
         message: String? = null,
     ) {
-        val spent = spentForCurrentSelection()
+        val additionalScoreAwarded = selectedTeamId?.let { teamId ->
+            teams.firstOrNull { it.id == teamId }?.additionalScoreAwarded
+        } ?: 0
+        val spent = TeamScoreCalculator.calculateSpentPoints(
+            purchases = purchases,
+            items = catalog?.items.orEmpty(),
+        )
+        val currentMoney = TeamScoreCalculator.calculateCurrentMoney(
+            taskEvents = taskEvents,
+            additionalScoreAwarded = additionalScoreAwarded,
+            purchases = purchases,
+            items = catalog?.items.orEmpty(),
+        )
         _uiState.update {
             it.copy(
                 teams = teams,
@@ -292,7 +306,7 @@ class ShopViewModel(
                 scoreAdjustmentInput = scoreAdjustmentInput,
                 selectedTeamScore = selectedTeamId?.let { selectedTeamScore },
                 selectedTeamSpent = selectedTeamId?.let { spent },
-                selectedTeamBudget = selectedTeamId?.let { selectedTeamScore - spent },
+                selectedTeamBudget = selectedTeamId?.let { currentMoney },
                 message = message,
                 errorMessage = null,
             )
@@ -309,17 +323,11 @@ class ShopViewModel(
 
         purchases = dataSource.getPurchases(teamId)
         taskEvents = dataSource.getTaskEvents(teamId)
-        val taskScore = taskEvents.count { it.isSuccess == true }
         val manualAdjustment = catalog?.teams.orEmpty().firstOrNull { it.id == teamId }?.additionalScoreAwarded ?: 0
-        selectedTeamScore = taskScore + manualAdjustment
-    }
-
-    private fun spentForCurrentSelection(): Int {
-        val itemsById = catalog?.items.orEmpty().associateBy { it.id }
-        return purchases.sumOf { purchase ->
-            val itemId = purchase.itemId ?: return@sumOf 0
-            itemsById[itemId]?.price ?: 0
-        }
+        selectedTeamScore = TeamScoreCalculator.calculateFinalPoints(
+            taskEvents = taskEvents,
+            additionalScoreAwarded = manualAdjustment,
+        )
     }
 
     private fun buildItemRows(): List<ShopItemRow> {
@@ -509,6 +517,7 @@ class ShopViewModel(
                     val taskId = task.id ?: return@filter false
                     task.isMiniBoss == true && when (effectCode) {
                         ItemEffectCode.MINIBOSS_UNLOCK -> taskId !in minibossUnlockTaskIds
+
                         ItemEffectCode.MINIBOSS_REWIND ->
                             taskId in failedBaseTaskIds &&
                                 taskId !in minibossRewindTaskIds &&
@@ -566,7 +575,9 @@ class ShopViewModel(
         }
 
         ShopTargetType.TASK -> loadedCatalog.tasks.count { it.id != null }
+
         ShopTargetType.LOCATION -> loadedCatalog.locations.count { it.id != null }
+
         ShopTargetType.MINIBOSS_TASK -> loadedCatalog.tasks.count { it.id != null && it.isMiniBoss == true }
     }
 
