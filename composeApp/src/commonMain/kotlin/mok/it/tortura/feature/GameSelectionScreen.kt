@@ -47,7 +47,7 @@ import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
 import mok.it.tortura.ui.components.SaveIcon
 import mok.it.tortura.ui.components.SectionCard
-import mok.it.tortura.ui.components.StatusBanner
+import mok.it.tortura.ui.components.TransientToastEffect
 import mok.it.tortura.ui.theme.AppThemeTokens
 
 @Composable
@@ -107,14 +107,11 @@ fun GameSelectionScreen(
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
 
-        val bannerMessage = uiState.errorMessage ?: uiState.message
-        if (bannerMessage != null) {
-            StatusBanner(
-                message = bannerMessage,
-                tone = if (uiState.errorMessage != null) BannerTone.Error else BannerTone.Success,
-                onDismiss = onClearMessages,
-            )
-        }
+        TransientToastEffect(
+            message = uiState.message,
+            errorMessage = uiState.errorMessage,
+            onConsumed = onClearMessages,
+        )
 
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val splitLayout = maxWidth >= 960.dp

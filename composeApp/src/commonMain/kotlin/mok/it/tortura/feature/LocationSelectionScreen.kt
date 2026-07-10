@@ -14,12 +14,11 @@ import mok.it.tortura.model.Game
 import mok.it.tortura.model.Location
 import mok.it.tortura.ui.components.AppButton
 import mok.it.tortura.ui.components.AppButtonStyle
-import mok.it.tortura.ui.components.BannerTone
 import mok.it.tortura.ui.components.EmptyState
 import mok.it.tortura.ui.components.FormSection
 import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
-import mok.it.tortura.ui.components.StatusBanner
+import mok.it.tortura.ui.components.TransientToastEffect
 import mok.it.tortura.ui.theme.AppTheme
 import mok.it.tortura.ui.theme.AppThemeTokens
 
@@ -28,6 +27,7 @@ fun LocationSelectionScreen(
     uiState: LocationSelectionUiState = LocationSelectionUiState(),
     onLoad: () -> Unit = {},
     onSelectLocation: (Long) -> Unit = {},
+    onClearError: () -> Unit = {},
     onBack: () -> Unit = {},
 ) {
     LaunchedEffect(Unit) {
@@ -55,17 +55,16 @@ fun LocationSelectionScreen(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
+            TransientToastEffect(
+                message = null,
+                errorMessage = uiState.errorMessage,
+                onConsumed = onClearError,
+            )
+
             FormSection(
                 title = "Választható állomások",
                 description = "Válaszd ki, melyik állomáson vagytok.",
             ) {
-                uiState.errorMessage?.let { errorMessage ->
-                    StatusBanner(
-                        message = errorMessage,
-                        tone = BannerTone.Error,
-                    )
-                }
-
                 if (uiState.locations.isEmpty() && !uiState.isLoading) {
                     EmptyState(
                         title = "Nincs választható állomás",

@@ -170,6 +170,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                         launchSingleTop = true
                     }
                 },
+                onClearError = locationSelectionViewModel::clearError,
                 onBack = { navController.popBackStack() },
             )
         }

@@ -112,6 +112,7 @@ kotlin {
     }
 
     sourceSets {
+        val androidMain by getting
         val desktopMain by getting
         val jsMain by getting
         val wasmJsMain by getting
@@ -120,6 +121,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.cmptoast)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -154,12 +156,14 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.cio)
             implementation(libs.slf4j.simple)
+            implementation(libs.cmptoast)
         }
         jsMain.dependencies {
             implementation(libs.ktor.client.js)
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
+            implementation(libs.cmptoast)
         }
     }
 }
