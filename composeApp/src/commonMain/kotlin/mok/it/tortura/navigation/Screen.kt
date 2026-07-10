@@ -33,4 +33,7 @@ object Screen {
 
     @Serializable
     object Shop
+
+    @Serializable
+    object LocationTasks
 }
