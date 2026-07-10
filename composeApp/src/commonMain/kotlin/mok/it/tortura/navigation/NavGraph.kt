@@ -291,6 +291,15 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 activeGame = selectedGame,
                 activeLocation = activeLocation,
                 authUiState = authUiState,
+                onBack = {
+                    resetActiveContext()
+                    navController.navigate(Screen.GameSelection) {
+                        popUpTo(Screen.GameSelection) {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
+                },
                 onChangeGame = {
                     resetActiveContext()
                     navController.navigate(Screen.GameSelection) {

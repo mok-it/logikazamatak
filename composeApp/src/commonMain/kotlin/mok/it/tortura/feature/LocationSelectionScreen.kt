@@ -16,6 +16,7 @@ import mok.it.tortura.ui.components.AppButton
 import mok.it.tortura.ui.components.AppButtonStyle
 import mok.it.tortura.ui.components.EmptyState
 import mok.it.tortura.ui.components.FormSection
+import mok.it.tortura.ui.components.NavigateBackIcon
 import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
 import mok.it.tortura.ui.components.TransientToastEffect
@@ -43,6 +44,7 @@ fun LocationSelectionScreen(
                     text = "Vissza",
                     onClick = onBack,
                     style = AppButtonStyle.Ghost,
+                    leadingIcon = { NavigateBackIcon() },
                 )
             },
         )
