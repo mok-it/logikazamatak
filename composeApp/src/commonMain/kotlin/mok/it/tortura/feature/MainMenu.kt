@@ -49,7 +49,7 @@ fun MainMenu(
             description = activeLocation?.name?.let { "Aktív helyszín: $it" } ?: "Még nincs kiválasztott helyszín.",
             trailingContent = {
                 AppButton(
-                    text = "Helyszín váltása",
+                    text = currentLocationButtonLabel(activeLocation?.name),
                     onClick = onChangeLocation,
                     style = AppButtonStyle.Secondary,
                     enabled = canUseActions,
@@ -115,6 +115,9 @@ fun MainMenu(
         }
     }
 }
+
+private fun currentLocationButtonLabel(activeLocationName: String?): String =
+    "Helyszín: ${activeLocationName ?: "nincs kiválasztva"}"
 
 @Composable
 private fun AuthSection(

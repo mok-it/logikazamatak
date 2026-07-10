@@ -15,6 +15,8 @@ class TaskEvent(
     val teamId: Long? = null,
     val taskId: Long,
     val isSuccess: Boolean? = null,
+    val bonusSourceShopId: Long? = null,
+    val bonusSourceTasksLedgerId: Long? = null,
     val task: Task? = null,
 ) : Event(
     id = id,

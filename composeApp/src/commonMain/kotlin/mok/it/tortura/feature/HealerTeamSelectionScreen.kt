@@ -15,10 +15,13 @@ import mok.it.tortura.model.Team
 import mok.it.tortura.ui.components.AppButton
 import mok.it.tortura.ui.components.AppButtonStyle
 import mok.it.tortura.ui.components.BannerTone
+import mok.it.tortura.ui.components.ChangeLocationIcon
 import mok.it.tortura.ui.components.EmptyState
 import mok.it.tortura.ui.components.FormSection
+import mok.it.tortura.ui.components.NavigateBackIcon
 import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
+import mok.it.tortura.ui.components.NavigateForwardIcon
 import mok.it.tortura.ui.components.SectionCard
 import mok.it.tortura.ui.components.TransientToastEffect
 import mok.it.tortura.ui.theme.AppThemeTokens
@@ -47,11 +50,13 @@ fun HealerTeamSelectionScreen(
                     text = "Vissza",
                     onClick = onBack,
                     style = AppButtonStyle.Ghost,
+                    leadingIcon = { NavigateBackIcon() },
                 )
                 AppButton(
-                    text = "Helyszín váltása",
+                    text = currentLocationButtonLabel(activeLocationName),
                     onClick = onChangeLocation,
                     style = AppButtonStyle.Secondary,
+                    leadingIcon = { ChangeLocationIcon() },
                 )
             },
         )
@@ -116,7 +121,11 @@ private fun TeamSelectionRow(
                 text = "Megnyitás",
                 onClick = { onSelectTeam(team) },
                 enabled = !isLoading && team.id != null,
+                leadingIcon = { NavigateForwardIcon() },
             )
         }
     }
 }
+
+private fun currentLocationButtonLabel(activeLocationName: String?): String =
+    "Helyszín: ${activeLocationName ?: "nincs kiválasztva"}"

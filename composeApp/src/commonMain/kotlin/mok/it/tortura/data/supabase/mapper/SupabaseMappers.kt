@@ -229,6 +229,8 @@ fun TasksLedgerDto.toModel(task: Task? = null): TaskEvent = TaskEvent(
     teamId = teamId,
     taskId = taskId,
     isSuccess = isSuccess,
+    bonusSourceShopId = bonusSourceShopId,
+    bonusSourceTasksLedgerId = bonusSourceTasksLedgerId,
     task = task,
 )
 
