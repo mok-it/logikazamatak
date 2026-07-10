@@ -17,6 +17,7 @@ import mok.it.tortura.ui.components.GamesIcon
 import mok.it.tortura.ui.components.HealerIcon
 import mok.it.tortura.ui.components.LoginIcon
 import mok.it.tortura.ui.components.LogoutIcon
+import mok.it.tortura.ui.components.NavigateBackIcon
 import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
 import mok.it.tortura.ui.components.SectionCard
@@ -34,6 +35,7 @@ fun MainMenu(
     onSignInWithGoogle: () -> Unit = {},
     onSignOut: () -> Unit = {},
     onClearAuthError: () -> Unit = {},
+    onBack: () -> Unit,
     onChangeGame: (() -> Unit),
     onSetUp: (() -> Unit),
     onCompetition: (() -> Unit),
@@ -48,6 +50,12 @@ fun MainMenu(
             title = activeGame.name ?: "#${activeGame.id ?: "-"}",
             description = activeLocation?.name?.let { "Aktív helyszín: $it" } ?: "Még nincs kiválasztott helyszín.",
             trailingContent = {
+                AppButton(
+                    text = "Vissza",
+                    onClick = onBack,
+                    style = AppButtonStyle.Ghost,
+                    leadingIcon = { NavigateBackIcon() },
+                )
                 AppButton(
                     text = currentLocationButtonLabel(activeLocation?.name),
                     onClick = onChangeLocation,
