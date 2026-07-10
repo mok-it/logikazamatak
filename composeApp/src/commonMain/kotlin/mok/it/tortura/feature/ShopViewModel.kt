@@ -47,6 +47,7 @@ data class ShopUiState(
     val selectedTeamScore: Int? = null,
     val selectedTeamSpent: Int? = null,
     val selectedTeamBudget: Int? = null,
+    val selectedTeamProgress: TeamProgressSummary? = null,
     val message: String? = null,
     val errorMessage: String? = null,
 )
@@ -86,7 +87,11 @@ class SupabaseShopDataSource(
         val teams = repositories.teamAssignments.getByGameId(gameId)
             .mapNotNull { it.id }
             .flatMap { repositories.teams.getByTeamAssignmentId(it) }
-            .map { it.toModel() }
+            .map { teamDto ->
+                val teamId = teamDto.id
+                val students = if (teamId == null) emptyList() else repositories.students.getByTeamId(teamId).map { it.toModel() }
+                teamDto.toModel(students = students)
+            }
             .sortedBy { (it.name ?: "zzz").lowercase() }
         val items = repositories.items.getByGameId(gameId)
             .map { it.toModel() }
@@ -307,6 +312,17 @@ class ShopViewModel(
                 selectedTeamScore = selectedTeamId?.let { selectedTeamScore },
                 selectedTeamSpent = selectedTeamId?.let { spent },
                 selectedTeamBudget = selectedTeamId?.let { currentMoney },
+                selectedTeamProgress = selectedTeamId?.let { teamId ->
+                    teams.firstOrNull { team -> team.id == teamId }?.let { team ->
+                        TeamProgressSummaryCalculator.calculate(
+                            team = team,
+                            allGameTasks = catalog?.tasks.orEmpty(),
+                            allItems = catalog?.items.orEmpty(),
+                            taskEvents = taskEvents,
+                            purchases = purchases,
+                        )
+                    }
+                },
                 message = message,
                 errorMessage = null,
             )

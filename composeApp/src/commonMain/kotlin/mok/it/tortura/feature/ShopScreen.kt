@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Item
 import mok.it.tortura.model.Team
+import mok.it.tortura.model.TeamProgressSummary
 import mok.it.tortura.ui.components.*
 import mok.it.tortura.ui.theme.AppTheme
 import mok.it.tortura.ui.theme.AppThemeTokens
@@ -101,6 +102,7 @@ fun ShopScreen(
                             teamScore = uiState.selectedTeamScore,
                             teamSpent = uiState.selectedTeamSpent,
                             teamBudget = uiState.selectedTeamBudget,
+                            teamProgress = uiState.selectedTeamProgress,
                             scoreAdjustmentInput = uiState.scoreAdjustmentInput,
                             isLoading = uiState.isLoading,
                             onSelectTeam = onSelectTeam,
@@ -129,6 +131,7 @@ fun ShopScreen(
                         teamScore = uiState.selectedTeamScore,
                         teamSpent = uiState.selectedTeamSpent,
                         teamBudget = uiState.selectedTeamBudget,
+                        teamProgress = uiState.selectedTeamProgress,
                         scoreAdjustmentInput = uiState.scoreAdjustmentInput,
                         isLoading = uiState.isLoading,
                         onSelectTeam = onSelectTeam,
@@ -170,6 +173,7 @@ private fun TeamBalanceSection(
     teamScore: Int?,
     teamSpent: Int?,
     teamBudget: Int?,
+    teamProgress: TeamProgressSummary?,
     scoreAdjustmentInput: String,
     isLoading: Boolean,
     onSelectTeam: (Long) -> Unit,
@@ -222,6 +226,13 @@ private fun TeamBalanceSection(
                         onApply = onApplyScoreAdjustment,
                     )
                 }
+                ScoreAdjustmentRow(
+                    value = scoreAdjustmentInput,
+                    enabled = !isLoading && selectedTeam != null,
+                    onValueChange = onScoreAdjustmentInputChange,
+                    onApply = onApplyScoreAdjustment,
+                )
+                TeamInfoDisclosure(team = selectedTeam, progress = teamProgress)
             } else {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -261,6 +272,7 @@ private fun TeamBalanceSection(
                         onValueChange = onScoreAdjustmentInputChange,
                         onApply = onApplyScoreAdjustment,
                     )
+                    TeamInfoDisclosure(team = selectedTeam, progress = teamProgress)
                 }
             }
         }

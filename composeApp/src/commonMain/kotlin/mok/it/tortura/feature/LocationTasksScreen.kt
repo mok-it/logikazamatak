@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.blur
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Location
 import mok.it.tortura.model.Task
 import mok.it.tortura.model.Team
+import mok.it.tortura.model.TeamProgressSummary
 import mok.it.tortura.ui.components.AppButton
 import mok.it.tortura.ui.components.AppButtonStyle
 import mok.it.tortura.ui.components.AppSelectOption
@@ -47,6 +49,7 @@ import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
 import mok.it.tortura.ui.components.SaveIcon
 import mok.it.tortura.ui.components.SectionCard
+import mok.it.tortura.ui.components.TeamInfoDisclosure
 import mok.it.tortura.ui.components.TransientToastEffect
 import mok.it.tortura.ui.theme.AppTheme
 import mok.it.tortura.ui.theme.AppThemeTokens
@@ -119,6 +122,7 @@ fun LocationTasksScreen(
                         TeamSelectionSection(
                             teams = uiState.teams,
                             selectedTeam = selectedTeam,
+                            progress = uiState.selectedTeamProgress,
                             isLoading = uiState.isLoading,
                             onSelectTeam = onSelectTeam,
                         )
@@ -145,6 +149,7 @@ fun LocationTasksScreen(
                     TeamSelectionSection(
                         teams = uiState.teams,
                         selectedTeam = selectedTeam,
+                        progress = uiState.selectedTeamProgress,
                         isLoading = uiState.isLoading,
                         onSelectTeam = onSelectTeam,
                     )
@@ -167,6 +172,7 @@ fun LocationTasksScreen(
 private fun TeamSelectionSection(
     teams: List<Team>,
     selectedTeam: Team?,
+    progress: TeamProgressSummary?,
     isLoading: Boolean,
     onSelectTeam: (Long) -> Unit,
 ) {
@@ -179,7 +185,6 @@ private fun TeamSelectionSection(
             )
         }
     }
-
     FormSection(
         title = "Csapat",
         description = "Válassz csapatot, majd rögzítsd a helyszín feladataira adott válaszokat.",
@@ -200,6 +205,7 @@ private fun TeamSelectionSection(
             style = MaterialTheme.typography.bodyMedium,
             color = AppThemeTokens.colors.textSecondary,
         )
+        TeamInfoDisclosure(team = selectedTeam, progress = progress)
     }
 }
 
@@ -409,6 +415,15 @@ private fun LocationTasksScreenPreview() {
                     Team(id = 2, name = "Red Dragon"),
                 ),
                 selectedTeamId = 1,
+                selectedTeamProgress = TeamProgressSummary(
+                    solvedTasks = 5,
+                    totalTasks = 12,
+                    defeatedMiniBosses = 1,
+                    totalMiniBosses = 3,
+                    points = 7,
+                    money = 4,
+                    spent = 3,
+                ),
                 answerDrafts = mapOf(1L to "42"),
                 latestSubmissionByTaskId = mapOf(
                     2L to TaskSubmissionResult(

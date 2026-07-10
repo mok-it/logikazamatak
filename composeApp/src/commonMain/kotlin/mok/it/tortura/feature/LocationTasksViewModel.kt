@@ -9,8 +9,13 @@ import kotlinx.coroutines.launch
 import mok.it.tortura.data.supabase.dto.TasksLedgerInsertDto
 import mok.it.tortura.data.supabase.mapper.toModel
 import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
+import mok.it.tortura.model.Item
+import mok.it.tortura.model.ShopEntry
 import mok.it.tortura.model.Task
+import mok.it.tortura.model.TaskEvent
 import mok.it.tortura.model.Team
+import mok.it.tortura.model.TeamProgressSummary
+import mok.it.tortura.model.TeamProgressSummaryCalculator
 
 data class TaskSubmissionResult(
     val isSuccess: Boolean,
@@ -22,6 +27,7 @@ data class LocationTasksUiState(
     val tasks: List<Task> = emptyList(),
     val teams: List<Team> = emptyList(),
     val selectedTeamId: Long? = null,
+    val selectedTeamProgress: TeamProgressSummary? = null,
     val answerDrafts: Map<Long, String> = emptyMap(),
     val latestSubmissionByTaskId: Map<Long, TaskSubmissionResult> = emptyMap(),
     val message: String? = null,
@@ -31,6 +37,8 @@ data class LocationTasksUiState(
 data class LocationTasksScreenData(
     val tasks: List<Task>,
     val teams: List<Team>,
+    val allGameTasks: List<Task>,
+    val allItems: List<Item>,
 )
 
 interface LocationTasksDataSource {
@@ -38,6 +46,10 @@ interface LocationTasksDataSource {
         gameId: Long,
         locationId: Long,
     ): LocationTasksScreenData
+
+    suspend fun getTaskEvents(teamId: Long): List<TaskEvent>
+
+    suspend fun getPurchases(teamId: Long): List<ShopEntry>
 
     suspend fun recordAttempt(
         teamId: Long,
@@ -63,14 +75,36 @@ class SupabaseLocationTasksDataSource(
         val teams = repositories.teamAssignments.getByGameId(gameId)
             .mapNotNull { it.id }
             .flatMap { repositories.teams.getByTeamAssignmentId(it) }
-            .map { it.toModel() }
+            .map { teamDto ->
+                val teamId = teamDto.id
+                val students = if (teamId == null) {
+                    emptyList()
+                } else {
+                    repositories.students.getByTeamId(teamId).map { it.toModel() }
+                }
+                teamDto.toModel(students = students)
+            }
             .sortedBy { (it.name ?: "zzz").lowercase() }
+        val allGameTasks = repositories.tasks
+            .getByGameId(gameId)
+            .map { it.toModel() }
+        val allItems = repositories.items
+            .getByGameId(gameId)
+            .map { it.toModel() }
 
         return LocationTasksScreenData(
             tasks = tasks,
             teams = teams,
+            allGameTasks = allGameTasks,
+            allItems = allItems,
         )
     }
+
+    override suspend fun getTaskEvents(teamId: Long): List<TaskEvent> =
+        repositories.tasksLedger.getByTeamId(teamId).map { it.toModel() }
+
+    override suspend fun getPurchases(teamId: Long): List<ShopEntry> =
+        repositories.shop.getByTeamId(teamId).map { it.toModel() }
 
     override suspend fun recordAttempt(
         teamId: Long,
@@ -95,16 +129,27 @@ class LocationTasksViewModel(
 
     private val _uiState = MutableStateFlow(LocationTasksUiState())
     val uiState: StateFlow<LocationTasksUiState> = _uiState
+    private var allGameTasks: List<Task> = emptyList()
+    private var allItems: List<Item> = emptyList()
+    private var selectedTeamTaskEvents: List<TaskEvent> = emptyList()
+    private var selectedTeamPurchases: List<ShopEntry> = emptyList()
 
     fun load() {
         runRepositoryAction {
             val data = dataSource.load(activeGameId, locationId)
+            allGameTasks = data.allGameTasks
+            allItems = data.allItems
             val selectedTeamId = resolveSelectedTeamId(data.teams)
+            refreshSelectedTeamState(
+                teams = data.teams,
+                teamId = selectedTeamId,
+            )
             _uiState.update { current ->
                 current.copy(
                     tasks = data.tasks,
                     teams = data.teams,
                     selectedTeamId = selectedTeamId,
+                    selectedTeamProgress = buildTeamProgressSummary(data.teams, selectedTeamId),
                     message = null,
                 )
             }
@@ -112,12 +157,20 @@ class LocationTasksViewModel(
     }
 
     fun selectTeam(teamId: Long) {
-        _uiState.update {
-            it.copy(
-                selectedTeamId = teamId,
-                message = null,
-                errorMessage = null,
+        runRepositoryAction {
+            val teams = _uiState.value.teams
+            refreshSelectedTeamState(
+                teams = teams,
+                teamId = teamId,
             )
+            _uiState.update {
+                it.copy(
+                    selectedTeamId = teamId,
+                    selectedTeamProgress = buildTeamProgressSummary(teams, teamId),
+                    message = null,
+                    errorMessage = null,
+                )
+            }
         }
     }
 
@@ -161,8 +214,13 @@ class LocationTasksViewModel(
                 taskId = task.id,
                 isSuccess = isSuccess,
             )
+            refreshSelectedTeamState(
+                teams = _uiState.value.teams,
+                teamId = selectedTeamId,
+            )
             _uiState.update {
                 it.copy(
+                    selectedTeamProgress = buildTeamProgressSummary(it.teams, selectedTeamId),
                     answerDrafts = it.answerDrafts - taskId,
                     latestSubmissionByTaskId = it.latestSubmissionByTaskId + (
                         taskId to TaskSubmissionResult(
@@ -184,6 +242,33 @@ class LocationTasksViewModel(
         val currentSelection = _uiState.value.selectedTeamId
         return currentSelection?.takeIf { selectedId -> teams.any { it.id == selectedId } }
             ?: teams.firstOrNull()?.id
+    }
+
+    private suspend fun refreshSelectedTeamState(
+        teams: List<Team>,
+        teamId: Long?,
+    ) {
+        if (teamId == null || teams.none { it.id == teamId }) {
+            selectedTeamTaskEvents = emptyList()
+            selectedTeamPurchases = emptyList()
+            return
+        }
+        selectedTeamTaskEvents = dataSource.getTaskEvents(teamId)
+        selectedTeamPurchases = dataSource.getPurchases(teamId)
+    }
+
+    private fun buildTeamProgressSummary(
+        teams: List<Team>,
+        teamId: Long?,
+    ): TeamProgressSummary? {
+        val team = teams.firstOrNull { it.id == teamId } ?: return null
+        return TeamProgressSummaryCalculator.calculate(
+            team = team,
+            allGameTasks = allGameTasks,
+            allItems = allItems,
+            taskEvents = selectedTeamTaskEvents,
+            purchases = selectedTeamPurchases,
+        )
     }
 
     private fun runRepositoryAction(action: suspend () -> Unit) {

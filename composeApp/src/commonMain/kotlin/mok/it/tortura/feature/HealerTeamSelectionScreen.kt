@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import mok.it.tortura.model.Team
+import mok.it.tortura.model.TeamProgressSummary
 import mok.it.tortura.ui.components.AppButton
 import mok.it.tortura.ui.components.AppButtonStyle
 import mok.it.tortura.ui.components.BannerTone
@@ -24,6 +25,7 @@ import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
 import mok.it.tortura.ui.components.NavigateForwardIcon
 import mok.it.tortura.ui.components.SectionCard
+import mok.it.tortura.ui.components.TeamInfoDisclosure
 import mok.it.tortura.ui.components.TransientToastEffect
 import mok.it.tortura.ui.theme.AppThemeTokens
 
@@ -86,9 +88,10 @@ fun HealerTeamSelectionScreen(
                         description = "Előbb hozd létre a csapatokat az előkészítés képernyőn.",
                     )
                 } else {
-                    uiState.teams.forEach { team ->
+                    uiState.teams.forEach { listItem ->
                         TeamSelectionRow(
-                            team = team,
+                            team = listItem.team,
+                            progress = listItem.progress,
                             isLoading = uiState.isLoading,
                             onSelectTeam = onSelectTeam,
                         )
@@ -102,6 +105,7 @@ fun HealerTeamSelectionScreen(
 @Composable
 private fun TeamSelectionRow(
     team: Team,
+    progress: TeamProgressSummary,
     isLoading: Boolean,
     onSelectTeam: (Team) -> Unit,
 ) {
@@ -118,6 +122,7 @@ private fun TeamSelectionRow(
                 text = "ID ${team.id ?: "-"}",
                 style = MaterialTheme.typography.bodySmall,
             )
+            TeamInfoDisclosure(team = team, progress = progress)
             AppButton(
                 text = "Megnyitás",
                 onClick = { onSelectTeam(team) },

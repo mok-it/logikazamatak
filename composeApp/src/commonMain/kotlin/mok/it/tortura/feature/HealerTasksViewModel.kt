@@ -9,8 +9,14 @@ import kotlinx.coroutines.launch
 import mok.it.tortura.data.supabase.dto.HealingLedgerInsertDto
 import mok.it.tortura.data.supabase.mapper.toModel
 import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
+import mok.it.tortura.model.Item
 import mok.it.tortura.model.HealingTask
+import mok.it.tortura.model.ShopEntry
+import mok.it.tortura.model.Task
+import mok.it.tortura.model.TaskEvent
 import mok.it.tortura.model.Team
+import mok.it.tortura.model.TeamProgressSummary
+import mok.it.tortura.model.TeamProgressSummaryCalculator
 
 data class HealingTaskListItem(
     val task: HealingTask,
@@ -28,6 +34,7 @@ data class HealerTasksUiState(
     val team: Team? = null,
     val healingTasks: List<HealingTaskListItem> = emptyList(),
     val healableFailedTasks: List<FailedTaskAttempt> = emptyList(),
+    val teamProgress: TeamProgressSummary? = null,
     val selectedHealingTaskId: Long? = null,
     val message: String? = null,
     val errorMessage: String? = null,
@@ -37,6 +44,7 @@ data class HealerScreenData(
     val team: Team,
     val healingTasks: List<HealingTaskListItem>,
     val healableFailedTasks: List<FailedTaskAttempt>,
+    val teamProgress: TeamProgressSummary,
 )
 
 interface HealerTasksDataSource {
@@ -55,7 +63,9 @@ class SupabaseHealerTasksDataSource(
 
     override suspend fun load(teamId: Long): HealerScreenData {
         val team = repositories.teams.getById(teamId)?.toModel()
-            ?: error("A csapat nem található")
+            ?.let { base ->
+                base.copy(students = repositories.students.getByTeamId(teamId).map { it.toModel() })
+            } ?: error("A csapat nem található")
         val teamAssignmentId = team.teamAssignmentId ?: error("A csapathoz nincs beosztás")
         val gameId = repositories.teamAssignments.getById(teamAssignmentId)?.gameId
             ?: error("A csapathoz nincs aktív játék")
@@ -99,10 +109,22 @@ class SupabaseHealerTasksDataSource(
             }
             .sortedBy { it.taskText.lowercase() }
 
+        val allGameTasks = repositories.tasks.getByGameId(gameId).map { it.toModel() }
+        val allItems = repositories.items.getByGameId(gameId).map { it.toModel() }
+        val taskEvents = repositories.tasksLedger.getByTeamId(teamId).map { it.toModel() }
+        val purchases = repositories.shop.getByTeamId(teamId).map { it.toModel() }
+
         return HealerScreenData(
             team = team,
             healingTasks = healingTasks,
             healableFailedTasks = healableFailedTasks,
+            teamProgress = TeamProgressSummaryCalculator.calculate(
+                team = team,
+                allGameTasks = allGameTasks,
+                allItems = allItems,
+                taskEvents = taskEvents,
+                purchases = purchases,
+            ),
         )
     }
 
@@ -169,6 +191,7 @@ class HealerTasksViewModel(
                         team = data.team,
                         healingTasks = data.healingTasks,
                         healableFailedTasks = data.healableFailedTasks,
+                        teamProgress = data.teamProgress,
                         selectedHealingTaskId = selectedHealingTaskId,
                         message = current.message,
                     )
@@ -195,6 +218,7 @@ class HealerTasksViewModel(
                         team = data.team,
                         healingTasks = data.healingTasks,
                         healableFailedTasks = data.healableFailedTasks,
+                        teamProgress = data.teamProgress,
                         selectedHealingTaskId = null,
                         message = "Gyógyítás rögzítve",
                     )
