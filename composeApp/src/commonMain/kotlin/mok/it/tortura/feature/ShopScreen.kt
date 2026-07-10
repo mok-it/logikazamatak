@@ -373,7 +373,6 @@ private fun ShopCatalogSection(
     Column(verticalArrangement = Arrangement.spacedBy(spacing.lg)) {
         PageHeader(
             title = "Shop tárgyak",
-            description = "Név, ár, vásárlási limit és gyors vásárlás táblázatos nézetben.",
         )
 
         if (itemRows.isEmpty() && !isLoading) {
@@ -487,6 +486,13 @@ private fun ShopTableRow(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
                     color = AppThemeTokens.colors.textSecondary,
+                )
+            }
+            itemRow.purchaseBlockedReason?.takeIf { it.isNotBlank() }?.let { blockedReason ->
+                Text(
+                    text = blockedReason,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppThemeTokens.colors.warning,
                 )
             }
         }
