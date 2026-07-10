@@ -59,7 +59,8 @@ fun LocationTasksScreen(
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    text = "Ide kerül majd a csapatválasztás, a helyszínhez tartozó feladatok listája, és a válaszbeküldés.",
+                    text = "Ide kerül majd a csapatválasztás, a helyszínhez tartozó feladatok listája, " +
+                        "és a válaszbeküldés.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = AppThemeTokens.colors.textSecondary,
                 )
@@ -67,7 +68,8 @@ fun LocationTasksScreen(
 
             EmptyState(
                 title = "Feladatbeküldés még nincs implementálva",
-                description = "A routing most már külön kezeli a shopot és a normál állomásokat. A tényleges gameplay űrlap ide jön majd.",
+                description = "A routing most már külön kezeli a shopot és a normál állomásokat. " +
+                    "A tényleges gameplay űrlap ide jön majd.",
             )
         }
     }

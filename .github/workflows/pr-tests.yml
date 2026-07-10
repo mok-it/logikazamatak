@@ -28,7 +28,7 @@ jobs:
 
       - name: Run desktop tests
         env:
-          SUPABASE_ENV: ${{ secrets.SUPABASE_ENV }}
+          SUPABASE_ENV: prod
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           BATKABANK_API_BASE_URL: ${{ secrets.BATKABANK_API_BASE_URL }}

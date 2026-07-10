@@ -21,8 +21,8 @@ import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
 import mok.it.tortura.ui.components.SectionCard
 import mok.it.tortura.ui.components.SetupIcon
-import mok.it.tortura.ui.components.StatusBanner
 import mok.it.tortura.ui.components.ShopIcon
+import mok.it.tortura.ui.components.StatusBanner
 import mok.it.tortura.ui.components.TransientToastEffect
 import mok.it.tortura.ui.theme.AppThemeTokens
 
