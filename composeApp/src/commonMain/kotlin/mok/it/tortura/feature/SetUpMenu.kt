@@ -27,7 +27,7 @@ import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
 import mok.it.tortura.ui.components.RefreshIcon
 import mok.it.tortura.ui.components.SaveIcon
-import mok.it.tortura.ui.components.StatusBanner
+import mok.it.tortura.ui.components.TransientToastEffect
 import mok.it.tortura.ui.theme.AppThemeTokens
 
 @Composable
@@ -77,13 +77,11 @@ fun SetUpMenu(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            if (uiState.errorMessage != null || uiState.message != null) {
-                StatusBanner(
-                    message = uiState.errorMessage ?: uiState.message.orEmpty(),
-                    tone = if (uiState.errorMessage != null) BannerTone.Error else BannerTone.Success,
-                    onDismiss = onClearMessages,
-                )
-            }
+            TransientToastEffect(
+                message = uiState.message,
+                errorMessage = uiState.errorMessage,
+                onConsumed = onClearMessages,
+            )
 
             FormSection(
                 title = "Csapatok",

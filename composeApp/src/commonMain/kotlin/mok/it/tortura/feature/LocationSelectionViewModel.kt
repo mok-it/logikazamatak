@@ -69,4 +69,8 @@ class LocationSelectionViewModel(
             }
         }
     }
+
+    fun clearError() {
+        _uiState.update { it.copy(errorMessage = null) }
+    }
 }

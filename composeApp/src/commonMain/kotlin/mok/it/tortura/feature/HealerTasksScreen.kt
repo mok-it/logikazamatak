@@ -94,13 +94,11 @@ fun HealerTasksScreen(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            if (uiState.errorMessage != null || uiState.message != null) {
-                StatusBanner(
-                    message = uiState.errorMessage ?: uiState.message.orEmpty(),
-                    tone = if (uiState.errorMessage != null) BannerTone.Error else BannerTone.Success,
-                    onDismiss = onClearMessages,
-                )
-            }
+            TransientToastEffect(
+                message = uiState.message,
+                errorMessage = uiState.errorMessage,
+                onConsumed = onClearMessages,
+            )
 
             SummarySection(
                 teamName = uiState.team?.name ?: "Csapat #${uiState.team?.id ?: "-"}",
