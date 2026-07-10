@@ -706,7 +706,7 @@ private fun ItemEffectDropdown(
                     value = effect.id?.toString().orEmpty(),
                     label = "${effect.id ?: "-"}: ${effect.description.orEmpty()}",
                     enabled = effect.id != null,
-                )
+                ),
             )
         }
     }

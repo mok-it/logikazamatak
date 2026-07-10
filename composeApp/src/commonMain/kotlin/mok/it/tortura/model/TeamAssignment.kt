@@ -1,8 +1,8 @@
 package mok.it.tortura.model
 
+import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlin.time.Instant
 
 @Serializable
 data class TeamAssignment(

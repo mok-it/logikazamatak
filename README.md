@@ -95,7 +95,12 @@ e.g ledgers, editing events after they happened, etc
 TBD
 
 - We don't score the teams' scores explicitly - they can be calculated easily from the ledger at any time. This approach is more failsafe 
-- Points vs money - _to be documented_
+- Points vs money:
+  teams do not have a separate mutable "money" balance.
+  A team's shop budget is derived from gameplay as:
+  current score minus the total price of already purchased shop items.
+  In practice, successful `TasksLedger` rows count as score, `Teams.additionalScoreAwarded` stores signed manual score corrections,
+  and shop affordability is checked against that derived budget.
 
 ## Hosting
 
@@ -128,6 +133,10 @@ Build or run against local Supabase:
 ```bash
 ./gradlew :composeApp:wasmJsBrowserDevelopmentRun -Psupabase.env=local
 ```
+
+Use the desktop hot-reload target for faster UI iteration when useful, but always verify shared UI changes in the web
+build as well. The `wasmJsBrowserDevelopmentRun` workflow gives you the web version for real browser testing, but it
+does not support Compose Hot Reload like the desktop JVM target does.
 
 Build or run against production only when intentional:
 

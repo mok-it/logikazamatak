@@ -1,5 +1,9 @@
 package mok.it.tortura.feature
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -8,10 +12,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import mok.it.tortura.model.TeamAssignment
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SetupViewModelTest {
@@ -71,19 +71,19 @@ class SetupViewModelTest {
     }
 
     @Test
-    fun baseTeamCounterFiltersNonNumericCharactersImmediately() = runViewModelTest {
+    fun baseTeamCounterInputFiltersOutNonNumericCharacters() = runViewModelTest {
         val viewModel = SetupViewModel(activeGameId = 7, dataSource = FakeSetupDataSource())
 
-        viewModel.onBaseTeamCounterChange("a1b2c")
+        viewModel.onBaseTeamCounterChange("12abc-3")
 
-        assertEquals("12", viewModel.uiState.value.baseTeamCounter)
+        assertEquals("123", viewModel.uiState.value.baseTeamCounter)
     }
 
     @Test
     fun repositoryErrorIsExposedInStateAndLoadingStops() = runViewModelTest {
         val viewModel = SetupViewModel(
             activeGameId = 7,
-            FakeSetupDataSource(loadError = IllegalStateException("database unavailable"))
+            FakeSetupDataSource(loadError = IllegalStateException("database unavailable")),
         )
 
         viewModel.loadSetupData()
@@ -108,7 +108,10 @@ private class FakeSetupDataSource(
         return teamAssignments
     }
 
-    override suspend fun createTeamAssignment(gameId: Long, baseTeamCounter: Long): TeamAssignment {
+    override suspend fun createTeamAssignment(
+        gameId: Long,
+        baseTeamCounter: Long,
+    ): TeamAssignment {
         createdTeamAssignments += gameId to baseTeamCounter
         return TeamAssignment(
             id = createdTeamAssignments.size.toLong(),

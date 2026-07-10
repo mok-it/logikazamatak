@@ -31,22 +31,22 @@ import mok.it.tortura.data.supabase.dto.TeamInsertDto
 class GameRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<GameDto> =
-        client.from(SupabaseTables.GAMES).select().decodeList()
+    suspend fun getAll(): List<GameDto> = client.from(SupabaseTables.GAMES).select().decodeList()
 
-    suspend fun getById(id: Long): GameDto? =
-        client.from(SupabaseTables.GAMES).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): GameDto? = client.from(SupabaseTables.GAMES).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
     suspend fun create(game: GameInsertDto): GameDto =
         client.from(SupabaseTables.GAMES).insert(game) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, game: GameInsertDto): GameDto =
-        client.from(SupabaseTables.GAMES).update(game) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        game: GameInsertDto,
+    ): GameDto = client.from(SupabaseTables.GAMES).update(game) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.GAMES).delete {
@@ -58,18 +58,15 @@ class GameRepository(
 class HealingLedgerRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<HealingLedgerDto> =
-        client.from(SupabaseTables.HEALING_LEDGER).select().decodeList()
+    suspend fun getAll(): List<HealingLedgerDto> = client.from(SupabaseTables.HEALING_LEDGER).select().decodeList()
 
-    suspend fun getById(id: Long): HealingLedgerDto? =
-        client.from(SupabaseTables.HEALING_LEDGER).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): HealingLedgerDto? = client.from(SupabaseTables.HEALING_LEDGER).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
-    suspend fun getByTeamId(teamId: Long): List<HealingLedgerDto> =
-        client.from(SupabaseTables.HEALING_LEDGER).select {
-            filter { eq("teamId", teamId) }
-        }.decodeList()
+    suspend fun getByTeamId(teamId: Long): List<HealingLedgerDto> = client.from(SupabaseTables.HEALING_LEDGER).select {
+        filter { eq("teamId", teamId) }
+    }.decodeList()
 
     suspend fun getByHealedTasksLedgerId(healedTasksLedgerId: Long): List<HealingLedgerDto> =
         client.from(SupabaseTables.HEALING_LEDGER).select {
@@ -79,11 +76,13 @@ class HealingLedgerRepository(
     suspend fun create(entry: HealingLedgerInsertDto): HealingLedgerDto =
         client.from(SupabaseTables.HEALING_LEDGER).insert(entry) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, entry: HealingLedgerInsertDto): HealingLedgerDto =
-        client.from(SupabaseTables.HEALING_LEDGER).update(entry) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        entry: HealingLedgerInsertDto,
+    ): HealingLedgerDto = client.from(SupabaseTables.HEALING_LEDGER).update(entry) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.HEALING_LEDGER).delete {
@@ -95,27 +94,26 @@ class HealingLedgerRepository(
 class HealingTaskRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<HealingTaskDto> =
-        client.from(SupabaseTables.HEALING_TASKS).select().decodeList()
+    suspend fun getAll(): List<HealingTaskDto> = client.from(SupabaseTables.HEALING_TASKS).select().decodeList()
 
-    suspend fun getById(id: Long): HealingTaskDto? =
-        client.from(SupabaseTables.HEALING_TASKS).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): HealingTaskDto? = client.from(SupabaseTables.HEALING_TASKS).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
-    suspend fun getByGameId(gameId: Long): List<HealingTaskDto> =
-        client.from(SupabaseTables.HEALING_TASKS).select {
-            filter { eq("gameId", gameId) }
-        }.decodeList()
+    suspend fun getByGameId(gameId: Long): List<HealingTaskDto> = client.from(SupabaseTables.HEALING_TASKS).select {
+        filter { eq("gameId", gameId) }
+    }.decodeList()
 
     suspend fun create(task: HealingTaskInsertDto): HealingTaskDto =
         client.from(SupabaseTables.HEALING_TASKS).insert(task) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, task: HealingTaskInsertDto): HealingTaskDto =
-        client.from(SupabaseTables.HEALING_TASKS).update(task) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        task: HealingTaskInsertDto,
+    ): HealingTaskDto = client.from(SupabaseTables.HEALING_TASKS).update(task) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.HEALING_TASKS).delete {
@@ -127,27 +125,26 @@ class HealingTaskRepository(
 class ItemRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<ItemDto> =
-        client.from(SupabaseTables.ITEMS).select().decodeList()
+    suspend fun getAll(): List<ItemDto> = client.from(SupabaseTables.ITEMS).select().decodeList()
 
-    suspend fun getById(id: Long): ItemDto? =
-        client.from(SupabaseTables.ITEMS).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): ItemDto? = client.from(SupabaseTables.ITEMS).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
-    suspend fun getByGameId(gameId: Long): List<ItemDto> =
-        client.from(SupabaseTables.ITEMS).select {
-            filter { eq("gameId", gameId) }
-        }.decodeList()
+    suspend fun getByGameId(gameId: Long): List<ItemDto> = client.from(SupabaseTables.ITEMS).select {
+        filter { eq("gameId", gameId) }
+    }.decodeList()
 
     suspend fun create(item: ItemInsertDto): ItemDto =
         client.from(SupabaseTables.ITEMS).insert(item) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, item: ItemInsertDto): ItemDto =
-        client.from(SupabaseTables.ITEMS).update(item) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        item: ItemInsertDto,
+    ): ItemDto = client.from(SupabaseTables.ITEMS).update(item) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.ITEMS).delete {
@@ -159,22 +156,22 @@ class ItemRepository(
 class ItemEffectRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<ItemEffectDto> =
-        client.from(SupabaseTables.ITEM_EFFECTS).select().decodeList()
+    suspend fun getAll(): List<ItemEffectDto> = client.from(SupabaseTables.ITEM_EFFECTS).select().decodeList()
 
-    suspend fun getById(id: Long): ItemEffectDto? =
-        client.from(SupabaseTables.ITEM_EFFECTS).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): ItemEffectDto? = client.from(SupabaseTables.ITEM_EFFECTS).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
     suspend fun create(itemEffect: ItemEffectInsertDto): ItemEffectDto =
         client.from(SupabaseTables.ITEM_EFFECTS).insert(itemEffect) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, itemEffect: ItemEffectInsertDto): ItemEffectDto =
-        client.from(SupabaseTables.ITEM_EFFECTS).update(itemEffect) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        itemEffect: ItemEffectInsertDto,
+    ): ItemEffectDto = client.from(SupabaseTables.ITEM_EFFECTS).update(itemEffect) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.ITEM_EFFECTS).delete {
@@ -186,27 +183,26 @@ class ItemEffectRepository(
 class LocationRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<LocationDto> =
-        client.from(SupabaseTables.LOCATIONS).select().decodeList()
+    suspend fun getAll(): List<LocationDto> = client.from(SupabaseTables.LOCATIONS).select().decodeList()
 
-    suspend fun getById(id: Long): LocationDto? =
-        client.from(SupabaseTables.LOCATIONS).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): LocationDto? = client.from(SupabaseTables.LOCATIONS).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
-    suspend fun getByGameId(gameId: Long): List<LocationDto> =
-        client.from(SupabaseTables.LOCATIONS).select {
-            filter { eq("gameId", gameId) }
-        }.decodeList()
+    suspend fun getByGameId(gameId: Long): List<LocationDto> = client.from(SupabaseTables.LOCATIONS).select {
+        filter { eq("gameId", gameId) }
+    }.decodeList()
 
     suspend fun create(location: LocationInsertDto): LocationDto =
         client.from(SupabaseTables.LOCATIONS).insert(location) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, location: LocationInsertDto): LocationDto =
-        client.from(SupabaseTables.LOCATIONS).update(location) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        location: LocationInsertDto,
+    ): LocationDto = client.from(SupabaseTables.LOCATIONS).update(location) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.LOCATIONS).delete {
@@ -218,22 +214,26 @@ class LocationRepository(
 class ShopRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<ShopDto> =
-        client.from(SupabaseTables.SHOP).select().decodeList()
+    suspend fun getAll(): List<ShopDto> = client.from(SupabaseTables.SHOP).select().decodeList()
 
-    suspend fun getById(id: Long): ShopDto? =
-        client.from(SupabaseTables.SHOP).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): ShopDto? = client.from(SupabaseTables.SHOP).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
+
+    suspend fun getByTeamId(teamId: Long): List<ShopDto> = client.from(SupabaseTables.SHOP).select {
+        filter { eq("teamId", teamId) }
+    }.decodeList()
 
     suspend fun create(shopEntry: ShopInsertDto): ShopDto =
         client.from(SupabaseTables.SHOP).insert(shopEntry) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, shopEntry: ShopInsertDto): ShopDto =
-        client.from(SupabaseTables.SHOP).update(shopEntry) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        shopEntry: ShopInsertDto,
+    ): ShopDto = client.from(SupabaseTables.SHOP).update(shopEntry) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.SHOP).delete {
@@ -245,27 +245,26 @@ class ShopRepository(
 class StudentRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<StudentDto> =
-        client.from(SupabaseTables.STUDENTS).select().decodeList()
+    suspend fun getAll(): List<StudentDto> = client.from(SupabaseTables.STUDENTS).select().decodeList()
 
-    suspend fun getById(id: Long): StudentDto? =
-        client.from(SupabaseTables.STUDENTS).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): StudentDto? = client.from(SupabaseTables.STUDENTS).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
-    suspend fun getByTeamId(teamId: Long): List<StudentDto> =
-        client.from(SupabaseTables.STUDENTS).select {
-            filter { eq("teamId", teamId) }
-        }.decodeList()
+    suspend fun getByTeamId(teamId: Long): List<StudentDto> = client.from(SupabaseTables.STUDENTS).select {
+        filter { eq("teamId", teamId) }
+    }.decodeList()
 
     suspend fun create(student: StudentInsertDto): StudentDto =
         client.from(SupabaseTables.STUDENTS).insert(student) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, student: StudentInsertDto): StudentDto =
-        client.from(SupabaseTables.STUDENTS).update(student) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        student: StudentInsertDto,
+    ): StudentDto = client.from(SupabaseTables.STUDENTS).update(student) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.STUDENTS).delete {
@@ -277,32 +276,30 @@ class StudentRepository(
 class TaskRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<TaskDto> =
-        client.from(SupabaseTables.TASKS).select().decodeList()
+    suspend fun getAll(): List<TaskDto> = client.from(SupabaseTables.TASKS).select().decodeList()
 
-    suspend fun getById(id: Long): TaskDto? =
-        client.from(SupabaseTables.TASKS).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): TaskDto? = client.from(SupabaseTables.TASKS).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
-    suspend fun getByGameId(gameId: Long): List<TaskDto> =
-        client.from(SupabaseTables.TASKS).select {
-            filter { eq("gameId", gameId) }
-        }.decodeList()
+    suspend fun getByGameId(gameId: Long): List<TaskDto> = client.from(SupabaseTables.TASKS).select {
+        filter { eq("gameId", gameId) }
+    }.decodeList()
 
-    suspend fun getByLocationId(locationId: Long): List<TaskDto> =
-        client.from(SupabaseTables.TASKS).select {
-            filter { eq("locationId", locationId) }
-        }.decodeList()
+    suspend fun getByLocationId(locationId: Long): List<TaskDto> = client.from(SupabaseTables.TASKS).select {
+        filter { eq("locationId", locationId) }
+    }.decodeList()
 
     suspend fun create(task: TaskInsertDto): TaskDto =
         client.from(SupabaseTables.TASKS).insert(task) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, task: TaskInsertDto): TaskDto =
-        client.from(SupabaseTables.TASKS).update(task) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        task: TaskInsertDto,
+    ): TaskDto = client.from(SupabaseTables.TASKS).update(task) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.TASKS).delete {
@@ -314,32 +311,30 @@ class TaskRepository(
 class TasksLedgerRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<TasksLedgerDto> =
-        client.from(SupabaseTables.TASKS_LEDGER).select().decodeList()
+    suspend fun getAll(): List<TasksLedgerDto> = client.from(SupabaseTables.TASKS_LEDGER).select().decodeList()
 
-    suspend fun getById(id: Long): TasksLedgerDto? =
-        client.from(SupabaseTables.TASKS_LEDGER).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): TasksLedgerDto? = client.from(SupabaseTables.TASKS_LEDGER).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
-    suspend fun getByTaskId(taskId: Long): List<TasksLedgerDto> =
-        client.from(SupabaseTables.TASKS_LEDGER).select {
-            filter { eq("taskId", taskId) }
-        }.decodeList()
+    suspend fun getByTaskId(taskId: Long): List<TasksLedgerDto> = client.from(SupabaseTables.TASKS_LEDGER).select {
+        filter { eq("taskId", taskId) }
+    }.decodeList()
 
-    suspend fun getByTeamId(teamId: Long): List<TasksLedgerDto> =
-        client.from(SupabaseTables.TASKS_LEDGER).select {
-            filter { eq("teamId", teamId) }
-        }.decodeList()
+    suspend fun getByTeamId(teamId: Long): List<TasksLedgerDto> = client.from(SupabaseTables.TASKS_LEDGER).select {
+        filter { eq("teamId", teamId) }
+    }.decodeList()
 
     suspend fun create(entry: TasksLedgerInsertDto): TasksLedgerDto =
         client.from(SupabaseTables.TASKS_LEDGER).insert(entry) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, entry: TasksLedgerInsertDto): TasksLedgerDto =
-        client.from(SupabaseTables.TASKS_LEDGER).update(entry) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        entry: TasksLedgerInsertDto,
+    ): TasksLedgerDto = client.from(SupabaseTables.TASKS_LEDGER).update(entry) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.TASKS_LEDGER).delete {
@@ -351,13 +346,11 @@ class TasksLedgerRepository(
 class TeamAssignmentRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<TeamAssignmentDto> =
-        client.from(SupabaseTables.TEAM_ASSIGNMENT).select().decodeList()
+    suspend fun getAll(): List<TeamAssignmentDto> = client.from(SupabaseTables.TEAM_ASSIGNMENT).select().decodeList()
 
-    suspend fun getById(id: Long): TeamAssignmentDto? =
-        client.from(SupabaseTables.TEAM_ASSIGNMENT).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): TeamAssignmentDto? = client.from(SupabaseTables.TEAM_ASSIGNMENT).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
     suspend fun getByGameId(gameId: Long): List<TeamAssignmentDto> =
         client.from(SupabaseTables.TEAM_ASSIGNMENT).select {
@@ -367,11 +360,13 @@ class TeamAssignmentRepository(
     suspend fun create(teamAssignment: TeamAssignmentInsertDto): TeamAssignmentDto =
         client.from(SupabaseTables.TEAM_ASSIGNMENT).insert(teamAssignment) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, teamAssignment: TeamAssignmentInsertDto): TeamAssignmentDto =
-        client.from(SupabaseTables.TEAM_ASSIGNMENT).update(teamAssignment) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        teamAssignment: TeamAssignmentInsertDto,
+    ): TeamAssignmentDto = client.from(SupabaseTables.TEAM_ASSIGNMENT).update(teamAssignment) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.TEAM_ASSIGNMENT).delete {
@@ -383,13 +378,11 @@ class TeamAssignmentRepository(
 class TeamRepository(
     private val client: SupabaseClient,
 ) {
-    suspend fun getAll(): List<TeamDto> =
-        client.from(SupabaseTables.TEAMS).select().decodeList()
+    suspend fun getAll(): List<TeamDto> = client.from(SupabaseTables.TEAMS).select().decodeList()
 
-    suspend fun getById(id: Long): TeamDto? =
-        client.from(SupabaseTables.TEAMS).select {
-            filter { eq("id", id) }
-        }.decodeSingleOrNull()
+    suspend fun getById(id: Long): TeamDto? = client.from(SupabaseTables.TEAMS).select {
+        filter { eq("id", id) }
+    }.decodeSingleOrNull()
 
     suspend fun getByTeamAssignmentId(teamAssignmentId: Long): List<TeamDto> =
         client.from(SupabaseTables.TEAMS).select {
@@ -399,11 +392,13 @@ class TeamRepository(
     suspend fun create(team: TeamInsertDto): TeamDto =
         client.from(SupabaseTables.TEAMS).insert(team) { select() }.decodeSingle()
 
-    suspend fun update(id: Long, team: TeamInsertDto): TeamDto =
-        client.from(SupabaseTables.TEAMS).update(team) {
-            select()
-            filter { eq("id", id) }
-        }.decodeSingle()
+    suspend fun update(
+        id: Long,
+        team: TeamInsertDto,
+    ): TeamDto = client.from(SupabaseTables.TEAMS).update(team) {
+        select()
+        filter { eq("id", id) }
+    }.decodeSingle()
 
     suspend fun delete(id: Long) {
         client.from(SupabaseTables.TEAMS).delete {

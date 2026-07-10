@@ -29,6 +29,7 @@ fun MainMenu(
     onChangeGame: (() -> Unit),
     onSetUp: (() -> Unit),
     onCompetition: (() -> Unit),
+    onShop: (() -> Unit),
     onChangeLocation: () -> Unit,
 ) {
     val canUseActions = authUiState.isAuthenticated && !authUiState.isBusy
@@ -93,6 +94,13 @@ fun MainMenu(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+            AppButton(
+                text = "Bolt",
+                onClick = onShop,
+                enabled = canUseActions,
+                style = AppButtonStyle.Secondary,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }

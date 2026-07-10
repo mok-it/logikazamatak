@@ -12,7 +12,10 @@ object ColorAsStringSerializer : KSerializer<Color> {
     // Serial names of descriptors should be unique, this is why we advise including app package in the name.
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("mok.it.tortura.Color", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: Color) {
+    override fun serialize(
+        encoder: Encoder,
+        value: Color,
+    ) {
         val string = value.value.toString()
         encoder.encodeString(string)
     }

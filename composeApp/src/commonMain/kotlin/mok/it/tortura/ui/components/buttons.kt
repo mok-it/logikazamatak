@@ -5,7 +5,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
-
 @Composable
 fun HelpButton(
     onClick: () -> Unit,
@@ -13,7 +12,7 @@ fun HelpButton(
 ) {
     IconButton(
         onClick = onClick,
-        modifier = modifier
+        modifier = modifier,
     ) {
         HelpIcon()
     }

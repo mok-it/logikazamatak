@@ -5,9 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
 @Composable
-fun HelpDialog(
-    onDismiss: () -> Unit,
-) {
+fun HelpDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         text = {
@@ -28,8 +26,8 @@ fun ParseErrorPopup(onDismiss: () -> Unit) {
     GenericErrorPopup(
         "Formátumhiba",
         "A fájl formátuma helytelen, biztosan jót választottál?" +
-                "Excel fájlok beolvasása még nem lehetséges, a beosztást az appban hozd létre!",
-        onDismiss
+            "Excel fájlok beolvasása még nem lehetséges, a beosztást az appban hozd létre!",
+        onDismiss,
     )
 }
 
@@ -38,8 +36,8 @@ fun TypeErrorPopup(onDismiss: () -> Unit) {
     GenericErrorPopup(
         "Tartalomhiba",
         "A fájl formátuma helyes ,de tartalma nem értelmezhető. Biztos jót választottál?" +
-                "Baloldat csapatbeosztást (.csp), jobboldalt feladatsort (.fes) válassz ki!",
-        onDismiss
+            "Baloldat csapatbeosztást (.csp), jobboldalt feladatsort (.fes) válassz ki!",
+        onDismiss,
     )
 }
 
@@ -48,8 +46,8 @@ fun SaveErrorPopup(onDismiss: () -> Unit) {
     GenericErrorPopup(
         "Mentési hiba",
         "A fájl mentése nem sikerült, mert egy vagy több helyen" +
-                "nincs csapat vagy feladatsor kiválasztva.",
-        onDismiss
+            "nincs csapat vagy feladatsor kiválasztva.",
+        onDismiss,
     )
 }
 
@@ -73,14 +71,12 @@ fun GenericErrorPopup(
 }
 
 @Composable
-fun ExcelErrorPopup(
-    onDismiss: () -> Unit,
-) {
+fun ExcelErrorPopup(onDismiss: () -> Unit) {
     GenericErrorPopup(
         "Excel hiba",
         "Az Excel fájl beolvasása nem sikerült, mert a fájl formátuma nem megfelelő." +
-                "Kérlek ellenőrizd a fájlt és próbáld újra.",
-        onDismiss
+            "Kérlek ellenőrizd a fájlt és próbáld újra.",
+        onDismiss,
     )
 }
 
@@ -89,8 +85,8 @@ fun CsvErrorPopup(onDismiss: () -> Unit) {
     GenericErrorPopup(
         "CSV hiba",
         "A CSV fájl beolvasása nem sikerült, mert a fájl formátuma nem megfelelő." +
-                "Kérlek ellenőrizd a fájlt és próbáld újra." +
-                "Jelenleg csak a Batkabankból exportált CSV fájlok támogatottak.",
-        onDismiss
+            "Kérlek ellenőrizd a fájlt és próbáld újra." +
+            "Jelenleg csak a Batkabankból exportált CSV fájlok támogatottak.",
+        onDismiss,
     )
 }

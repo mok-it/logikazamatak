@@ -30,4 +30,7 @@ object Screen {
 
     @Serializable
     object MainMenu
+
+    @Serializable
+    object Shop
 }
