@@ -35,6 +35,10 @@ Raw Material components are allowed in the design-system layer and in feature sc
 - Use semantic colors from `AppThemeTokens.colors`, not direct hard-coded page colors in feature screens.
 - Prefer clear hierarchy and dense but readable spacing over large empty card stacks.
 - Keep body copy and labels compact. This is an operational UI, not a marketing page.
+- Prefer icon-led actions over text-only actions when the meaning is standard and repeated often.
+- Buttons should usually include a leading icon for navigation, add, save, refresh, purchase, delete, sign-in, and sign-out actions.
+- Use icon-only actions only when the control remains unambiguous from context and still has an accessible content description.
+- Avoid long button copy when a short label plus icon communicates the action just as clearly.
 
 ## Form and validation rules
 

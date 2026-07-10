@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Game
 import mok.it.tortura.model.ItemEffect
+import mok.it.tortura.ui.components.AddIcon
 import mok.it.tortura.ui.components.AppButton
 import mok.it.tortura.ui.components.AppButtonStyle
 import mok.it.tortura.ui.components.AppNumberField
@@ -38,11 +39,13 @@ import mok.it.tortura.ui.components.AppSelectField
 import mok.it.tortura.ui.components.AppSelectOption
 import mok.it.tortura.ui.components.AppTextField
 import mok.it.tortura.ui.components.BannerTone
+import mok.it.tortura.ui.components.DeleteIcon
 import mok.it.tortura.ui.components.EmptyState
 import mok.it.tortura.ui.components.FormSection
 import mok.it.tortura.ui.components.InlineActionRow
 import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
+import mok.it.tortura.ui.components.SaveIcon
 import mok.it.tortura.ui.components.SectionCard
 import mok.it.tortura.ui.components.StatusBanner
 import mok.it.tortura.ui.theme.AppThemeTokens
@@ -323,6 +326,7 @@ private fun CreateGameEditor(
                     text = "Mentés és tovább",
                     onClick = onCreateGame,
                     enabled = !uiState.isLoading && validationError == null,
+                    leadingIcon = { SaveIcon() },
                 )
             }
         }
@@ -383,6 +387,7 @@ private fun DraftSection(
                 onClick = onAdd,
                 enabled = enabled,
                 style = AppButtonStyle.Secondary,
+                leadingIcon = { AddIcon() },
             )
             IconButton(onClick = { isExpanded = !isExpanded }, enabled = enabled) {
                 Icon(
@@ -451,6 +456,7 @@ private fun LocationDraftCard(
                 onClick = { onRemoveLocation(location.localId) },
                 enabled = enabled,
                 style = AppButtonStyle.Danger,
+                leadingIcon = { DeleteIcon() },
             )
         }
 
@@ -481,6 +487,7 @@ private fun LocationDraftCard(
                 onClick = { onAddTask(location.localId) },
                 enabled = enabled,
                 style = AppButtonStyle.Secondary,
+                leadingIcon = { AddIcon() },
             )
         }
     }
@@ -543,6 +550,7 @@ private fun TaskDraftCard(
                 onClick = { onRemove(task.localId) },
                 enabled = enabled,
                 style = AppButtonStyle.Ghost,
+                leadingIcon = { DeleteIcon() },
             )
         }
     }
@@ -582,6 +590,7 @@ private fun HealingTaskDraftCard(
                 onClick = { onRemove(healingTask.localId) },
                 enabled = enabled,
                 style = AppButtonStyle.Ghost,
+                leadingIcon = { DeleteIcon() },
             )
         }
     }
@@ -656,6 +665,7 @@ private fun ShopItemDraftCard(
                 onClick = { onRemove(item.localId) },
                 enabled = enabled,
                 style = AppButtonStyle.Ghost,
+                leadingIcon = { DeleteIcon() },
             )
         }
     }

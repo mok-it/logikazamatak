@@ -21,10 +21,10 @@ private fun AppButtonsPreview() {
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(AppThemeTokens.spacing.md),
         ) {
-            AppButton(text = "Primary action", onClick = {})
-            AppButton(text = "Secondary action", onClick = {}, style = AppButtonStyle.Secondary)
-            AppButton(text = "Danger action", onClick = {}, style = AppButtonStyle.Danger)
-            AppButton(text = "Ghost action", onClick = {}, style = AppButtonStyle.Ghost)
+            AppButton(text = "Primary action", onClick = {}, leadingIcon = { SaveIcon() })
+            AppButton(text = "Secondary action", onClick = {}, style = AppButtonStyle.Secondary, leadingIcon = { AddIcon() })
+            AppButton(text = "Danger action", onClick = {}, style = AppButtonStyle.Danger, leadingIcon = { DeleteIcon() })
+            AppButton(text = "Ghost action", onClick = {}, style = AppButtonStyle.Ghost, leadingIcon = { NavigateBackIcon() })
             AppButton(text = "Loading action", onClick = {}, loading = true)
         }
     }
@@ -116,14 +116,14 @@ private fun AppLayoutPreview() {
                 title = "Design system preview",
                 description = "A közös layout és a szekcióblokkok mintája.",
                 trailingContent = {
-                    AppButton(text = "Művelet", onClick = {}, style = AppButtonStyle.Secondary)
+                    AppButton(text = "Művelet", onClick = {}, style = AppButtonStyle.Secondary, leadingIcon = { RefreshIcon() })
                 },
             )
             FormSection(
                 title = "Űrlapszekció",
                 description = "A jellemző admin felületi blokk.",
                 headerAction = {
-                    AppButton(text = "Hozzáadás", onClick = {}, style = AppButtonStyle.Secondary)
+                    AppButton(text = "Hozzáadás", onClick = {}, style = AppButtonStyle.Secondary, leadingIcon = { AddIcon() })
                 },
             ) {
                 AppTextField(
@@ -133,7 +133,7 @@ private fun AppLayoutPreview() {
                     modifier = Modifier.fillMaxWidth(),
                 )
                 InlineActionRow {
-                    AppButton(text = "Mentés", onClick = {})
+                    AppButton(text = "Mentés", onClick = {}, leadingIcon = { SaveIcon() })
                 }
             }
         }

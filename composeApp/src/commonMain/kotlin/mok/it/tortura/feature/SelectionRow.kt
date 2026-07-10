@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import mok.it.tortura.ui.components.AppButton
 import mok.it.tortura.ui.components.AppButtonStyle
+import mok.it.tortura.ui.components.NavigateForwardIcon
 import mok.it.tortura.ui.components.SectionCard
 import mok.it.tortura.ui.theme.AppThemeTokens
 
@@ -44,6 +45,7 @@ fun SelectionRow(
                 onClick = onAction,
                 enabled = enabled,
                 style = AppButtonStyle.Secondary,
+                leadingIcon = { NavigateForwardIcon() },
             )
         }
     }
