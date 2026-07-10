@@ -155,7 +155,7 @@ Current effect codes:
 - `retroactive_location_score_multiplier`: `területduplázó visszamenőleg`; double all eligible completed tasks in a location immediately
 - `miniboss_unlock`: `minibosslelőhely`; unlock one miniboss task for one team
 - `miniboss_rewind`: `idővisszatekerő`; allow unlimited extra retries for one already-failed miniboss task
-- `boss_location_unlock`: `főbosslelőhely`; unlock one boss location after the team defeats every miniboss
+- `boss_location_unlock`: `főbosslelőhely`; unlock the main boss encounter after the team defeats every miniboss
 
 ### `Items`
 

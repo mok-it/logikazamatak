@@ -1,52 +1,20 @@
 package mok.it.tortura.feature
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mok.it.tortura.model.Item
 import mok.it.tortura.model.Team
-import mok.it.tortura.ui.components.AppButton
-import mok.it.tortura.ui.components.AppButtonStyle
-import mok.it.tortura.ui.components.AppSelectField
-import mok.it.tortura.ui.components.AppSelectOption
-import mok.it.tortura.ui.components.AppTextField
-import mok.it.tortura.ui.components.BannerTone
-import mok.it.tortura.ui.components.ChangeLocationIcon
-import mok.it.tortura.ui.components.EmptyState
-import mok.it.tortura.ui.components.NavigateBackIcon
-import mok.it.tortura.ui.components.PageHeader
-import mok.it.tortura.ui.components.PageScaffold
-import mok.it.tortura.ui.components.SaveIcon
-import mok.it.tortura.ui.components.SectionCard
-import mok.it.tortura.ui.components.ShopIcon
-import mok.it.tortura.ui.components.TransientToastEffect
+import mok.it.tortura.ui.components.*
 import mok.it.tortura.ui.theme.AppTheme
 import mok.it.tortura.ui.theme.AppThemeTokens
 
@@ -96,7 +64,7 @@ fun ShopScreen(
                     leadingIcon = { NavigateBackIcon() },
                 )
                 AppButton(
-                    text = "Helyszín váltása",
+                    text = currentLocationButtonLabel(activeLocationName),
                     onClick = onChangeLocation,
                     style = AppButtonStyle.Secondary,
                     leadingIcon = { ChangeLocationIcon() },
@@ -497,9 +465,10 @@ private fun ShopTableRow(
     val purchaseEnabled = !isLoading &&
         itemId != null &&
         selectedTeam?.id != null &&
+        itemRow.isEligibleForPurchase &&
         hasRemainingStock &&
         hasEnoughMoney
-    val totalLimit = itemRow.item.maxPerTeam?.toString() ?: "∞"
+    val totalLimit = itemRow.totalAvailableCount?.toString() ?: "∞"
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -579,6 +548,7 @@ private fun PurchaseDialog(
     val hasRemainingStock = itemRow.remainingStock?.let { it > 0 } ?: true
     val canConfirmPurchase = !isLoading &&
         selectedTeam?.id != null &&
+        itemRow.isEligibleForPurchase &&
         hasEnoughMoney &&
         hasRemainingStock &&
         (!requiresTarget || itemRow.selectedTargetId != null)
@@ -599,6 +569,14 @@ private fun PurchaseDialog(
                         itemRow = itemRow,
                         enabled = !isLoading,
                         onTargetChange = onTargetChange,
+                    )
+                }
+
+                itemRow.purchaseBlockedReason?.let { blockedReason ->
+                    Text(
+                        text = blockedReason,
+                        color = AppThemeTokens.colors.warning,
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -684,6 +662,9 @@ private fun buildShopPageDescription(
 ): String = activeLocationName?.let { locationName ->
     "$activeGameName • aktív helyszín: $locationName"
 } ?: "$activeGameName • még nincs kiválasztott helyszín"
+
+private fun currentLocationButtonLabel(activeLocationName: String?): String =
+    "Helyszín: ${activeLocationName ?: "nincs kiválasztva"}"
 
 @Preview
 @Composable

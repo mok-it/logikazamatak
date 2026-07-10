@@ -78,7 +78,7 @@ fun HealerTasksScreen(
                     leadingIcon = { NavigateBackIcon() },
                 )
                 AppButton(
-                    text = "Helyszín váltása",
+                    text = currentLocationButtonLabel(activeLocationName),
                     onClick = onChangeLocation,
                     style = AppButtonStyle.Secondary,
                     leadingIcon = { ChangeLocationIcon() },
@@ -155,6 +155,9 @@ fun HealerTasksScreen(
         }
     }
 }
+
+private fun currentLocationButtonLabel(activeLocationName: String?): String =
+    "Helyszín: ${activeLocationName ?: "nincs kiválasztva"}"
 
 @Composable
 private fun SummarySection(

@@ -63,7 +63,7 @@ class SetupViewModel(
             _uiState.update {
                 it.copy(
                     teamAssignments = teamAssignments,
-                    message = "Adatok betöltve",
+                    message = null,
                 )
             }
         }

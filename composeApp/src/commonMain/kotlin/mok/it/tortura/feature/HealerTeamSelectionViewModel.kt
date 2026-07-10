@@ -49,7 +49,7 @@ class HealerTeamSelectionViewModel(
             _uiState.update {
                 it.copy(
                     teams = teams,
-                    message = if (teams.isEmpty()) null else "Csapatok betöltve",
+                    message = null,
                 )
             }
         }

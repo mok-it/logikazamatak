@@ -166,7 +166,7 @@ class GameSelectionViewModel(
                 it.copy(
                     games = games,
                     itemEffects = itemEffects,
-                    message = if (games.isEmpty()) null else "Játékok betöltve",
+                    message = null,
                 )
             }
         }

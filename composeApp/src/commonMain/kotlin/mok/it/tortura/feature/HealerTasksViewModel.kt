@@ -170,7 +170,7 @@ class HealerTasksViewModel(
                         healingTasks = data.healingTasks,
                         healableFailedTasks = data.healableFailedTasks,
                         selectedHealingTaskId = selectedHealingTaskId,
-                        message = if (current.team == null) "Adatok betöltve" else current.message,
+                        message = current.message,
                     )
                 }
             },
