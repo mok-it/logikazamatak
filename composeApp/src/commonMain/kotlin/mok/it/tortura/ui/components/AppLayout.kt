@@ -22,18 +22,22 @@ fun PageScaffold(
     val colors = AppThemeTokens.colors
     val spacing = AppThemeTokens.spacing
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(colors.pageBackground),
     ) {
+        val compact = maxWidth < 600.dp
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 1120.dp)
                 .align(Alignment.TopCenter)
-                .padding(horizontal = spacing.xl, vertical = spacing.xxl),
-            verticalArrangement = Arrangement.spacedBy(spacing.xl),
+                .padding(
+                    horizontal = if (compact) spacing.md else spacing.xl,
+                    vertical = if (compact) spacing.lg else spacing.xxl,
+                ),
+            verticalArrangement = Arrangement.spacedBy(if (compact) spacing.lg else spacing.xl),
             content = content,
         )
     }
@@ -44,31 +48,58 @@ fun PageHeader(
     title: String,
     description: String? = null,
     modifier: Modifier = Modifier,
-    trailingContent: (@Composable RowScope.() -> Unit)? = null,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val colors = AppThemeTokens.colors
     val spacing = AppThemeTokens.spacing
 
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(spacing.lg),
-        verticalAlignment = Alignment.Top,
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(spacing.sm),
-        ) {
-            Text(title, style = MaterialTheme.typography.headlineMedium, color = colors.textPrimary)
-            description?.takeIf { it.isNotEmpty() }?.let {
-                Text(it, style = MaterialTheme.typography.bodyLarge, color = colors.textSecondary)
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val compact = maxWidth < 600.dp
+        if (compact) {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
+                PageHeaderText(title = title, description = description)
+                trailingContent?.let {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+                    ) { it() }
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing.lg),
+                verticalAlignment = Alignment.Top,
+            ) {
+                PageHeaderText(
+                    title = title,
+                    description = description,
+                    modifier = Modifier.weight(1f),
+                )
+                trailingContent?.let {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(spacing.md),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) { it() }
+                }
             }
         }
-        trailingContent?.let {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(spacing.md),
-                verticalAlignment = Alignment.CenterVertically,
-                content = it,
-            )
+    }
+}
+
+@Composable
+private fun PageHeaderText(
+    title: String,
+    description: String?,
+    modifier: Modifier = Modifier,
+) {
+    val colors = AppThemeTokens.colors
+    val spacing = AppThemeTokens.spacing
+
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+        Text(title, style = MaterialTheme.typography.headlineMedium, color = colors.textPrimary)
+        description?.takeIf { it.isNotEmpty() }?.let {
+            Text(it, style = MaterialTheme.typography.bodyLarge, color = colors.textSecondary)
         }
     }
 }
@@ -92,11 +123,14 @@ fun SectionCard(
             contentColor = colors.textPrimary,
         ),
     ) {
-        Column(
-            modifier = Modifier.padding(spacing.xl),
-            verticalArrangement = Arrangement.spacedBy(spacing.lg),
-            content = content,
-        )
+        BoxWithConstraints {
+            val compact = maxWidth < 600.dp
+            Column(
+                modifier = Modifier.padding(if (compact) spacing.lg else spacing.xl),
+                verticalArrangement = Arrangement.spacedBy(spacing.lg),
+                content = content,
+            )
+        }
     }
 }
 
@@ -105,33 +139,47 @@ fun FormSection(
     title: String,
     modifier: Modifier = Modifier,
     description: String? = null,
-    headerAction: (@Composable RowScope.() -> Unit)? = null,
+    headerAction: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = AppThemeTokens.colors
     val spacing = AppThemeTokens.spacing
 
     SectionCard(modifier = modifier) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing.md),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(spacing.xs),
-            ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val compact = maxWidth < 480.dp
+            val heading: @Composable (Modifier) -> Unit = { headingModifier ->
+                Column(modifier = headingModifier, verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
                 Text(title, style = MaterialTheme.typography.titleLarge, color = colors.textPrimary)
                 description?.let {
                     Text(it, style = MaterialTheme.typography.bodyMedium, color = colors.textSecondary)
                 }
             }
-            headerAction?.let {
+            }
+            if (compact) {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
+                    heading(Modifier.fillMaxWidth())
+                    headerAction?.let {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(spacing.sm),
+                        ) { it() }
+                    }
+                }
+            } else {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-                    verticalAlignment = Alignment.CenterVertically,
-                    content = it,
-                )
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.md),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    heading(Modifier.weight(1f))
+                    headerAction?.let {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) { it() }
+                    }
+                }
             }
         }
         Column(
@@ -144,14 +192,22 @@ fun FormSection(
 @Composable
 fun InlineActionRow(
     modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit,
+    content: @Composable () -> Unit,
 ) {
     val spacing = AppThemeTokens.spacing
 
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(spacing.md, Alignment.End),
-        verticalAlignment = Alignment.CenterVertically,
-        content = content,
-    )
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        if (maxWidth < 480.dp) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(spacing.sm),
+            ) { content() }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing.md, Alignment.End),
+                verticalAlignment = Alignment.CenterVertically,
+            ) { content() }
+        }
+    }
 }

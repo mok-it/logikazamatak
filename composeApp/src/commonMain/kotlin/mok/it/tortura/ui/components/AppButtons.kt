@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -82,10 +83,12 @@ fun AppButton(
         }
     }
 
+    val touchTargetModifier = modifier.heightIn(min = 48.dp)
+
     when (style) {
         AppButtonStyle.Primary -> Button(
             onClick = onClick,
-            modifier = modifier,
+            modifier = touchTargetModifier,
             enabled = isEnabled,
             colors = ButtonDefaults.buttonColors(
                 containerColor = colors.accent,
@@ -96,7 +99,7 @@ fun AppButton(
 
         AppButtonStyle.Secondary -> OutlinedButton(
             onClick = onClick,
-            modifier = modifier,
+            modifier = touchTargetModifier,
             enabled = isEnabled,
             border = BorderStroke(1.dp, colors.borderStrong),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.accent),
@@ -105,7 +108,7 @@ fun AppButton(
 
         AppButtonStyle.Danger -> Button(
             onClick = onClick,
-            modifier = modifier,
+            modifier = touchTargetModifier,
             enabled = isEnabled,
             colors = ButtonDefaults.buttonColors(
                 containerColor = colors.danger,
@@ -116,7 +119,7 @@ fun AppButton(
 
         AppButtonStyle.Ghost -> TextButton(
             onClick = onClick,
-            modifier = modifier,
+            modifier = touchTargetModifier,
             enabled = isEnabled,
             colors = ButtonDefaults.textButtonColors(contentColor = colors.textSecondary),
             content = buttonContent,
