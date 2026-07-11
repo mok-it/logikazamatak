@@ -192,31 +192,36 @@ private fun TeamBalanceSection(
             val isWide = maxWidth >= 720.dp
 
             if (isWide) {
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.lg),
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalArrangement = Arrangement.spacedBy(spacing.sm),
                 ) {
-                    TeamComboBox(
-                        selectedLabel = selectedTeam?.name ?: "Válassz csapatot",
-                        options = teamOptions,
-                        enabled = !isLoading && teamOptions.isNotEmpty(),
-                        onSelectTeam = onSelectTeam,
-                        modifier = Modifier.weight(1f),
-                    )
-                    TeamInfoLine(
-                        selectedTeam = selectedTeam,
-                        teamScore = teamScore,
-                        teamSpent = teamSpent,
-                        teamBudget = teamBudget,
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(spacing.lg),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        TeamComboBox(
+                            selectedLabel = selectedTeam?.name ?: "Válassz csapatot",
+                            options = teamOptions,
+                            enabled = !isLoading && teamOptions.isNotEmpty(),
+                            onSelectTeam = onSelectTeam,
+                            modifier = Modifier.weight(1f),
+                        )
+                        TeamInfoLine(
+                            selectedTeam = selectedTeam,
+                            teamScore = teamScore,
+                            teamSpent = teamSpent,
+                            teamBudget = teamBudget,
+                        )
+                    }
+                    ScoreAdjustmentRow(
+                        value = scoreAdjustmentInput,
+                        enabled = !isLoading && selectedTeam != null,
+                        onValueChange = onScoreAdjustmentInputChange,
+                        onApply = onApplyScoreAdjustment,
                     )
                 }
-                ScoreAdjustmentRow(
-                    value = scoreAdjustmentInput,
-                    enabled = !isLoading && selectedTeam != null,
-                    onValueChange = onScoreAdjustmentInputChange,
-                    onApply = onApplyScoreAdjustment,
-                )
             } else {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
