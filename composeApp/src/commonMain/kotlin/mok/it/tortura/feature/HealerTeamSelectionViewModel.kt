@@ -11,9 +11,6 @@ import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
 import mok.it.tortura.model.Team
 import mok.it.tortura.model.TeamProgressSummary
 import mok.it.tortura.model.TeamProgressSummaryCalculator
-import mok.it.tortura.model.Team
-import mok.it.tortura.model.TeamProgressSummary
-import mok.it.tortura.model.TeamProgressSummaryCalculator
 
 data class HealerTeamListItem(
     val team: Team,
