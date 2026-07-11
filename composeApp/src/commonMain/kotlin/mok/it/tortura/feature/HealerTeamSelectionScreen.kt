@@ -23,7 +23,6 @@ import mok.it.tortura.ui.components.NavigateBackIcon
 import mok.it.tortura.ui.components.NavigateForwardIcon
 import mok.it.tortura.ui.components.PageHeader
 import mok.it.tortura.ui.components.PageScaffold
-import mok.it.tortura.ui.components.NavigateForwardIcon
 import mok.it.tortura.ui.components.SectionCard
 import mok.it.tortura.ui.components.TeamInfoDisclosure
 import mok.it.tortura.ui.components.TransientToastEffect

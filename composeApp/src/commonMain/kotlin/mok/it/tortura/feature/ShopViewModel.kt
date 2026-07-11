@@ -89,7 +89,13 @@ class SupabaseShopDataSource(
             .flatMap { repositories.teams.getByTeamAssignmentId(it) }
             .map { teamDto ->
                 val teamId = teamDto.id
-                val students = if (teamId == null) emptyList() else repositories.students.getByTeamId(teamId).map { it.toModel() }
+                val students = if (teamId ==
+                    null
+                ) {
+                    emptyList()
+                } else {
+                    repositories.students.getByTeamId(teamId).map { it.toModel() }
+                }
                 teamDto.toModel(students = students)
             }
             .sortedBy { (it.name ?: "zzz").lowercase() }
