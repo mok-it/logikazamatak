@@ -150,11 +150,11 @@ fun FormSection(
             val compact = maxWidth < 480.dp
             val heading: @Composable (Modifier) -> Unit = { headingModifier ->
                 Column(modifier = headingModifier, verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
-                Text(title, style = MaterialTheme.typography.titleLarge, color = colors.textPrimary)
-                description?.let {
-                    Text(it, style = MaterialTheme.typography.bodyMedium, color = colors.textSecondary)
+                    Text(title, style = MaterialTheme.typography.titleLarge, color = colors.textPrimary)
+                    description?.let {
+                        Text(it, style = MaterialTheme.typography.bodyMedium, color = colors.textSecondary)
+                    }
                 }
-            }
             }
             if (compact) {
                 Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
