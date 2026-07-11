@@ -354,26 +354,43 @@ private fun ScoreAdjustmentRow(
 ) {
     val spacing = AppThemeTokens.spacing
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AppTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = "Pontkorrekció (-/+)",
-            enabled = enabled,
-            singleLine = true,
-            modifier = Modifier.weight(1f),
-        )
-        AppButton(
-            text = "Alkalmaz",
-            onClick = onApply,
-            enabled = enabled && value.isNotBlank() && value != "-",
-            style = AppButtonStyle.Secondary,
-            leadingIcon = { SaveIcon() },
-        )
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val compact = maxWidth < 480.dp
+        val field: @Composable (Modifier) -> Unit = { fieldModifier ->
+            AppTextField(
+                value = value,
+                onValueChange = onValueChange,
+                label = "Pontkorrekció (-/+)",
+                enabled = enabled,
+                singleLine = true,
+                modifier = fieldModifier,
+            )
+        }
+        val action: @Composable (Modifier) -> Unit = { actionModifier ->
+            AppButton(
+                text = "Alkalmaz",
+                onClick = onApply,
+                modifier = actionModifier,
+                enabled = enabled && value.isNotBlank() && value != "-",
+                style = AppButtonStyle.Secondary,
+                leadingIcon = { SaveIcon() },
+            )
+        }
+        if (compact) {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                field(Modifier.fillMaxWidth())
+                action(Modifier.fillMaxWidth())
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                field(Modifier.weight(1f))
+                action(Modifier)
+            }
+        }
     }
 }
 
@@ -418,18 +435,26 @@ private fun ShopItemsTable(
     onPurchaseClick: (Long) -> Unit,
 ) {
     SectionCard {
-        ShopTableHeader()
-        itemRows.forEachIndexed { index, itemRow ->
-            if (index > 0) {
-                HorizontalDivider()
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val compact = maxWidth < 600.dp
+            Column(verticalArrangement = Arrangement.spacedBy(AppThemeTokens.spacing.md)) {
+                if (!compact) {
+                    ShopTableHeader()
+                }
+                itemRows.forEachIndexed { index, itemRow ->
+                    if (index > 0) {
+                        HorizontalDivider()
+                    }
+                    ShopTableRow(
+                        itemRow = itemRow,
+                        selectedTeam = selectedTeam,
+                        availableBudget = availableBudget,
+                        isLoading = isLoading,
+                        compact = compact,
+                        onPurchaseClick = onPurchaseClick,
+                    )
+                }
             }
-            ShopTableRow(
-                itemRow = itemRow,
-                selectedTeam = selectedTeam,
-                availableBudget = availableBudget,
-                isLoading = isLoading,
-                onPurchaseClick = onPurchaseClick,
-            )
         }
     }
 }
@@ -472,6 +497,7 @@ private fun ShopTableRow(
     selectedTeam: Team?,
     availableBudget: Int?,
     isLoading: Boolean,
+    compact: Boolean,
     onPurchaseClick: (Long) -> Unit,
 ) {
     val itemId = itemRow.item.id
@@ -486,12 +512,9 @@ private fun ShopTableRow(
         hasEnoughMoney
     val totalLimit = itemRow.totalAvailableCount?.toString() ?: "∞"
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    val details: @Composable (Modifier) -> Unit = { detailsModifier ->
         Column(
-            modifier = Modifier.weight(2.4f),
+            modifier = detailsModifier,
             verticalArrangement = Arrangement.spacedBy(AppThemeTokens.spacing.xs),
         ) {
             Text(
@@ -513,6 +536,32 @@ private fun ShopTableRow(
                 )
             }
         }
+    }
+    if (compact) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(AppThemeTokens.spacing.md),
+        ) {
+            details(Modifier.fillMaxWidth())
+            Text(
+                text = "Ár: $price • Megvett: ${itemRow.purchasedCount}/$totalLimit",
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppThemeTokens.colors.textSecondary,
+            )
+            AppButton(
+                text = "Vásárlás",
+                onClick = { itemId?.let(onPurchaseClick) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = purchaseEnabled,
+                leadingIcon = { ShopIcon() },
+            )
+        }
+    } else {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            details(Modifier.weight(2.4f))
         TableCell(
             text = price.toString(),
             modifier = Modifier.weight(0.8f),
@@ -531,6 +580,7 @@ private fun ShopTableRow(
                 enabled = purchaseEnabled,
                 leadingIcon = { ShopIcon() },
             )
+        }
         }
     }
 }
