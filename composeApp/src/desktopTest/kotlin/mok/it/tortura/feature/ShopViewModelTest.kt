@@ -167,7 +167,7 @@ private class FakeShopDataSource(
         val index = mutableTeams.indexOfFirst { it.id == teamId }
         val updatedTeam = mutableTeams[index].copy(
             additionalScoreAwarded =
-            mutableTeams[index].additionalScoreAwarded + delta,
+                mutableTeams[index].additionalScoreAwarded + delta,
         )
         mutableTeams[index] = updatedTeam
         return updatedTeam

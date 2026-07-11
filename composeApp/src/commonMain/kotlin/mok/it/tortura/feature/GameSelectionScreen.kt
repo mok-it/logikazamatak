@@ -543,19 +543,19 @@ private fun TaskDraftCard(
             val compact = maxWidth < 480.dp
             val miniBossToggle: @Composable () -> Unit = {
                 Row(
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Checkbox(
-                    checked = task.isMiniBoss,
-                    onCheckedChange = { onMiniBossChange(task.localId, it) },
-                    enabled = enabled,
-                )
-                Text(
-                    text = "Mini boss",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.textPrimary,
-                )
-            }
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(
+                        checked = task.isMiniBoss,
+                        onCheckedChange = { onMiniBossChange(task.localId, it) },
+                        enabled = enabled,
+                    )
+                    Text(
+                        text = "Mini boss",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.textPrimary,
+                    )
+                }
             }
             if (compact) {
                 Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {

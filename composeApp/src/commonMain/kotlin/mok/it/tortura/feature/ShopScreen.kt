@@ -562,25 +562,25 @@ private fun ShopTableRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             details(Modifier.weight(2.4f))
-        TableCell(
-            text = price.toString(),
-            modifier = Modifier.weight(0.8f),
-        )
-        TableCell(
-            text = "${itemRow.purchasedCount}/$totalLimit",
-            modifier = Modifier.weight(1.4f),
-        )
-        Row(
-            modifier = Modifier.weight(1.1f),
-            horizontalArrangement = Arrangement.End,
-        ) {
-            AppButton(
-                text = "Vásárlás",
-                onClick = { itemId?.let(onPurchaseClick) },
-                enabled = purchaseEnabled,
-                leadingIcon = { ShopIcon() },
+            TableCell(
+                text = price.toString(),
+                modifier = Modifier.weight(0.8f),
             )
-        }
+            TableCell(
+                text = "${itemRow.purchasedCount}/$totalLimit",
+                modifier = Modifier.weight(1.4f),
+            )
+            Row(
+                modifier = Modifier.weight(1.1f),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                AppButton(
+                    text = "Vásárlás",
+                    onClick = { itemId?.let(onPurchaseClick) },
+                    enabled = purchaseEnabled,
+                    leadingIcon = { ShopIcon() },
+                )
+            }
         }
     }
 }

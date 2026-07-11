@@ -227,7 +227,7 @@ class LocationTasksViewModel(
                             isSuccess = isSuccess,
                             submittedAnswer = answer,
                         )
-                    ),
+                        ),
                     message = if (isSuccess) "Helyes válasz rögzítve" else "Sikertelen próbálkozás rögzítve",
                 )
             }
