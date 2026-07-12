@@ -433,28 +433,45 @@ private fun LocationDraftCard(
     val spacing = AppThemeTokens.spacing
 
     SectionCard(toned = true) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing.md),
-            verticalAlignment = Alignment.Top,
-        ) {
-            AppTextField(
-                value = location.name,
-                onValueChange = { onLocationNameChange(location.localId, it) },
-                label = "Helyszín neve",
-                singleLine = true,
-                isError = location.name.trim().isEmpty(),
-                supportingText = if (location.name.trim().isEmpty()) "Kötelező" else null,
-                enabled = enabled,
-                modifier = Modifier.weight(1f),
-            )
-            AppButton(
-                text = "Törlés",
-                onClick = { onRemoveLocation(location.localId) },
-                enabled = enabled,
-                style = AppButtonStyle.Danger,
-                leadingIcon = { DeleteIcon() },
-            )
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val compact = maxWidth < 480.dp
+            val field: @Composable (Modifier) -> Unit = { fieldModifier ->
+                AppTextField(
+                    value = location.name,
+                    onValueChange = { onLocationNameChange(location.localId, it) },
+                    label = "Helyszín neve",
+                    singleLine = true,
+                    isError = location.name.trim().isEmpty(),
+                    supportingText = if (location.name.trim().isEmpty()) "Kötelező" else null,
+                    enabled = enabled,
+                    modifier = fieldModifier,
+                )
+            }
+            val remove: @Composable (Modifier) -> Unit = { buttonModifier ->
+                AppButton(
+                    text = "Törlés",
+                    onClick = { onRemoveLocation(location.localId) },
+                    modifier = buttonModifier,
+                    enabled = enabled,
+                    style = AppButtonStyle.Danger,
+                    leadingIcon = { DeleteIcon() },
+                )
+            }
+            if (compact) {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                    field(Modifier.fillMaxWidth())
+                    remove(Modifier.fillMaxWidth())
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.md),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    field(Modifier.weight(1f))
+                    remove(Modifier)
+                }
+            }
         }
 
         if (tasks.isEmpty()) {
@@ -522,33 +539,52 @@ private fun TaskDraftCard(
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing.md),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Row(
-                modifier = Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Checkbox(
-                    checked = task.isMiniBoss,
-                    onCheckedChange = { onMiniBossChange(task.localId, it) },
-                    enabled = enabled,
-                )
-                Text(
-                    text = "Mini boss",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.textPrimary,
-                )
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val compact = maxWidth < 480.dp
+            val miniBossToggle: @Composable () -> Unit = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(
+                        checked = task.isMiniBoss,
+                        onCheckedChange = { onMiniBossChange(task.localId, it) },
+                        enabled = enabled,
+                    )
+                    Text(
+                        text = "Mini boss",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.textPrimary,
+                    )
+                }
             }
-            AppButton(
-                text = "Feladat törlése",
-                onClick = { onRemove(task.localId) },
-                enabled = enabled,
-                style = AppButtonStyle.Ghost,
-                leadingIcon = { DeleteIcon() },
-            )
+            if (compact) {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                    miniBossToggle()
+                    AppButton(
+                        text = "Feladat törlése",
+                        onClick = { onRemove(task.localId) },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = enabled,
+                        style = AppButtonStyle.Ghost,
+                        leadingIcon = { DeleteIcon() },
+                    )
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.md),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Row(modifier = Modifier.weight(1f)) { miniBossToggle() }
+                    AppButton(
+                        text = "Feladat törlése",
+                        onClick = { onRemove(task.localId) },
+                        enabled = enabled,
+                        style = AppButtonStyle.Ghost,
+                        leadingIcon = { DeleteIcon() },
+                    )
+                }
+            }
         }
     }
 }
