@@ -17,11 +17,6 @@ data class HealerTeamListItem(
     val progress: TeamProgressSummary,
 )
 
-data class HealerTeamListItem(
-    val team: Team,
-    val progress: TeamProgressSummary,
-)
-
 data class HealerTeamSelectionUiState(
     val isLoading: Boolean = false,
     val teams: List<HealerTeamListItem> = emptyList(),
