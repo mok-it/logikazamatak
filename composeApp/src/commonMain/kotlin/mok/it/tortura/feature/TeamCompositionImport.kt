@@ -171,15 +171,18 @@ class DelimitedTeamCompositionImportSource : TeamCompositionImportSource {
     }
 
     private fun detectDelimiter(text: String): Char {
-        val firstLine = text.lineSequence().firstOrNull { it.isNotBlank() }.orEmpty()
         val candidates = listOf('\t', ';', ',')
-        return candidates.maxByOrNull { candidate ->
-            var quoted = false
-            firstLine.count { char ->
-                if (char == '"') quoted = !quoted
-                char == candidate && !quoted
+        val counts = IntArray(candidates.size)
+        var quoted = false
+        for (char in text.trimStart()) {
+            if (char == '"') quoted = !quoted
+            if (!quoted && (char == '\n' || char == '\r')) break
+            if (!quoted) {
+                val index = candidates.indexOf(char)
+                if (index >= 0) counts[index]++
             }
-        } ?: ','
+        }
+        return candidates[counts.indices.maxByOrNull { counts[it] } ?: 0]
     }
 
     private fun normalizeHeader(value: String): String = value

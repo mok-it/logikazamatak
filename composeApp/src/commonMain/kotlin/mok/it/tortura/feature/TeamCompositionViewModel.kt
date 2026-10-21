@@ -40,7 +40,10 @@ data class TeamCompositionUiState(
 )
 
 interface TeamCompositionDataSource {
-    suspend fun loadTeamComposition(gameId: Long): TeamCompositionSnapshot
+    suspend fun loadTeamComposition(
+        gameId: Long,
+        assignmentId: Long? = null,
+    ): TeamCompositionSnapshot
     suspend fun saveTeamComposition(
         gameId: Long,
         draft: TeamCompositionDraft,
@@ -52,16 +55,27 @@ private data class SaveTeamCompositionParams(
     val p_game_id: Long,
     val p_base_team_counter: Long?,
     val p_teams: List<TeamDraft>,
+    val p_assignment_id: Long? = null,
 )
 
 class SupabaseTeamCompositionDataSource(
     private val repositories: TorturaSupabaseRepositories = TorturaSupabaseRepositories(),
 ) : TeamCompositionDataSource {
-    override suspend fun loadTeamComposition(gameId: Long): TeamCompositionSnapshot {
-        val assignment = repositories.teamAssignments
+    override suspend fun loadTeamComposition(
+        gameId: Long,
+        assignmentId: Long?,
+    ): TeamCompositionSnapshot {
+        val assignments = repositories.teamAssignments
             .getByGameId(gameId)
-            .maxByOrNull { it.id ?: Long.MIN_VALUE }
-            ?.toModel()
+            .map { it.toModel() }
+            .sortedByDescending { it.id ?: Long.MIN_VALUE }
+        val assignment = if (assignmentId == null) {
+            assignments.firstOrNull()
+        } else {
+            requireNotNull(assignments.firstOrNull { it.id == assignmentId }) {
+                "A beosztás nem ehhez a játékhoz tartozik."
+            }
+        }
             ?: return TeamCompositionSnapshot()
 
         val teams = repositories.teams.getByTeamAssignmentId(
@@ -77,6 +91,7 @@ class SupabaseTeamCompositionDataSource(
         return TeamCompositionSnapshot(
             assignment = assignment,
             teams = teams,
+            assignments = assignments,
         )
     }
 
@@ -86,10 +101,12 @@ class SupabaseTeamCompositionDataSource(
     ): TeamCompositionSnapshot {
         SupabaseClient.client.postgrest.rpc(
             "save_team_composition",
-            Json.encodeToJsonElement(SaveTeamCompositionParams(gameId, draft.baseTeamCounter, draft.teams)).jsonObject,
+            Json.encodeToJsonElement(
+                SaveTeamCompositionParams(gameId, draft.baseTeamCounter, draft.teams, draft.assignmentId),
+            ).jsonObject,
         )
 
-        return loadTeamComposition(gameId)
+        return loadTeamComposition(gameId, draft.assignmentId)
     }
 }
 
@@ -114,8 +131,16 @@ class TeamCompositionViewModel(
     val uiState: StateFlow<TeamCompositionUiState> = _uiState
 
     fun load() {
+        loadAssignment(null)
+    }
+
+    fun selectAssignment(assignmentId: Long) {
+        loadAssignment(assignmentId)
+    }
+
+    private fun loadAssignment(assignmentId: Long?) {
         runAction(loading = true) {
-            val snapshot = dataSource.loadTeamComposition(activeGameId)
+            val snapshot = dataSource.loadTeamComposition(activeGameId, assignmentId)
             val draft = snapshot.toDraft()
             val currentYear = Clock.System.now().toLocalDateTime(currentSystemDefault()).year
 
@@ -124,6 +149,8 @@ class TeamCompositionViewModel(
                     baseTeamCounter = draft.baseTeamCounter?.toString().orEmpty(),
                     teams = draft.teams,
                     persistedSnapshot = snapshot,
+                    importPreview = null,
+                    importText = "",
                     batkabankYearInput = currentYear.toString(),
                     message = "Csapatbeosztás betöltve",
                 )
@@ -328,6 +355,7 @@ class TeamCompositionViewModel(
         }
 
         val draft = TeamCompositionDraft(
+            assignmentId = uiState.value.persistedSnapshot?.assignment?.id,
             baseTeamCounter = uiState.value.baseTeamCounter.trim().toLongOrNull(),
             teams = uiState.value.teams.map { team ->
                 team.copy(

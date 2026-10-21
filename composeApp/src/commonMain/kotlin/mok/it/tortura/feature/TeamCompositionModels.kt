@@ -22,11 +22,13 @@ data class TeamDraft(
 data class TeamCompositionSnapshot(
     val assignment: TeamAssignment? = null,
     val teams: List<Team> = emptyList(),
+    val assignments: List<TeamAssignment> = emptyList(),
 )
 
 data class TeamCompositionDraft(
     val baseTeamCounter: Long? = null,
     val teams: List<TeamDraft> = emptyList(),
+    val assignmentId: Long? = null,
 )
 
 data class TeamCategory(
@@ -92,6 +94,7 @@ expect fun teamCompositionPlatformBridge(): TeamCompositionPlatformBridge
 fun TeamCompositionSnapshot.toDraft(): TeamCompositionDraft = TeamCompositionDraft(
     baseTeamCounter = assignment?.baseTeamCounter,
     teams = teams.map { it.toDraft() },
+    assignmentId = assignment?.id,
 )
 
 private fun Team.toDraft(): TeamDraft {

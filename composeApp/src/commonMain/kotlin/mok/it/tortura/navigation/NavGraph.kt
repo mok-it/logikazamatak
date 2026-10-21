@@ -241,6 +241,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 activeGameName = selectedGame.name ?: "#$selectedGameId",
                 uiState = teamCompositionUiState.value,
                 onLoad = teamCompositionViewModel::load,
+                onAssignmentSelected = teamCompositionViewModel::selectAssignment,
                 onBaseTeamCounterChange = teamCompositionViewModel::onBaseTeamCounterChange,
                 onImportTextChange = teamCompositionViewModel::onImportTextChange,
                 onImportFromText = teamCompositionViewModel::importFromText,

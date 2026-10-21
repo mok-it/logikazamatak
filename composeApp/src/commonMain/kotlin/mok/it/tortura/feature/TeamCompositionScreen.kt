@@ -16,6 +16,7 @@ fun TeamCompositionScreen(
     activeGameName: String,
     uiState: TeamCompositionUiState = TeamCompositionUiState(),
     onLoad: () -> Unit = {},
+    onAssignmentSelected: (Long) -> Unit = {},
     onBaseTeamCounterChange: (String) -> Unit = {},
     onImportTextChange: (String) -> Unit = {},
     onImportFromText: () -> Unit = {},
@@ -40,6 +41,7 @@ fun TeamCompositionScreen(
     val busy = uiState.isLoading || uiState.isSaving || uiState.isBatkabankLoading
     val spacing = AppThemeTokens.spacing
     var campExpanded by remember { mutableStateOf(false) }
+    var assignmentExpanded by remember { mutableStateOf(false) }
 
     PageScaffold(modifier = Modifier.verticalScroll(rememberScrollState())) {
         PageHeader(title = "Csapatösszeállítás", description = "Aktív játék: $activeGameName") {
@@ -52,6 +54,21 @@ fun TeamCompositionScreen(
             StatusBanner(it, BannerTone.Success, onDismiss = onClearMessages)
         }
         FormSection(title = "Beállítások") {
+            val assignments = uiState.persistedSnapshot?.assignments.orEmpty()
+            if (assignments.size > 1) {
+                AppSelectField(
+                    value = "Beosztás #${uiState.persistedSnapshot?.assignment?.id}",
+                    label = "Szerkesztendő beosztás",
+                    expanded = assignmentExpanded,
+                    options = assignments.mapNotNull { assignment ->
+                        assignment.id?.let { id -> AppSelectOption(id.toString(), "Beosztás #$id") }
+                    },
+                    onExpandedChange = { assignmentExpanded = it },
+                    onSelect = { onAssignmentSelected(it.value.toLong()) },
+                    enabled = !busy,
+                )
+                Text("Beosztásváltás előtt mentsd el a módosításokat.")
+            }
             AppNumberField(
                 value = uiState.baseTeamCounter,
                 onValueChange = onBaseTeamCounterChange,

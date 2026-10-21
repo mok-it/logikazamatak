@@ -51,6 +51,22 @@ class TeamCompositionImportTest {
     }
 
     @Test
+    fun detectsDelimiterAfterMultilineFirstCellWithoutHeaders() {
+        for (delimiter in listOf(',', ';', '\t')) {
+            val result = coordinator.import(
+                ImportedRosterPayload(
+                    "multiline",
+                    "\"Anna\nBela\"${delimiter}A${delimiter}Red",
+                    TeamCompositionImportFormat.DELIMITED_TEXT,
+                ),
+            )
+            assertEquals("Anna\nBela", result.draft.teams.single().students.single().name)
+            assertEquals("Red", result.draft.teams.single().name)
+            assertTrue(result.preview.rowErrors.isEmpty())
+        }
+    }
+
+    @Test
     fun extraColumnsAreReportedInsteadOfImportingTheWrongTeam() {
         val result = coordinator.import(
             ImportedRosterPayload(

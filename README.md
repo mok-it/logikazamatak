@@ -82,13 +82,15 @@ Then, in this repo, modify the `.env.local` file's `BATKABANK_API_BASE_URL` for 
 ### Team composition
 
 Creating a game opens the team composition editor. Existing games expose it from the setup menu.
+When a game has several saved assignments, use the assignment selector to edit each one. Save changes before switching.
 You can edit teams and students manually, paste CSV/TSV, or import a Batkabank assignment.
 CSV/TSV headers are `name,group,team` (Hungarian `nev,csoport,csapat` also works).
 The web app supports file selection including XLSX (first worksheet) and clipboard reading.
 Desktop and Android support pasted text; their native file/clipboard import buttons are unavailable.
 The web XLSX reader loads SheetJS from its CDN, so that import requires network access.
 
-Apply `supabase/migrations/20261021195812_save_team_composition.sql` to the test database before using the editor.
+Apply the team composition migrations (`20261021195812_save_team_composition.sql` and
+`20261021200000_select_team_composition_assignment.sql`) to the test database before using the editor.
 Roster saves run in one transaction, retain existing team/student IDs, and preserve team scores.
 Teams with task, healing or purchase history cannot be deleted or replaced by an import; edit those teams in place.
 The migration follows the current public operator access model, including anonymous roster access.

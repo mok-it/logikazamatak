@@ -48,6 +48,37 @@ class TeamCompositionViewModelTest {
     }
 
     @Test
+    fun selectingOlderAssignmentLoadsItsTeamsAndImportSavesToThatAssignment() = runTeamCompositionTest {
+        val older = TeamCompositionSnapshot(
+            assignment = TeamAssignment(id = 1, baseTeamCounter = 1, gameId = 42),
+            teams = listOf(Team(id = 10, name = "Older team")),
+        )
+        val newest = TeamCompositionSnapshot(
+            assignment = TeamAssignment(id = 2, baseTeamCounter = 2, gameId = 42),
+        )
+        val dataSource = FakeTeamCompositionDataSource(newest, listOf(newest, older))
+        val viewModel = TeamCompositionViewModel(
+            42,
+            dataSource = dataSource,
+            batkabankSource = DisabledBatkabankTeamCompositionSource,
+        )
+        viewModel.load()
+        advanceUntilIdle()
+        assertEquals(listOf(2L, 1L), viewModel.uiState.value.persistedSnapshot?.assignments?.map { it.id })
+        viewModel.selectAssignment(1)
+        advanceUntilIdle()
+        assertEquals("Older team", viewModel.uiState.value.teams.single().name)
+        viewModel.onImportTextChange("name,group,team\nAnna,A,Red")
+        viewModel.importFromText()
+        advanceUntilIdle()
+        viewModel.save()
+        advanceUntilIdle()
+        assertEquals(1L, dataSource.savedDraft?.assignmentId)
+        assertEquals(1L, viewModel.uiState.value.persistedSnapshot?.assignment?.id)
+        assertEquals("Red", viewModel.uiState.value.teams.single().name)
+    }
+
+    @Test
     fun importFromTextCreatesDraftTeams() = runTeamCompositionTest {
         val viewModel = TeamCompositionViewModel(
             activeGameId = 42,
@@ -189,11 +220,17 @@ class TeamCompositionViewModelTest {
 
 private class FakeTeamCompositionDataSource(
     private val snapshot: TeamCompositionSnapshot = TeamCompositionSnapshot(),
+    private val snapshots: List<TeamCompositionSnapshot> = listOf(snapshot),
 ) : TeamCompositionDataSource {
     var savedGameId: Long? = null
     var savedDraft: TeamCompositionDraft? = null
 
-    override suspend fun loadTeamComposition(gameId: Long): TeamCompositionSnapshot = snapshot
+    override suspend fun loadTeamComposition(
+        gameId: Long,
+        assignmentId: Long?,
+    ): TeamCompositionSnapshot =
+        (if (assignmentId == null) snapshot else snapshots.first { it.assignment?.id == assignmentId })
+            .copy(assignments = snapshots.mapNotNull { it.assignment })
 
     override suspend fun saveTeamComposition(
         gameId: Long,
@@ -202,7 +239,12 @@ private class FakeTeamCompositionDataSource(
         savedGameId = gameId
         savedDraft = draft
         return TeamCompositionSnapshot(
-            assignment = TeamAssignment(id = 9, baseTeamCounter = draft.baseTeamCounter, gameId = gameId),
+            assignment = TeamAssignment(
+                id = draft.assignmentId ?: 9,
+                baseTeamCounter = draft.baseTeamCounter,
+                gameId = gameId,
+            ),
+            assignments = snapshots.mapNotNull { it.assignment },
             teams = draft.teams.mapIndexed { index, team ->
                 Team(
                     id = index.toLong() + 1,

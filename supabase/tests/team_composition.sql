@@ -8,6 +8,8 @@ DECLARE
     team_id bigint;
     student_id bigint;
     task_id bigint;
+    original_assignment_id bigint;
+    newer_assignment_id bigint;
     roster jsonb;
     rejected boolean;
 BEGIN
@@ -71,6 +73,38 @@ BEGIN
     ASSERT rejected, 'Import must not replace a team with game history';
     ASSERT EXISTS (SELECT 1 FROM public."TasksLedger" WHERE "teamId" = team_id), 'Game history must survive';
     ASSERT EXISTS (SELECT 1 FROM public."Students" WHERE id = student_id), 'Rejected replacement must retain students';
+
+    SELECT id INTO original_assignment_id FROM public."TeamAssignment" WHERE "gameId" = game_id;
+    INSERT INTO public."TeamAssignment" ("gameId", "baseTeamCounter")
+        VALUES (game_id, 5) RETURNING id INTO newer_assignment_id;
+    PERFORM public.save_team_composition(game_id, 3, roster, original_assignment_id);
+    ASSERT (SELECT "baseTeamCounter" = 3 FROM public."TeamAssignment" WHERE id = original_assignment_id),
+        'Explicit selection must update the older assignment';
+    ASSERT (SELECT "baseTeamCounter" = 5 FROM public."TeamAssignment" WHERE id = newer_assignment_id),
+        'Saving an older assignment must leave the newer assignment unchanged';
+    ASSERT EXISTS (SELECT 1 FROM public."Teams" WHERE id = team_id AND "teamAssignmentId" = original_assignment_id),
+        'Saving an older assignment must preserve its team ID';
+    ASSERT EXISTS (SELECT 1 FROM public."TasksLedger" WHERE "teamId" = team_id),
+        'Editing an older assignment must preserve its gameplay history';
+
+    rejected := false;
+    BEGIN
+        PERFORM public.save_team_composition(game_id, 1, roster, newer_assignment_id);
+    EXCEPTION WHEN raise_exception THEN rejected := true;
+    END;
+    ASSERT rejected, 'A selected assignment must not steal another assignment''s team';
+    rejected := false;
+    BEGIN
+        PERFORM public.save_team_composition(other_game_id, 1, roster, original_assignment_id);
+    EXCEPTION WHEN raise_exception THEN rejected := true;
+    END;
+    ASSERT rejected, 'An assignment from a different game must be rejected';
+    rejected := false;
+    BEGIN
+        PERFORM public.save_team_composition(game_id, 1, roster, -1);
+    EXCEPTION WHEN raise_exception THEN rejected := true;
+    END;
+    ASSERT rejected, 'An unknown assignment must be rejected';
 END;
 $$;
 ROLLBACK;
