@@ -22,22 +22,29 @@ private object WebTeamCompositionPlatformBridge : TeamCompositionPlatformBridge 
 
     override suspend fun readClipboardText(): Result<String> = suspendCancellableCoroutine { continuation ->
         torturaReadClipboardText(
-            onSuccess = { text -> continuation.resume(Result.success(text)) },
-            onError = { message -> continuation.resume(Result.failure(IllegalStateException(message))) },
+            onSuccess = { text -> if (continuation.isActive) continuation.resume(Result.success(text)) },
+            onError = { message ->
+                if (continuation.isActive) continuation.resume(Result.failure(IllegalStateException(message)))
+            },
         )
     }
 
     override suspend fun pickRosterFile(): Result<ImportedRosterPayload> = suspendCancellableCoroutine { continuation ->
         torturaPickRosterFile(
             onSuccess = { payload ->
-                continuation.resume(runCatching {
-                    json.decodeFromString<ImportedRosterPayload>(payload)
-                })
+                if (continuation.isActive) {
+                    continuation.resume(
+                        runCatching {
+                            json.decodeFromString<ImportedRosterPayload>(payload)
+                        },
+                    )
+                }
             },
-            onError = { message -> continuation.resume(Result.failure(IllegalStateException(message))) },
+            onError = { message ->
+                if (continuation.isActive) continuation.resume(Result.failure(IllegalStateException(message)))
+            },
         )
     }
 }
 
-actual fun teamCompositionPlatformBridge(): TeamCompositionPlatformBridge =
-    WebTeamCompositionPlatformBridge
+actual fun teamCompositionPlatformBridge(): TeamCompositionPlatformBridge = WebTeamCompositionPlatformBridge

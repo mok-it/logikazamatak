@@ -59,7 +59,7 @@ class TeamCompositionViewModelTest {
             """
                 name	group	team
                 Anna	A	Red
-                Bela	A	7	Red
+                Bela	A	Red
             """.trimIndent(),
         )
         viewModel.importFromText()
@@ -70,6 +70,52 @@ class TeamCompositionViewModelTest {
         assertEquals(1, state.teams.size)
         assertEquals(2, state.teams.single().students.size)
         assertEquals("Beillesztett szöveg", state.importPreview?.sourceLabel)
+    }
+
+    @Test
+    fun numericInputsRejectNonDigits() = runTeamCompositionTest {
+        val viewModel = TeamCompositionViewModel(42, dataSource = FakeTeamCompositionDataSource())
+        viewModel.onBaseTeamCounterChange("1x-2")
+        viewModel.onBatkabankYearInputChange("20a26")
+        assertEquals("12", viewModel.uiState.value.baseTeamCounter)
+        assertEquals("2026", viewModel.uiState.value.batkabankYearInput)
+    }
+
+    @Test
+    fun invalidImportPreservesExistingDraft() = runTeamCompositionTest {
+        val viewModel = TeamCompositionViewModel(42, dataSource = FakeTeamCompositionDataSource())
+        viewModel.addTeam()
+        viewModel.updateTeamName(0, "Existing")
+        viewModel.onImportTextChange("name,group,team\nAnna,,Red")
+        viewModel.importFromText()
+        advanceUntilIdle()
+        assertEquals("Existing", viewModel.uiState.value.teams.single().name)
+        assertNotNull(viewModel.uiState.value.errorMessage)
+        assertEquals(1, viewModel.uiState.value.importPreview?.rowErrors?.size)
+    }
+
+    @Test
+    fun headerOnlyImportPreservesExistingDraft() = runTeamCompositionTest {
+        val viewModel = TeamCompositionViewModel(42, dataSource = FakeTeamCompositionDataSource())
+        viewModel.addTeam()
+        viewModel.updateTeamName(0, "Existing")
+        viewModel.onImportTextChange("name,group,team")
+        viewModel.importFromText()
+        advanceUntilIdle()
+        assertEquals("Existing", viewModel.uiState.value.teams.single().name)
+        assertNotNull(viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun malformedCsvReportsErrorWithoutReplacingDraft() = runTeamCompositionTest {
+        val viewModel = TeamCompositionViewModel(42, dataSource = FakeTeamCompositionDataSource())
+        viewModel.addTeam()
+        viewModel.onImportTextChange("name,group,team\n\"Anna,A,Red")
+        viewModel.importFromText()
+        advanceUntilIdle()
+        assertEquals(1, viewModel.uiState.value.teams.size)
+        assertNotNull(viewModel.uiState.value.errorMessage)
+        assertFalse(viewModel.uiState.value.isLoading)
     }
 
     @Test
@@ -123,7 +169,7 @@ class TeamCompositionViewModelTest {
         viewModel.load()
         advanceUntilIdle()
 
-        assertEquals("2026", viewModel.uiState.value.batkabankYearInput)
+        assertEquals(kotlin.time.Clock.System.now().toString().take(4), viewModel.uiState.value.batkabankYearInput)
         assertEquals(1, viewModel.uiState.value.batkabankAvailableCamps.size)
 
         val camp = viewModel.uiState.value.batkabankAvailableCamps.single()

@@ -2,19 +2,23 @@ package mok.it.tortura.feature
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.jan.supabase.postgrest.postgrest
 import kotlin.time.Clock
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone.Companion.currentSystemDefault
 import kotlinx.datetime.toLocalDateTime
-import mok.it.tortura.data.supabase.mapper.toInsertDto
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
+import mok.it.tortura.SupabaseClient
 import mok.it.tortura.data.supabase.mapper.toModel
-import mok.it.tortura.data.supabase.mapper.toUpdateDto
 import mok.it.tortura.data.supabase.repository.TorturaSupabaseRepositories
-import mok.it.tortura.model.Team
-import mok.it.tortura.model.TeamAssignment
+import mok.it.tortura.ui.components.sanitizeNumericInput
 
 data class TeamCompositionUiState(
     val isLoading: Boolean = false,
@@ -42,6 +46,13 @@ interface TeamCompositionDataSource {
         draft: TeamCompositionDraft,
     ): TeamCompositionSnapshot
 }
+
+@Serializable
+private data class SaveTeamCompositionParams(
+    val p_game_id: Long,
+    val p_base_team_counter: Long?,
+    val p_teams: List<TeamDraft>,
+)
 
 class SupabaseTeamCompositionDataSource(
     private val repositories: TorturaSupabaseRepositories = TorturaSupabaseRepositories(),
@@ -73,55 +84,10 @@ class SupabaseTeamCompositionDataSource(
         gameId: Long,
         draft: TeamCompositionDraft,
     ): TeamCompositionSnapshot {
-        val existingAssignment = repositories.teamAssignments
-            .getByGameId(gameId)
-            .maxByOrNull { it.id ?: Long.MIN_VALUE }
-            ?.toModel()
-
-        val assignment = if (existingAssignment?.id != null) {
-            repositories.teamAssignments.update(
-                id = existingAssignment.id,
-                teamAssignment = TeamAssignment(
-                    id = existingAssignment.id,
-                    baseTeamCounter = draft.baseTeamCounter,
-                    gameId = gameId,
-                ).toUpdateDto(),
-            ).toModel()
-        } else {
-            repositories.teamAssignments.create(
-                TeamAssignment(
-                    baseTeamCounter = draft.baseTeamCounter,
-                    gameId = gameId,
-                ).toInsertDto(),
-            ).toModel()
-        }
-
-        val assignmentId =
-            assignment.id ?: error("A csapatbeosztás mentése nem adott vissza azonosítót.")
-        val existingTeams = repositories.teams.getByTeamAssignmentId(assignmentId)
-
-        existingTeams.forEach { teamDto ->
-            val teamId = teamDto.id ?: return@forEach
-            repositories.students.getByTeamId(teamId).forEach { studentDto ->
-                val studentId = studentDto.id ?: return@forEach
-                repositories.students.delete(studentId)
-            }
-            repositories.teams.delete(teamId)
-        }
-
-        draft.teams.forEach { teamDraft ->
-            val team = repositories.teams.create(
-                Team(
-                    name = teamDraft.name.trim(),
-                    teamAssignmentId = assignmentId,
-                ).toInsertDto(),
-            ).toModel()
-
-            val teamId = team.id ?: error("A csapat mentése nem adott vissza azonosítót.")
-            teamDraft.toStudents().forEach { student ->
-                repositories.students.create(student.copy(teamId = teamId).toInsertDto())
-            }
-        }
+        SupabaseClient.client.postgrest.rpc(
+            "save_team_composition",
+            Json.encodeToJsonElement(SaveTeamCompositionParams(gameId, draft.baseTeamCounter, draft.teams)).jsonObject,
+        )
 
         return loadTeamComposition(gameId)
     }
@@ -164,13 +130,14 @@ class TeamCompositionViewModel(
             }
 
             if (batkabankSource.isConfigured) {
-                loadBatkabankCamps(currentYear)
+                val camps = batkabankSource.getImportableCamps(currentYear).getOrElse { throw it }
+                _uiState.update { it.copy(batkabankAvailableCamps = camps) }
             }
         }
     }
 
     fun onBaseTeamCounterChange(value: String) {
-        _uiState.update { it.copy(baseTeamCounter = value, message = null, errorMessage = null) }
+        _uiState.update { it.copy(baseTeamCounter = sanitizeNumericInput(value), message = null, errorMessage = null) }
     }
 
     fun onImportTextChange(value: String) {
@@ -186,17 +153,19 @@ class TeamCompositionViewModel(
             return
         }
 
-        applyImport(
-            ImportedRosterPayload(
-                sourceLabel = "Beillesztett szöveg",
-                content = text,
-                format = TeamCompositionImportFormat.DELIMITED_TEXT,
-            ),
-        )
+        runAction {
+            applyImport(
+                ImportedRosterPayload(
+                    sourceLabel = "Beillesztett szöveg",
+                    content = text,
+                    format = TeamCompositionImportFormat.DELIMITED_TEXT,
+                ),
+            )
+        }
     }
 
     fun readClipboard() {
-        runAction {
+        runAction(loading = true) {
             val clipboardText = platformBridge.readClipboardText().getOrElse { throw it }
             _uiState.update { it.copy(importText = clipboardText) }
             applyImport(
@@ -210,7 +179,7 @@ class TeamCompositionViewModel(
     }
 
     fun importFromFile() {
-        runAction {
+        runAction(loading = true) {
             val payload = platformBridge.pickRosterFile().getOrElse { throw it }
             applyImport(payload)
         }
@@ -219,7 +188,7 @@ class TeamCompositionViewModel(
     fun onBatkabankYearInputChange(value: String) {
         _uiState.update {
             it.copy(
-                batkabankYearInput = value,
+                batkabankYearInput = sanitizeNumericInput(value),
                 message = null,
                 errorMessage = null,
             )
@@ -351,6 +320,7 @@ class TeamCompositionViewModel(
     }
 
     fun save() {
+        if (uiState.value.isLoading || uiState.value.isSaving || uiState.value.isBatkabankLoading) return
         val validationError = validate(uiState.value)
         if (validationError != null) {
             _uiState.update { it.copy(errorMessage = validationError) }
@@ -399,6 +369,20 @@ class TeamCompositionViewModel(
         result: TeamCompositionImportResult,
         importText: String? = null,
     ) {
+        if (result.preview.rowErrors.isNotEmpty() || result.draft.teams.isEmpty()) {
+            _uiState.update {
+                it.copy(
+                    importPreview = result.preview,
+                    errorMessage = if (result.draft.teams.isEmpty()) {
+                        "Az import nem tartalmaz érvényes csapatokat."
+                    } else {
+                        "Az import hibás sorokat tartalmaz. Javítsd a forrást, majd importáld újra."
+                    },
+                    message = null,
+                )
+            }
+            return
+        }
         _uiState.update {
             it.copy(
                 baseTeamCounter = result.draft.baseTeamCounter?.toString().orEmpty(),
@@ -459,6 +443,7 @@ class TeamCompositionViewModel(
         batkabankLoading: Boolean = false,
         action: suspend () -> Unit,
     ) {
+        if (uiState.value.isLoading || uiState.value.isSaving || uiState.value.isBatkabankLoading) return
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -471,6 +456,8 @@ class TeamCompositionViewModel(
             }
             try {
                 action()
+            } catch (exception: CancellationException) {
+                throw exception
             } catch (exception: Exception) {
                 _uiState.update {
                     it.copy(errorMessage = exception.message ?: "A művelet nem sikerült.")

@@ -133,6 +133,9 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                     navController.navigate(Screen.MainMenu) {
                         launchSingleTop = true
                     }
+                    navController.navigate(Screen.TeamComposition) {
+                        launchSingleTop = true
+                    }
                 },
                 onLocationSelectionRequired = { gameId ->
                     gameSelectionViewModel.clearLocationSelectionRequest()

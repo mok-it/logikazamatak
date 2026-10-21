@@ -30,6 +30,40 @@ class TeamCompositionImportTest {
     }
 
     @Test
+    fun csvSupportsBomQuotedDelimitersEscapedQuotesAndNewlines() {
+        val result = coordinator.import(
+            ImportedRosterPayload(
+                "quoted.csv",
+                "\uFEFFname,group,team\r\n\"Anna, \"\"A\"\"\",A,Red\r\n\"Bela\nB\",A,Red",
+                TeamCompositionImportFormat.DELIMITED_TEXT,
+            ),
+        )
+        assertEquals(listOf("Anna, \"A\"", "Bela\nB"), result.draft.teams.single().students.map { it.name })
+        assertTrue(result.preview.rowErrors.isEmpty())
+    }
+
+    @Test
+    fun importsThreeColumnTextWithoutHeaders() {
+        val result = coordinator.import(
+            ImportedRosterPayload("paste", "Anna;A;Red", TeamCompositionImportFormat.DELIMITED_TEXT),
+        )
+        assertEquals("Red", result.draft.teams.single().name)
+    }
+
+    @Test
+    fun extraColumnsAreReportedInsteadOfImportingTheWrongTeam() {
+        val result = coordinator.import(
+            ImportedRosterPayload(
+                "paste",
+                "name,group,team\nAnna,A,extra,Red",
+                TeamCompositionImportFormat.DELIMITED_TEXT,
+            ),
+        )
+        assertEquals(1, result.preview.rowErrors.size)
+        assertTrue(result.draft.teams.isEmpty())
+    }
+
+    @Test
     fun xlsxImportUsesNormalizedDelimitedContent() {
         val result = coordinator.import(
             ImportedRosterPayload(

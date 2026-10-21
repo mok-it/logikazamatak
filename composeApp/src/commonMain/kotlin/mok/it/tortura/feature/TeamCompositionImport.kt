@@ -11,12 +11,8 @@ class DelimitedTeamCompositionImportSource : TeamCompositionImportSource {
 
     override fun import(payload: ImportedRosterPayload): TeamCompositionImportResult {
         val delimiter = detectDelimiter(payload.content)
-        val rows = payload.content
-            .lineSequence()
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
-            .map { row -> splitRow(row, delimiter) }
-            .toList()
+        val rows = parseRows(payload.content.removePrefix("\uFEFF"), delimiter)
+            .filter { row -> row.any { it.isNotBlank() } }
 
         if (rows.isEmpty()) {
             return TeamCompositionImportResult(
@@ -38,6 +34,10 @@ class DelimitedTeamCompositionImportSource : TeamCompositionImportSource {
 
         dataRows.forEachIndexed { index, cells ->
             val rowNumber = if (header.isHeaderRow) index + 2 else index + 1
+            if (cells.size != rows.first().size) {
+                rowErrors += TeamCompositionRowError(rowNumber, "Eltérő oszlopszám a forrásban.")
+                return@forEachIndexed
+            }
             val name = header.readValue(cells, Column.NAME)
             val group = header.readValue(cells, Column.GROUP)
             val teamName = header.readValue(cells, Column.TEAM)
@@ -111,7 +111,7 @@ class DelimitedTeamCompositionImportSource : TeamCompositionImportSource {
             isHeaderRow = false,
             nameIndex = 0,
             groupIndex = 1,
-            teamIndex = 3,
+            teamIndex = if (cells.size >= 4) 3 else 2,
         )
     }
 
@@ -128,39 +128,62 @@ class DelimitedTeamCompositionImportSource : TeamCompositionImportSource {
         return cells.getOrNull(index)?.trim().orEmpty()
     }
 
-    private fun splitRow(
-        row: String,
+    private fun parseRows(
+        text: String,
         delimiter: Char,
-    ): List<String> {
-        val result = mutableListOf<String>()
-        val current = StringBuilder()
-        var inQuotes = false
-
-        row.forEach { char ->
+    ): List<List<String>> {
+        val rows = mutableListOf<List<String>>()
+        val cells = mutableListOf<String>()
+        val cell = StringBuilder()
+        var quoted = false
+        var index = 0
+        while (index < text.length) {
+            val char = text[index]
             when {
-                char == '"' -> inQuotes = !inQuotes
-
-                char == delimiter && !inQuotes -> {
-                    result += current.toString().trim()
-                    current.clear()
+                char == '"' && quoted && text.getOrNull(index + 1) == '"' -> {
+                    cell.append('"')
+                    index++
                 }
 
-                else -> current.append(char)
-            }
-        }
+                char == '"' -> quoted = !quoted
 
-        result += current.toString().trim()
-        return result.map { it.removeSurrounding("\"") }
+                char == delimiter && !quoted -> {
+                    cells += cell.toString().trim()
+                    cell.clear()
+                }
+
+                (char == '\n' || char == '\r') && !quoted -> {
+                    cells += cell.toString().trim()
+                    rows += cells.toList()
+                    cells.clear()
+                    cell.clear()
+                    if (char == '\r' && text.getOrNull(index + 1) == '\n') index++
+                }
+
+                else -> cell.append(char)
+            }
+            index++
+        }
+        require(!quoted) { "Lezáratlan idézőjel az importban." }
+        cells += cell.toString().trim()
+        rows += cells.toList()
+        return rows
     }
 
     private fun detectDelimiter(text: String): Char {
-        val firstLine = text.lineSequence().firstOrNull().orEmpty()
+        val firstLine = text.lineSequence().firstOrNull { it.isNotBlank() }.orEmpty()
         val candidates = listOf('\t', ';', ',')
-        return candidates.maxByOrNull { candidate -> firstLine.count { it == candidate } } ?: ','
+        return candidates.maxByOrNull { candidate ->
+            var quoted = false
+            firstLine.count { char ->
+                if (char == '"') quoted = !quoted
+                char == candidate && !quoted
+            }
+        } ?: ','
     }
 
     private fun normalizeHeader(value: String): String = value
-        .trim()
+        .trim().removePrefix("\uFEFF")
         .lowercase()
         .replace("á", "a")
         .replace("é", "e")
@@ -187,18 +210,9 @@ class DelimitedTeamCompositionImportSource : TeamCompositionImportSource {
     }
 }
 
-class XlsxTeamCompositionImportSource(
-    private val delegate: DelimitedTeamCompositionImportSource = DelimitedTeamCompositionImportSource(),
-) : TeamCompositionImportSource {
-    override fun import(payload: ImportedRosterPayload): TeamCompositionImportResult = delegate.import(payload)
-}
-
 class TeamCompositionImportCoordinator(
     private val delimitedSource: TeamCompositionImportSource = DelimitedTeamCompositionImportSource(),
-    private val xlsxSource: TeamCompositionImportSource = XlsxTeamCompositionImportSource(),
 ) {
-    fun import(payload: ImportedRosterPayload): TeamCompositionImportResult = when (payload.format) {
-        TeamCompositionImportFormat.DELIMITED_TEXT -> delimitedSource.import(payload)
-        TeamCompositionImportFormat.XLSX -> xlsxSource.import(payload)
-    }
+    // The browser converts XLSX worksheets to TSV before passing them to shared code.
+    fun import(payload: ImportedRosterPayload): TeamCompositionImportResult = delimitedSource.import(payload)
 }

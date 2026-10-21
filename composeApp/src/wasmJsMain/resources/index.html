@@ -22,6 +22,7 @@
             input.type = "file";
             input.accept = ".csv,.tsv,.txt,.xlsx";
 
+            input.addEventListener("cancel", () => onError("Nem választottál fájlt."), { once: true });
             input.addEventListener("change", async () => {
                 const file = input.files && input.files[0];
                 if (!file) {
@@ -35,6 +36,9 @@
                     let format = "DELIMITED_TEXT";
 
                     if (lowerName.endsWith(".xlsx")) {
+                        if (typeof XLSX === "undefined") {
+                            throw new Error("Az XLSX olvasó nem töltődött be. Próbáld újra, vagy illessz be TSV szöveget.");
+                        }
                         const arrayBuffer = await file.arrayBuffer();
                         const workbook = XLSX.read(arrayBuffer, { type: "array" });
                         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];

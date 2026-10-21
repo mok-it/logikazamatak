@@ -5,11 +5,13 @@ import mok.it.tortura.model.Student
 import mok.it.tortura.model.Team
 import mok.it.tortura.model.TeamAssignment
 
+@Serializable
 data class StudentDraft(
     val id: Long? = null,
     val name: String = "",
 )
 
+@Serializable
 data class TeamDraft(
     val id: Long? = null,
     val name: String = "",

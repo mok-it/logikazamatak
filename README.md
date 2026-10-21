@@ -77,7 +77,31 @@ Head into the Batkabank repo, and:
 3) seed the emulator's db - from the root: `yarn import-seed`
 4) run the emulators: `yarn emulators`
 
-Then, in this repo, modify the `env.local` file's `BATKABANK_API_BASE_URL` for something like this: http://127.0.0.1:5001/batkabank/europe-west1. Use the ip and port from the console output of the `yarn emulators` command
+Then, in this repo, modify the `.env.local` file's `BATKABANK_API_BASE_URL` for something like this: http://127.0.0.1:5001/batkabank/europe-west1. Use the ip and port from the console output of the `yarn emulators` command
+
+### Team composition
+
+Creating a game opens the team composition editor. Existing games expose it from the setup menu.
+You can edit teams and students manually, paste CSV/TSV, or import a Batkabank assignment.
+CSV/TSV headers are `name,group,team` (Hungarian `nev,csoport,csapat` also works).
+The web app supports file selection including XLSX (first worksheet) and clipboard reading.
+Desktop and Android support pasted text; their native file/clipboard import buttons are unavailable.
+The web XLSX reader loads SheetJS from its CDN, so that import requires network access.
+
+Apply `supabase/migrations/20261021195812_save_team_composition.sql` to the test database before using the editor.
+Roster saves run in one transaction, retain existing team/student IDs, and preserve team scores.
+Teams with task, healing or purchase history cannot be deleted or replaced by an import; edit those teams in place.
+The migration follows the current public operator access model, including anonymous roster access.
+
+Database regression check against a migrated local database:
+
+```sh
+psql "$LOCAL_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/team_composition.sql
+```
+
+Before merging, check the web app at desktop and mobile widths: create a game, edit/save/reload a roster,
+import CSV/TSV and a real XLSX file, read clipboard text, cancel a file picker, and import from Batkabank.
+Check that invalid/empty imports preserve the draft and a failed save preserves stored data.
 
 # Supported Platforms
 
