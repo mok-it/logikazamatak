@@ -14,8 +14,9 @@ explains the domain model, relationships, and app-level rules.
 - `supabase/seed.sql` contains dummy data for local development and application testing.
 - Supabase applies it after migrations when running `supabase db reset`. (Make sure to have a docker daemon - in
   practice, Docker Desktop - running before running that)
-- The seed uses fixed IDs in the `900001+` range and `ON CONFLICT` upserts, so it can be rerun locally without
-  duplicating rows.
+- The seed uses fixed IDs in the `900001+` range. Reference/setup rows use upserts; existing ledger rows are
+  skipped before insert, preserving history and avoiding duplicate-purchase triggers on reruns.
+- Demo teams receive 100 points of manual starting credit so seeded purchases are affordable before task history is inserted.
 - The demo data includes games, locations, tasks, healing tasks, team assignments, teams, students, task ledgers,
   healing ledgers, game-scoped shop items, and shop purchases.
 - Several teams have unhealed failed `TasksLedger` rows so the healer screen has selectable failed tasks. A few failed
@@ -204,6 +205,50 @@ Trigger-backed rules:
 - Avoid UI-facing repository calls that read broad table data, such as `getAll()`, when a selected-game scoped method
   can be used.
 - A game with no `TeamAssignment`/teams is a partially configured game that is not ready to start.
+
+## Required and optional fields
+
+Primary keys and creation timestamps remain required. `20261022144125_require_domain_fields.sql` also requires:
+
+| Table | Required domain fields |
+| --- | --- |
+| Games | name |
+| Locations | name, gameId |
+| Tasks | text, solution, isMiniBoss, gameId |
+| HealingTasks | text, gameId |
+| TeamAssignment | baseTeamCounter, gameId |
+| Teams | name, teamAssignmentId, additionalScoreAwarded |
+| Students | name, group, teamId |
+| Items | name, price, itemEffectId, gameId |
+| ItemEffects | code |
+| TasksLedger | taskId, teamId, isSuccess |
+| HealingLedger | teamId, healingTaskId, healedTasksLedgerId |
+| Shop | itemId, teamId |
+
+`Tasks.isMiniBoss` defaults to false when omitted. This does not convert existing null flags.
+Fields with domain meaning when absent remain nullable:
+
+- `Tasks.locationId`: tasks may exist without a location.
+- `HealingTasks.solution`: a manually judged activity may have no textual answer.
+- `Items.maxPerTeam`: no purchase limit.
+- `ItemEffects.description`: the effect is identified by its required code.
+- `Shop.targetId`: targetless effects such as boss unlocks are supported; triggers validate other targets.
+- Ledger `userId`: authentication is currently disabled, so an actor may not be known.
+- Task bonus-source links: ordinary attempts have no bonus source.
+
+The migration locks the affected tables, checks every new required field, and aborts atomically with table/column
+null counts if legacy rows need repair. It neither guesses missing values nor deletes or updates existing data.
+Repair those rows from authoritative data before retrying. Schedule application when blocking writes is acceptable.
+Kotlin DTOs remain tolerant of legacy reads; required-field enforcement is in the database.
+
+Local checks:
+
+```sh
+# Before the migration, on a disposable database:
+psql "$LOCAL_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/domain_nullability_preflight.sql
+# After the migration and seed:
+psql "$LOCAL_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/domain_nullability.sql
+```
 
 ## RLS
 

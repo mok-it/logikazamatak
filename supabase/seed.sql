@@ -61,17 +61,19 @@ set
   "baseTeamCounter" = excluded."baseTeamCounter",
   "gameId" = excluded."gameId";
 
-insert into "public"."Teams" ("id", "name", "teamAssignmentId")
+-- Demo credit covers purchases inserted before the task history.
+insert into "public"."Teams" ("id", "name", "teamAssignmentId", "additionalScoreAwarded")
 values
-  (900001, 'Red Logic', 900001),
-  (900002, 'Blue Cipher', 900001),
-  (900003, 'Green Matrix', 900001),
-  (900004, 'Silver Signal', 900002),
-  (900005, 'Gold Vector', 900002)
+  (900001, 'Red Logic', 900001, 100),
+  (900002, 'Blue Cipher', 900001, 100),
+  (900003, 'Green Matrix', 900001, 100),
+  (900004, 'Silver Signal', 900002, 100),
+  (900005, 'Gold Vector', 900002, 100)
 on conflict ("id") do update
 set
   "name" = excluded."name",
-  "teamAssignmentId" = excluded."teamAssignmentId";
+  "teamAssignmentId" = excluded."teamAssignmentId",
+  "additionalScoreAwarded" = excluded."additionalScoreAwarded";
 
 insert into "public"."Students" ("id", "name", "group", "teamId")
 values
@@ -123,20 +125,16 @@ set
   "maxPerTeam" = excluded."maxPerTeam";
 
 insert into "public"."Shop" ("id", "itemId", "targetId", "teamId", "userId")
-values
+select seed.* from (values
   (900009, 900004, 900005, 900001, 101),
   (900010, 900004, 900005, 900003, 103),
   (900011, 900104, 900008, 900004, 104),
   (900012, 900104, 900008, 900005, 105)
-on conflict ("id") do update
-set
-  "itemId" = excluded."itemId",
-  "targetId" = excluded."targetId",
-  "teamId" = excluded."teamId",
-  "userId" = excluded."userId";
+) as seed ("id", "itemId", "targetId", "teamId", "userId")
+where not exists (select 1 from "public"."Shop" existing where existing."id" = seed."id");
 
 insert into "public"."TasksLedger" ("id", "taskId", "teamId", "userId", "isSuccess")
-values
+select seed.* from (values
   (900001, 900001, 900001, 101, true),
   (900002, 900002, 900001, 101, false),
   (900009, 900003, 900001, 101, false),
@@ -151,37 +149,25 @@ values
   (900013, 900008, 900004, 104, false),
   (900008, 900008, 900005, 105, false),
   (900014, 900007, 900005, 105, false)
-on conflict ("id") do update
-set
-  "taskId" = excluded."taskId",
-  "teamId" = excluded."teamId",
-  "userId" = excluded."userId",
-  "isSuccess" = excluded."isSuccess";
+) as seed ("id", "taskId", "teamId", "userId", "isSuccess")
+where not exists (select 1 from "public"."TasksLedger" existing where existing."id" = seed."id");
 
 insert into "public"."HealingLedger" ("id", "teamId", "healingTaskId", "healedTasksLedgerId", "userId")
-values
+select seed.* from (values
   (900001, 900001, 900001, 900002, 101),
   (900002, 900002, 900002, 900004, 102),
   (900003, 900003, 900003, 900006, 103),
   (900004, 900005, 900004, 900008, 105)
-on conflict ("id") do update
-set
-  "teamId" = excluded."teamId",
-  "healingTaskId" = excluded."healingTaskId",
-  "healedTasksLedgerId" = excluded."healedTasksLedgerId",
-  "userId" = excluded."userId";
+) as seed ("id", "teamId", "healingTaskId", "healedTasksLedgerId", "userId")
+where not exists (select 1 from "public"."HealingLedger" existing where existing."id" = seed."id");
 
 insert into "public"."Shop" ("id", "itemId", "targetId", "teamId", "userId")
-values
+select seed.* from (values
   (900001, 900001, 900002, 900001, 101),
   (900002, 900002, 900003, 900002, 102),
   (900003, 900003, 900003, 900003, 103)
-on conflict ("id") do update
-set
-  "itemId" = excluded."itemId",
-  "targetId" = excluded."targetId",
-  "teamId" = excluded."teamId",
-  "userId" = excluded."userId";
+) as seed ("id", "itemId", "targetId", "teamId", "userId")
+where not exists (select 1 from "public"."Shop" existing where existing."id" = seed."id");
 
 select setval('"public"."Games_id_seq"', greatest((select max("id") from "public"."Games"), 1), true);
 select setval('"public"."Locations_id_seq"', greatest((select max("id") from "public"."Locations"), 1), true);
