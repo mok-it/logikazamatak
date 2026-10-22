@@ -24,6 +24,8 @@ import mok.it.tortura.feature.HealerTasksScreen
 import mok.it.tortura.feature.HealerTasksViewModel
 import mok.it.tortura.feature.HealerTeamSelectionScreen
 import mok.it.tortura.feature.HealerTeamSelectionViewModel
+import mok.it.tortura.feature.LedgerScreen
+import mok.it.tortura.feature.LedgerViewModel
 import mok.it.tortura.feature.LocationSelectionScreen
 import mok.it.tortura.feature.LocationSelectionViewModel
 import mok.it.tortura.feature.LocationTasksScreen
@@ -50,6 +52,11 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
         isAuthenticated = true,
         email = "Auth kikapcsolva",
     )
+
+    fun openLedger(teamId: Long? = null) {
+        val gameId = activeGame?.id ?: return
+        navController.navigate(Screen.Ledger(gameId, teamId))
+    }
 
     fun resetActiveContext() {
         activeGame = null
@@ -273,8 +280,24 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onSelectHealingTask = healerTasksViewModel::selectHealingTask,
                 onCompleteHealing = healerTasksViewModel::completeHealing,
                 onClearMessages = healerTasksViewModel::clearMessages,
+                onLedger = { openLedger(healerTasksUiState.value.team?.id) },
                 onBack = { navController.popBackStack() },
                 onChangeLocation = ::openLocationPickerForActiveGame,
+            )
+        }
+        composable<Screen.Ledger> { backStackEntry ->
+            val screen = backStackEntry.toRoute<Screen.Ledger>()
+            val ledgerViewModel = viewModel(key = "ledger-${screen.gameId}-${screen.teamId}") {
+                LedgerViewModel(screen.gameId, screen.teamId)
+            }
+            val ledgerUiState = ledgerViewModel.uiState.collectAsStateWithLifecycle()
+            LedgerScreen(
+                uiState = ledgerUiState.value,
+                onLoad = ledgerViewModel::load,
+                onSelectTeam = ledgerViewModel::selectTeam,
+                onUndo = ledgerViewModel::undo,
+                onClearMessages = ledgerViewModel::clearMessages,
+                onBack = { navController.popBackStack() },
             )
         }
         composable<Screen.MainMenu> {
@@ -292,6 +315,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 activeGame = selectedGame,
                 activeLocation = activeLocation,
                 authUiState = authUiState,
+                onLedger = { openLedger() },
                 onBack = {
                     resetActiveContext()
                     navController.navigate(Screen.GameSelection) {
@@ -353,6 +377,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onAnswerChange = locationTasksViewModel::onAnswerChange,
                 onSubmitAnswer = locationTasksViewModel::submitAnswer,
                 onClearMessages = locationTasksViewModel::clearMessages,
+                onLedger = { openLedger(locationTasksUiState.value.selectedTeamId) },
                 onBack = { navController.popBackStack() },
                 onChangeLocation = ::openLocationPickerForActiveGame,
             )
@@ -386,6 +411,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onTargetChange = shopViewModel::selectTarget,
                 onPurchase = shopViewModel::purchaseItem,
                 onClearMessages = shopViewModel::clearMessages,
+                onLedger = { openLedger(shopUiState.value.selectedTeamId) },
                 onBack = { navController.popBackStack() },
                 onChangeLocation = ::openLocationPickerForActiveGame,
             )
