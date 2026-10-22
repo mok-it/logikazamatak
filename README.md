@@ -38,6 +38,10 @@ They recommend using Scoop, but that's another dependency. Use whatever works fo
 
 We use IntelliJ Idea, but Android Studio works just as good (apart from being somewhat slower in my experience).
 
+## Tests
+
+See [gameplay acceptance scenarios](docs/gameplay-scenarios.md) for operator stories, automated coverage and the isolated desktop test command.
+
 ## Local development
 
 0 - Make sure you have a `.env.local` file with the appropriate values. See `.env.example` for some of the values, as well as the structure
