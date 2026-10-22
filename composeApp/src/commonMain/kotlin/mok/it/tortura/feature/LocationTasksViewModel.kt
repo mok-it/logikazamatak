@@ -145,10 +145,17 @@ class LocationTasksViewModel(
                 teamId = selectedTeamId,
             )
             _uiState.update { current ->
+                val sameTeam = current.selectedTeamId == selectedTeamId
                 current.copy(
                     tasks = data.tasks,
                     teams = data.teams,
                     selectedTeamId = selectedTeamId,
+                    answerDrafts = if (sameTeam) current.answerDrafts else emptyMap(),
+                    latestSubmissionByTaskId = if (sameTeam) {
+                        current.latestSubmissionByTaskId
+                    } else {
+                        emptyMap()
+                    },
                     selectedTeamProgress = buildTeamProgressSummary(data.teams, selectedTeamId),
                     message = null,
                 )
@@ -157,6 +164,7 @@ class LocationTasksViewModel(
     }
 
     fun selectTeam(teamId: Long) {
+        if (_uiState.value.teams.none { it.id == teamId }) return
         runRepositoryAction {
             val teams = _uiState.value.teams
             refreshSelectedTeamState(
@@ -164,8 +172,15 @@ class LocationTasksViewModel(
                 teamId = teamId,
             )
             _uiState.update {
+                val sameTeam = it.selectedTeamId == teamId
                 it.copy(
                     selectedTeamId = teamId,
+                    answerDrafts = if (sameTeam) it.answerDrafts else emptyMap(),
+                    latestSubmissionByTaskId = if (sameTeam) {
+                        it.latestSubmissionByTaskId
+                    } else {
+                        emptyMap()
+                    },
                     selectedTeamProgress = buildTeamProgressSummary(teams, teamId),
                     message = null,
                     errorMessage = null,
@@ -272,8 +287,9 @@ class LocationTasksViewModel(
     }
 
     private fun runRepositoryAction(action: suspend () -> Unit) {
+        if (_uiState.value.isLoading) return
+        _uiState.update { it.copy(isLoading = true, message = null, errorMessage = null) }
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, message = null, errorMessage = null) }
             try {
                 action()
             } catch (exception: Exception) {
