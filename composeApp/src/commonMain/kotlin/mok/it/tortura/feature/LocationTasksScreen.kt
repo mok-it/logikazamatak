@@ -35,6 +35,7 @@ fun LocationTasksScreen(
     onClearMessages: () -> Unit = {},
     onBack: () -> Unit = {},
     onChangeLocation: () -> Unit = {},
+    onLedger: () -> Unit = {},
 ) {
     val spacing = AppThemeTokens.spacing
     val selectedTeam = remember(uiState.selectedTeamId, uiState.teams) {
@@ -50,6 +51,7 @@ fun LocationTasksScreen(
             title = activeLocation.name ?: "Állomás",
             description = "$activeGameName • feladatbeküldés",
             trailingContent = {
+                AppButton(text = "Napló", onClick = onLedger, style = AppButtonStyle.Secondary)
                 AppButton(
                     text = "Vissza",
                     onClick = onBack,

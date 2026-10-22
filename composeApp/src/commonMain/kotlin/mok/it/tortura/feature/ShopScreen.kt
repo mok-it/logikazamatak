@@ -33,6 +33,7 @@ fun ShopScreen(
     onClearMessages: () -> Unit = {},
     onBack: () -> Unit = {},
     onChangeLocation: () -> Unit = {},
+    onLedger: () -> Unit = {},
 ) {
     val spacing = AppThemeTokens.spacing
     val selectedTeam = remember(uiState.selectedTeamId, uiState.teams) {
@@ -58,6 +59,7 @@ fun ShopScreen(
                 activeLocationName = activeLocationName,
             ),
             trailingContent = {
+                AppButton(text = "Napló", onClick = onLedger, style = AppButtonStyle.Secondary)
                 AppButton(
                     text = "Vissza",
                     onClick = onBack,

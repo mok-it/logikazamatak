@@ -31,6 +31,7 @@ data class HealingLedgerDto(
     val healingTaskId: Long? = null,
     val healedTasksLedgerId: Long? = null,
     val userId: Long? = null,
+    val reversesId: Long? = null,
 )
 
 @Serializable
@@ -128,6 +129,7 @@ data class ShopDto(
     val targetId: Long? = null,
     val teamId: Long? = null,
     val userId: Long? = null,
+    val reversesId: Long? = null,
 )
 
 @Serializable
@@ -193,6 +195,7 @@ data class TasksLedgerDto(
     val isSuccess: Boolean? = null,
     val bonusSourceShopId: Long? = null,
     val bonusSourceTasksLedgerId: Long? = null,
+    val reversesId: Long? = null,
 )
 
 @Serializable

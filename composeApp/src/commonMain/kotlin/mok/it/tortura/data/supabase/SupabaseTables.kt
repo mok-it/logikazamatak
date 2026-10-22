@@ -1,6 +1,9 @@
 package mok.it.tortura.data.supabase
 
 object SupabaseTables {
+    const val ACTIVE_HEALING_LEDGER = "ActiveHealingLedger"
+    const val ACTIVE_SHOP = "ActiveShop"
+    const val ACTIVE_TASKS_LEDGER = "ActiveTasksLedger"
     const val GAMES = "Games"
     const val HEALING_LEDGER = "HealingLedger"
     const val HEALING_TASKS = "HealingTasks"

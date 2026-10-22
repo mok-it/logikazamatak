@@ -224,3 +224,15 @@ Current temporary policies:
 
 These policies match the current app state where authentication is disabled/stubbed in navigation. Before enabling real
 multi-user access, replace the public policies with authenticated access or explicit game membership rules.
+
+## Ledger reversals
+
+`TasksLedger`, `HealingLedger` and `Shop` have a nullable, unique `reversesId` foreign key to an original row
+in the same table. A reversal copies the original transaction fields, retains its own timestamp, and cancels
+the original in the `ActiveTasksLedger`, `ActiveHealingLedger` and `ActiveShop` views. Views use invoker security.
+The raw tables are append-only and remain the source for the history screen.
+
+`undo_ledger_entry(p_kind, p_entry_id, p_team_id)` accepts `task`, `healing` or `shop` and runs atomically.
+Team-scoped advisory locks serialize gameplay inserts and undo. Bonuses and dependent healing get their own
+reversal rows. Double undo, forged reversal fields, invalid team IDs and inconsistent gameplay dependencies
+are rejected. A reversal cannot worsen a negative budget. Generated bonuses cannot be undone independently.

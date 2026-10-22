@@ -32,6 +32,9 @@ object Screen {
     object MainMenu
 
     @Serializable
+    data class Ledger(val gameId: Long, val teamId: Long? = null)
+
+    @Serializable
     object Shop
 
     @Serializable

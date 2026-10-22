@@ -41,6 +41,7 @@ fun MainMenu(
     onCompetition: (() -> Unit),
     onShop: (() -> Unit),
     onChangeLocation: () -> Unit,
+    onLedger: () -> Unit = {},
 ) {
     val canUseActions = authUiState.isAuthenticated && !authUiState.isBusy
     val spacing = AppThemeTokens.spacing
@@ -88,6 +89,12 @@ fun MainMenu(
                 description = "Válassz egy fő munkafolyamatot az aktív játékhoz.",
                 modifier = Modifier.fillMaxWidth(),
             ) {
+                AppButton(
+                    text = "Csapatnapló",
+                    onClick = onLedger,
+                    enabled = canUseActions,
+                    style = AppButtonStyle.Secondary,
+                )
                 AppButton(
                     text = "Másik játék választása",
                     onClick = onChangeGame,

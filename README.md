@@ -154,6 +154,34 @@ Supported overrides:
 Use the public `anon` or publishable key in client apps. Never use a `service_role` or secret key in Web, Android,
 iOS, or Desktop builds.
 
+## Team ledger and undo
+
+The main menu and the task, healing and shop screens have a ledger action for the active game/team.
+History includes original transactions, generated bonuses, timestamps, optional operator IDs and reversal rows.
+Confirming an undo appends a reversal without editing or deleting the original entry.
+Task/purchase undo also reverses dependent bonus rows; failed-task undo reverses dependent healing.
+Generated bonuses are undone through their original task or purchase.
+
+Reversals cannot invalidate existing purchases or miniboss/boss unlock dependencies. In those cases,
+undo the dependent purchase/attempt first. An already negative manual balance can still be improved by refunds.
+Operator IDs remain empty while authentication is disabled; this change does not invent an operator identity.
+
+Apply `supabase/migrations/20261022135650_ledger_reversals.sql` to a test database before testing the updated client.
+Gameplay repositories and database item rules use the `ActiveTasksLedger`, `ActiveHealingLedger` and `ActiveShop`
+views; the underlying tables retain full history. Deploy the updated client together with the migration:
+older clients that query the raw tables do not understand reversals. Original ledger updates/deletes are rejected.
+The existing public operator access model is retained.
+
+Run the database regression check against a migrated local database:
+
+```sh
+psql "$LOCAL_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/ledger_reversals.sql
+```
+
+Manual check: record a task, buy a multiplier, and heal a failed attempt. Open the ledger from each screen,
+undo the entries, and return to verify refreshed score, budget, stock and healing choices. Check confirmation,
+duplicate undo, dependency errors and the mobile layout. Hosted migrations and live browser checks are separate.
+
 ## Scheduled Backups
 
 The repository includes a GitHub Actions workflow at `.github/workflows/supabase-backup.yml` that runs daily at

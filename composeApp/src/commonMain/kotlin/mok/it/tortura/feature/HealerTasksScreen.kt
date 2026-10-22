@@ -28,6 +28,7 @@ fun HealerTasksScreen(
     onClearMessages: () -> Unit = {},
     onBack: () -> Unit = {},
     onChangeLocation: () -> Unit = {},
+    onLedger: () -> Unit = {},
 ) {
     var isHealDialogVisible by rememberSaveable { mutableStateOf(false) }
     var selectedFailedLedgerId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -72,6 +73,7 @@ fun HealerTasksScreen(
                 append(activeLocationName?.let { "Helyszín: $it" } ?: "Nincs kiválasztott helyszín")
             },
             trailingContent = {
+                AppButton(text = "Napló", onClick = onLedger, style = AppButtonStyle.Secondary)
                 AppButton(
                     text = "Vissza",
                     onClick = onBack,
