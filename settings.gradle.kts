@@ -1,4 +1,4 @@
-rootProject.name = "tortura"
+rootProject.name = "logikazamatak"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

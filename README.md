@@ -110,6 +110,18 @@ The web app builds to `composeApp/build/dist/wasmJs/productionExecutable`.
 This repository includes a `wrangler.jsonc` with `pages_build_output_dir` pointing at that directory
 
 
+## Application identity
+
+The application name is `Logikazamatak`. Kotlin packages, generated build configuration, and the Android application ID
+use `mok.it.logikazamatak`. The Android authentication callback is `logikazamatak://auth`.
+The iOS base bundle ID is `mok.it.logikazamatak`, with the existing `TEAM_ID` suffix applied by Xcode.
+
+These native identifiers create a separate application from earlier installations. Existing native app data is not
+migrated automatically. Before publishing native builds, configure the matching store/signing registrations and allow
+`logikazamatak://auth` in the authentication provider if native sign-in is enabled. Repository changes do not update
+hosted provider settings. The iOS project metadata is maintained, but iOS targets are currently absent from the Gradle
+build, so an iOS release requires restoring and validating that platform first.
+
 ## Miscellaneous
 
 ### Build-Time Config
