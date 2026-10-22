@@ -235,15 +235,16 @@ class HealerTasksViewModel(
         clearSelection: Boolean,
         action: suspend () -> Unit,
     ) {
+        if (_uiState.value.isLoading) return
+        _uiState.update {
+            it.copy(
+                isLoading = true,
+                message = null,
+                errorMessage = null,
+                selectedHealingTaskId = if (clearSelection) null else it.selectedHealingTaskId,
+            )
+        }
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoading = true,
-                    message = null,
-                    errorMessage = null,
-                    selectedHealingTaskId = if (clearSelection) null else it.selectedHealingTaskId,
-                )
-            }
             try {
                 action()
             } catch (exception: Exception) {
