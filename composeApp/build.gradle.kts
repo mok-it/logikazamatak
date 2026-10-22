@@ -79,7 +79,7 @@ plugins {
 }
 
 buildkonfig {
-    packageName = "mok.it.tortura"
+    packageName = "mok.it.logikazamatak"
     objectName = "AppConfig"
 
     defaultConfigs {
@@ -169,11 +169,11 @@ kotlin {
 }
 
 android {
-    namespace = "mok.it.tortura"
+    namespace = "mok.it.logikazamatak"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "mok.it.tortura"
+        applicationId = "mok.it.logikazamatak"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -201,11 +201,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "mok.it.tortura.MainKt"
+        mainClass = "mok.it.logikazamatak.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Tortura"
+            packageName = "Logikazamatak"
             packageVersion = "1.0.0"
 
             linux {
